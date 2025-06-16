@@ -24,3 +24,17 @@ export const getPallets = async (
 
   return await apiRequest(endpoint);
 };
+
+export const getBoxByCode = async (codigo: string): Promise<any> => {
+  const queryString = new URLSearchParams({ codigo }).toString();
+  return await apiRequest(`/getEggsByCodigo?${queryString}`, {
+    method: 'GET',
+  });
+};
+
+export const getUnassignedBoxesByLocation = async (location: string): Promise<any> => {
+  const queryString = new URLSearchParams({ ubicacion: location }).toString();
+  return await apiRequest(`/getUnassignedBoxesByLocation?${queryString}`, {
+    method: 'GET',
+  });
+};

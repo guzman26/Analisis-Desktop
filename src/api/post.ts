@@ -28,3 +28,24 @@ export const movePallet = async (
     body: JSON.stringify({ codigo, ubicacion }),
   });
 };
+
+export const closePallet = async (codigo: string): Promise<any> => {
+  return await apiRequest('/closePallet', {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  });
+};
+
+export const unassignBox = async (codigo: string): Promise<any> => {
+  return await apiRequest('/unassignBox', {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  });
+};
+
+export const assignBox = async (codigo: string, pallet: string): Promise<any> => {
+  return await apiRequest('/reassignBoxToPallet', {
+    method: 'POST',
+    body: JSON.stringify({ boxCode: codigo, palletCode: pallet }),
+  });
+};

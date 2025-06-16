@@ -18,3 +18,23 @@ export interface GetPalletsParams {
   fechaDesde?: string;
   fechaHasta?: string;
 }
+
+export interface Box {
+  id: string;
+  codigo: string;
+  empacadora: string;
+  calibre: number;
+  formato_caja: string;
+  operario: string;
+  estado: string;
+  fecha_registro: string;
+  semana: number;
+  ubicacion: string;
+  horario_proceso: string;
+  contador: number;
+  quantity: number;
+  dia_semana: string;
+  año: number;
+  descripcion: string;
+  palletId: string;
+}

@@ -16,6 +16,8 @@ interface PalletContextType {
     codigo: string,
     ubicacion: 'TRANSITO' | 'BODEGA' | 'VENTA'
   ) => Promise<any>;
+  palletsInBodega: Pallet[];
+  fetchPalletsInBodega: () => Promise<void>;
 }
 
 export const PalletContext = createContext<PalletContextType>(
@@ -34,7 +36,7 @@ export const PalletProvider: React.FC<Props> = ({ children }) => {
   const [closedPalletsInTransit, setClosedPalletsInTransit] = useState<
     Pallet[]
   >([]);
-
+  const [palletsInBodega, setPalletsInBodega] = useState<Pallet[]>([]);
   // Función auxiliar para procesar pallets y asignarles el calibre
   const processPalletsWithCalibre = useCallback(
     (pallets: Pallet[]): Pallet[] => {
@@ -80,6 +82,13 @@ export const PalletProvider: React.FC<Props> = ({ children }) => {
     []
   );
 
+  const fetchPalletsInBodega = useCallback(async () => {
+    const response = await getPallets({ ubicacion: 'BODEGA' });
+    const pallets = extractDataFromResponse(response);
+    const palletsWithCalibre = processPalletsWithCalibre(pallets);
+    setPalletsInBodega(palletsWithCalibre);
+  }, [processPalletsWithCalibre]);
+
   const value: PalletContextType = {
     activePallets,
     fetchActivePallets,
@@ -88,6 +97,8 @@ export const PalletProvider: React.FC<Props> = ({ children }) => {
     closedPalletsInTransit,
     fetchClosedPalletsInTransit,
     movePalletFunction,
+    palletsInBodega,
+    fetchPalletsInBodega,
   };
 
   return (

@@ -35,6 +35,10 @@
   --color-bodega: #2196f3;
   --color-venta: #9c27b0;
 
+  /* Colores de Estado */
+  --color-abierto: #4caf50;
+  --color-cerrado: #919090;
+
   /* Colores de Hover */
   --color-hover-light: #f5f5f5;
   --color-hover-primary: #1565c0;

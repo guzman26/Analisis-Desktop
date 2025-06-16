@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Pallet } from '@/types';
+import { Box, Pallet } from '@/types';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import '@/styles/PalletDetailModal.css';
+import { getBoxByCode } from '@/api/get';
+import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
+import BoxDetailModal from './BoxDetailModal';
+import { formatDate } from '@/utils/formatDate';
 
 interface PalletDetailModalProps {
   pallet: Pallet | null;
@@ -21,7 +25,8 @@ const PalletDetailModal = ({
   onMovePallet,
 }: PalletDetailModalProps) => {
   const [showMoveOptions, setShowMoveOptions] = useState(false);
-
+  const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
+  const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -39,19 +44,25 @@ const PalletDetailModal = ({
 
   if (!isOpen || !pallet) return null;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const moveLocations = ['TRANSITO', 'BODEGA', 'VENTA'].filter(
     (loc) => loc !== pallet.ubicacion
   );
+
+  const handleBoxClick = async (codigo: string) => {
+    try {
+      const response = await getBoxByCode(codigo);
+      const boxData = extractDataFromResponse(response);
+      // extractDataFromResponse returns an array, so we need the first element
+      if (boxData && boxData.length > 0) {
+        setSelectedBox(boxData[0]);
+        setShowBoxDetailModal(true);
+      } else {
+        console.warn('No box data found for codigo:', codigo);
+      }
+    } catch (error) {
+      console.error('Error fetching box details:', error);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -61,7 +72,7 @@ const PalletDetailModal = ({
           <div>
             <h2 className="modal-title">Pallet {pallet.codigo}</h2>
             <div className="modal-badges">
-              <span className={`status-badge ${pallet.estado}`}>
+              <span className={`status-badge ${pallet.estado.toLowerCase()}`}>
                 {pallet.estado.toUpperCase()}
               </span>
               <span
@@ -110,7 +121,12 @@ const PalletDetailModal = ({
               <div className="boxes-container">
                 <div className="boxes-grid">
                   {pallet.cajas.map((caja, index) => (
-                    <div key={index} className="box-item">
+                    <div
+                      key={index}
+                      className="box-item"
+                      onClick={() => handleBoxClick(caja)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {caja}
                     </div>
                   ))}
@@ -165,6 +181,11 @@ const PalletDetailModal = ({
           )}
         </div>
       </div>
+      <BoxDetailModal
+        box={selectedBox}
+        isOpen={showBoxDetailModal}
+        onClose={() => setShowBoxDetailModal(false)}
+      />
     </div>
   );
 };

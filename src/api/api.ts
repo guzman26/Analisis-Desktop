@@ -4,7 +4,7 @@ import { Pallet, GetPalletsParams } from '@/types';
 // Types matching your backend exactly
 
 // Get API URL from environment
-const API_URL = import.meta.env.VITE_API_URL;
+export const API_URL = import.meta.env.VITE_API_URL;
 
 if (!API_URL) {
   console.error('VITE_API_URL not found in environment variables');
