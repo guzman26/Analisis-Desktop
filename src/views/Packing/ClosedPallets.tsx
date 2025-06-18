@@ -7,40 +7,40 @@ import { closePallet, movePallet } from '@/api/post';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
-  const { closedPalletsInPacking, fetchClosedPalletsInPacking } =
+  const { closedPalletsInPackingPaginated } =
     useContext(PalletContext);
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchClosedPalletsInPacking();
-  }, [fetchClosedPalletsInPacking]);
+    closedPalletsInPackingPaginated.refresh();
+  }, []);
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
-        <h1 className="open-pallets-title">Pallets Abiertos</h1>
-        <button onClick={() => fetchClosedPalletsInPacking()}>Refrescar</button>
+          <h1 className="open-pallets-title">Pallets Cerrados</h1>
+        <button onClick={() => closedPalletsInPackingPaginated.refresh()}>Refrescar</button>
         <div className="open-pallets-count">
-          {closedPalletsInPacking.length} pallets
+          {closedPalletsInPackingPaginated.data.length} pallets
         </div>
       </div>
 
       {/* Empty State */}
-      {closedPalletsInPacking.length === 0 ? (
+      {closedPalletsInPackingPaginated.data.length === 0 ? (
         <div className="open-pallets-empty">
-          <p>No hay pallets abiertos</p>
+          <p>No hay pallets cerrados</p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {closedPalletsInPacking.map((pallet) => (
+          {closedPalletsInPackingPaginated.data.map((pallet) => (
             <PalletCard
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
               closePallet={closePallet}
-              fetchActivePallets={fetchClosedPalletsInPacking}
+              fetchActivePallets={closedPalletsInPackingPaginated.refresh}
             />
           ))}
         </div>

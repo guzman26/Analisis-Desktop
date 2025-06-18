@@ -22,9 +22,9 @@ export const BoxesProvider = ({ children }: Props) => {
   const [unassignedBoxesInBodega, setUnassignedBoxesInBodega] = useState<Box[]>(
     []
   );
-  const [unassignedBoxesInPacking, setUnassignedBoxesInPacking] = useState<Box[]>(
-    []
-  );
+  const [unassignedBoxesInPacking, setUnassignedBoxesInPacking] = useState<
+    Box[]
+  >([]);
 
   const fetchUnassignedBoxesInBodega = useCallback(async () => {
     try {
@@ -38,7 +38,6 @@ export const BoxesProvider = ({ children }: Props) => {
   }, []);
 
   const fetchUnassignedBoxesInPacking = useCallback(async () => {
-
     try {
       const response = await getUnassignedBoxesByLocation('PACKING');
       const boxes = extractDataFromResponse(response);

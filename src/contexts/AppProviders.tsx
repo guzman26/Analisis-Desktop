@@ -1,5 +1,7 @@
 import { PalletProvider } from './PalletContext';
 import { BoxesProvider } from './BoxesContext';
+import { CustomerProvider } from './CustomerContext';
+import { SalesProvider } from './SalesContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -8,7 +10,11 @@ interface AppProvidersProps {
 export const AppProviders = ({ children }: AppProvidersProps) => {
   return (
     <PalletProvider>
-      <BoxesProvider>{children}</BoxesProvider>
+      <BoxesProvider>
+        <CustomerProvider>
+          <SalesProvider>{children}</SalesProvider>
+        </CustomerProvider>
+      </BoxesProvider>
     </PalletProvider>
   );
 };

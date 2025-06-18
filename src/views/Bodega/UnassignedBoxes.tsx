@@ -14,12 +14,13 @@ const UnassignedBoxes = () => {
     fetchUnassignedBoxesInBodega();
   }, [fetchUnassignedBoxesInBodega]);
 
-
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={() => fetchUnassignedBoxesInBodega()}>Refrescar</button>
+        <button onClick={() => fetchUnassignedBoxesInBodega()}>
+          Refrescar
+        </button>
         <div className="open-pallets-count">
           {unassignedBoxesInBodega.length} cajas
         </div>

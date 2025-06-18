@@ -165,6 +165,56 @@
   background-color: var(--color-primary-dark);
 }
 
+/* Selectable and Selected States */
+.box-card.selectable {
+  cursor: pointer;
+  border: 2px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.box-card.selectable:hover {
+  border-color: var(--color-primary-light);
+  background-color: var(--color-background);
+}
+
+.box-card.selected {
+  border: 2px solid var(--color-primary);
+  background-color: var(--color-primary-light);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.box-card.selected:hover {
+  border-color: var(--color-primary-dark);
+  background-color: var(--color-primary-light);
+}
+
+/* Selection checkbox positioning */
+.box-card .selection-checkbox {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-background-white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box-card.selected .selection-checkbox {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-background-white);
+}
+
+.box-card .selection-checkbox:hover {
+  border-color: var(--color-primary);
+}
+
 /* Responsive Design for Box Cards */
 @media (max-width: 768px) {
   .box-card {

@@ -1,5 +1,4 @@
 export const extractDataFromResponse = (response: any) => {
-  console.log(response);
 
   // Si la respuesta es null o undefined, retornar array vacío
   if (!response) {
@@ -7,9 +6,13 @@ export const extractDataFromResponse = (response: any) => {
     return [];
   }
 
-
   // Si tiene una propiedad 'data'
   if (response?.data) {
+    // Nuevo formato: data.items (estructura paginada)
+    if (response.data.items && Array.isArray(response.data.items)) {
+      return response.data.items;
+    }
+
     // Si es un array, retornarlo directamente
     if (Array.isArray(response.data)) {
       return response.data;
@@ -34,39 +37,29 @@ export const extractDataFromResponse = (response: any) => {
 
   // Si tiene una propiedad 'body' que contiene JSON string
   if (response?.body && typeof response.body === 'string') {
-    console.log('📦 Found body string, parsing...');
     try {
       const parsedBody = JSON.parse(response.body);
-      console.log('✅ Parsed body:', parsedBody);
 
       if (Array.isArray(parsedBody)) {
-        console.log('📋 Parsed body is array, returning directly');
         return parsedBody;
       }
 
       // Si tiene una propiedad 'data'
       if (parsedBody?.data) {
-        console.log('📊 Found data property:', parsedBody.data);
         // Si es un array, retornarlo directamente
         if (Array.isArray(parsedBody.data)) {
-          console.log('✅ Data is array, returning:', parsedBody.data);
           return parsedBody.data;
         }
         // Si es un objeto, retornarlo como array de un elemento
         if (typeof parsedBody.data === 'object' && parsedBody.data !== null) {
-          console.log('✅ Data is object, wrapping in array:', [
-            parsedBody.data,
-          ]);
           return [parsedBody.data];
         }
       }
 
       // Si tiene una propiedad 'pallets'
       if (parsedBody?.pallets) {
-        console.log('🎯 Found pallets property:', parsedBody.pallets);
         // Si es un array, retornarlo directamente
         if (Array.isArray(parsedBody.pallets)) {
-          console.log('✅ Pallets is array, returning:', parsedBody.pallets);
           return parsedBody.pallets;
         }
         // Si es un objeto, retornarlo como array de un elemento
@@ -74,9 +67,6 @@ export const extractDataFromResponse = (response: any) => {
           typeof parsedBody.pallets === 'object' &&
           parsedBody.pallets !== null
         ) {
-          console.log('✅ Pallets is object, wrapping in array:', [
-            parsedBody.pallets,
-          ]);
           return [parsedBody.pallets];
         }
       }
@@ -139,6 +129,5 @@ export const extractDataFromResponse = (response: any) => {
     }
   }
 
-  console.log('⚠️ No data found, returning empty array');
   return []; // Fallback final a array vacío
 };

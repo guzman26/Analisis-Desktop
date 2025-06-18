@@ -4,8 +4,19 @@ const Dashboard = lazy(() => import('../views/Dashboard'));
 const OpenPallets = lazy(() => import('../views/Packing/OpenPallets'));
 const ClosedPallets = lazy(() => import('../views/Packing/ClosedPallets'));
 const PalletsInBodega = lazy(() => import('../views/Bodega/Pallets'));
-const UnassignedBoxesBodega = lazy(() => import('../views/Bodega/UnassignedBoxes'));
-const UnassignedBoxesPacking = lazy(() => import('../views/Packing/UnassignedBoxes'));
+const UnassignedBoxesBodega = lazy(
+  () => import('../views/Bodega/UnassignedBoxes')
+);
+const UnassignedBoxesPacking = lazy(
+  () => import('../views/Packing/UnassignedBoxes')
+);
+const CreateSaleForm = lazy(
+  () => import('../views/Sale/CreateSaleForm/CreateSaleForm')
+);
+const CreateCustomerForm = lazy(
+  () => import('../views/Sale/CreateCustomerForm')
+);
+const SalesOrders = lazy(() => import('../views/Sale/SalesOrdersList'));
 export const routes = [
   {
     path: '/',
@@ -34,5 +45,17 @@ export const routes = [
   {
     path: '/packing/unassignedBoxes',
     element: <UnassignedBoxesPacking />,
+  },
+  {
+    path: '/sales/new',
+    element: <CreateSaleForm />,
+  },
+  {
+    path: '/sales/createCustomer',
+    element: <CreateCustomerForm />,
+  },
+  {
+    path: '/sales/orders',
+    element: <SalesOrders />,
   },
 ];

@@ -7,40 +7,86 @@ import { closePallet, movePallet } from '@/api/post';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
-  const { activePallets, fetchActivePallets } = useContext(PalletContext);
+  const {
+    activePalletsPaginated: {
+      data: activePalletsPaginated,
+      loading,
+      error,
+      hasMore,
+      loadMore,
+      refresh,
+    },
+  } = useContext(PalletContext);
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchActivePallets();
-  }, [fetchActivePallets]);
+    refresh();
+  }, []);
+
+  const handleRefresh = () => {
+    refresh();
+  };
+
+  const handleCloseAction = async (codigo: string) => {
+    await closePallet(codigo);
+    refresh(); // Refresh paginated data instead of fetchActivePallets
+  };
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Pallets Abiertos</h1>
-        <button onClick={() => fetchActivePallets()}>Refrescar</button>
-        <div className="open-pallets-count">{activePallets.length} pallets</div>
+        <button onClick={handleRefresh} disabled={loading}>
+          {loading ? 'Cargando...' : 'Refrescar'}
+        </button>
+        <div className="open-pallets-count">
+          {activePalletsPaginated.length} pallets
+        </div>
       </div>
 
+      {/* Error State */}
+      {error && (
+        <div className="open-pallets-error">
+          <p>Error: {error}</p>
+          <button onClick={handleRefresh}>Reintentar</button>
+        </div>
+      )}
+
       {/* Empty State */}
-      {activePallets.length === 0 ? (
+      {!loading && !error && activePalletsPaginated.length === 0 ? (
         <div className="open-pallets-empty">
           <p>No hay pallets abiertos</p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {activePallets.map((pallet) => (
+          {activePalletsPaginated.map((pallet) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
-              closePallet={closePallet}
-              fetchActivePallets={fetchActivePallets}
+              closePallet={handleCloseAction}
+              fetchActivePallets={handleRefresh}
             />
           ))}
+        </div>
+      )}
+
+      {/* Load More Button */}
+      {hasMore && !loading && (
+        <div className="open-pallets-load-more">
+          <button onClick={loadMore} className="load-more-button">
+            Cargar más pallets
+          </button>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="open-pallets-loading">
+          <p>Cargando pallets...</p>
         </div>
       )}
 
@@ -51,11 +97,7 @@ const OpenPallets = () => {
           setIsModalOpen(false);
           setSelectedPallet(null);
         }}
-        onClosePallet={(codigo) => {
-          closePallet(codigo);
-          setIsModalOpen(false);
-          fetchActivePallets();
-        }}
+        onClosePallet={handleCloseAction}
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);
         }}

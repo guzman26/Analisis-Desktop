@@ -1,5 +1,12 @@
 import { apiRequest } from './api';
-import { Pallet } from '@/types';
+import {
+  Pallet,
+  Customer,
+  CustomerFormData,
+  Sale,
+  SaleRequest,
+  SaleReport,
+} from '@/types';
 
 export const createPallet = async (
   baseCode: string,
@@ -43,9 +50,52 @@ export const unassignBox = async (codigo: string): Promise<any> => {
   });
 };
 
-export const assignBox = async (codigo: string, pallet: string): Promise<any> => {
+export const assignBox = async (
+  codigo: string,
+  pallet: string
+): Promise<any> => {
   return await apiRequest('/reassignBoxToPallet', {
     method: 'POST',
     body: JSON.stringify({ boxCode: codigo, palletCode: pallet }),
+  });
+};
+
+export const createCustomer = async (
+  customerData: CustomerFormData
+): Promise<Customer> => {
+  return await apiRequest('/customers', {
+    method: 'POST',
+    body: JSON.stringify(customerData),
+  });
+};
+
+export const updateCustomer = async (
+  customerId: string,
+  customerData: Partial<CustomerFormData>
+): Promise<Customer> => {
+  return await apiRequest(`/customers/${customerId}`, {
+    method: 'PUT',
+    body: JSON.stringify(customerData),
+  });
+};
+
+export const deleteCustomer = async (customerId: string): Promise<any> => {
+  return await apiRequest(`/customers/${customerId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const createSale = async (payload: SaleRequest): Promise<Sale> => {
+  return await apiRequest('/sales/orders/from-pallets', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+export const generateSaleReport = async (
+  saleId: string
+): Promise<SaleReport> => {
+  return await apiRequest(`/sales/${saleId}/report`, {
+    method: 'POST',
   });
 };

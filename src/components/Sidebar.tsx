@@ -56,6 +56,27 @@ const sidebarItems: SidebarItem[] = [
       },
     ],
   },
+  {
+    label: 'Ventas',
+    icon: '💰',
+    children: [
+      {
+        path: '/sales/new',
+        label: 'Nueva Venta',
+        icon: '📝',
+      },
+      {
+        path: '/sales/createCustomer',
+        label: 'Crear Cliente',
+        icon: '📝',
+      },
+      {
+        path: '/sales/orders',
+        label: 'Ventas',
+        icon: '💰',
+      },
+    ],
+  },
 ];
 
 const Sidebar = ({ onToggle }: SidebarProps) => {

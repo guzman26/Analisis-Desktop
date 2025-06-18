@@ -24,10 +24,12 @@
 
   /* Colores de Estado */
   --color-success: #28a745;
+  --color-success-light: #d4edda;
   --color-warning: #fd7e14;
   --color-error: #ff5722;
   --color-info: #17a2b8;
   --color-blue: #007bff;
+  --color-text-light: #f8f9fa;
 
   /* Colores de Ubicación */
   --color-packing: #4caf50;

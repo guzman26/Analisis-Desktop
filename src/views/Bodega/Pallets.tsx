@@ -11,9 +11,10 @@ const OpenPallets = () => {
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Cargar datos al montar el componente
   useEffect(() => {
     fetchPalletsInBodega();
-  }, [fetchPalletsInBodega]);
+  }, []); // Dependencias vacías para que solo se ejecute una vez al montar
 
   return (
     <div className="open-pallets">
