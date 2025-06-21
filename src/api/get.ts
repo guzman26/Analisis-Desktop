@@ -6,16 +6,9 @@ import {
   PaginatedResponse,
   Customer,
   GetCustomersParams,
-  SaleReport,
   Sale,
   GetSalesOrdersParamsPaginated,
 } from '@/types';
-
-export const getPalletByCode = async (
-  codigo: string
-): Promise<Pallet | null> => {
-  return await apiRequest(`/pallets/${codigo}`);
-};
 
 export const getPallets = async (
   params: GetPalletsParams = {}
@@ -101,18 +94,13 @@ export const getCustomerByEmail = async (
   return await apiRequest(`/customers/email?${queryString}`);
 };
 
-export const getSaleReport = async (
-  saleId: string
-): Promise<SaleReport | null> => {
-  return await apiRequest(`/sales/${saleId}/report`);
-};
-
 export const getSalesOrdersPaginated = async (
   params: GetSalesOrdersParamsPaginated = {}
 ): Promise<PaginatedResponse<Sale>> => {
 
   // Build query string
   const queryParams = new URLSearchParams();
+  if (params.state) queryParams.append('state', params.state);
   if (params.fechaDesde) queryParams.append('fechaDesde', params.fechaDesde);
   if (params.fechaHasta) queryParams.append('fechaHasta', params.fechaHasta);
   if (params.limit) queryParams.append('limit', params.limit.toString());

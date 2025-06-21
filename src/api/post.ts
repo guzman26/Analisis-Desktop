@@ -1,22 +1,10 @@
 import { apiRequest } from './api';
 import {
-  Pallet,
   Customer,
   CustomerFormData,
   Sale,
   SaleRequest,
-  SaleReport,
 } from '@/types';
-
-export const createPallet = async (
-  baseCode: string,
-  ubicacion: 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA' = 'PACKING'
-): Promise<Pallet> => {
-  return await apiRequest('/pallets', {
-    method: 'POST',
-    body: JSON.stringify({ baseCode, ubicacion }),
-  });
-};
 
 export const movePallet = async (
   codigo: string,
@@ -92,10 +80,4 @@ export const createSale = async (payload: SaleRequest): Promise<Sale> => {
   });
 };
 
-export const generateSaleReport = async (
-  saleId: string
-): Promise<SaleReport> => {
-  return await apiRequest(`/sales/${saleId}/report`, {
-    method: 'POST',
-  });
-};
+

@@ -58,7 +58,7 @@
   margin-bottom: 2rem;
 }
 
-/* Sale Card */
+/* Sale Card - Nueva estructura */
 .sale-card {
   background: var(--color-background-white);
   border-radius: 12px;
@@ -66,6 +66,9 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--color-border);
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .sale-card:hover {
@@ -73,108 +76,75 @@
   transform: translateY(-2px);
 }
 
-/* Sale Header */
-.sale-header {
+/* Información principal - Fecha y Cliente */
+.sale-main-info {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border-light);
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.sale-id {
+.sale-date-primary {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.2;
+}
+
+.sale-customer-primary {
+  display: flex;
+  align-items: center;
+}
+
+.customer-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Información secundaria */
+.sale-secondary-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-background);
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+}
+
+.sale-id-secondary,
+.sale-boxes-info {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.sale-id .label {
-  font-size: 0.8rem;
+.sale-id-secondary .label,
+.sale-boxes-info .label {
+  font-size: 0.75rem;
   color: var(--color-text-muted);
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.sale-id .value {
-  font-size: 0.9rem;
+.sale-id-secondary .value {
+  font-size: 0.85rem;
   color: var(--color-primary);
-  font-weight: 700;
+  font-weight: 600;
   font-family: monospace;
 }
 
-.sale-date {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  text-align: right;
-}
-
-/* Customer Info */
-.sale-customer {
-  margin-bottom: 1rem;
-}
-
-.customer-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.customer-info .label {
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
-.customer-info .value {
-  font-size: 0.9rem;
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-/* Sale Details */
-.sale-details {
-  margin-bottom: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.25rem 0;
-}
-
-.detail-row .label {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-.detail-row .value {
-  font-size: 0.9rem;
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-.detail-row.total-amount {
-  border-top: 1px solid var(--color-border-light);
-  padding-top: 0.5rem;
-  margin-top: 0.25rem;
-}
-
-.total-amount .label,
-.total-amount .value {
+.sale-boxes-info .value {
   font-size: 1rem;
+  color: var(--color-text-primary);
   font-weight: 700;
-  color: var(--color-primary);
 }
 
 /* Sale Items */
 .sale-items {
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
 .items-label {
@@ -194,8 +164,8 @@
 
 .pallet-item {
   background: var(--color-background);
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
   border: 1px solid var(--color-border);
   font-size: 0.8rem;
   display: flex;
@@ -204,9 +174,8 @@
 }
 
 .pallet-id {
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   font-weight: 600;
-  font-family: monospace;
 }
 
 .box-count {
@@ -216,11 +185,11 @@
 
 /* Sale Notes */
 .sale-notes {
-  margin-bottom: 1rem;
+  margin: 0;
   padding: 0.75rem;
-  background: var(--color-background);
+  background: #f8f9fa;
   border-radius: 6px;
-  border-left: 3px solid var(--color-info);
+  border-left: 3px solid var(--color-primary);
 }
 
 .sale-notes .label {
@@ -234,7 +203,7 @@
 
 .notes-text {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
@@ -243,35 +212,48 @@
 .sale-actions {
   display: flex;
   gap: 0.5rem;
-  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border-light);
 }
 
 .btn-small {
   padding: 0.5rem 0.75rem;
   font-size: 0.8rem;
-  min-width: auto;
+  flex: 1;
+  cursor: pointer;
 }
 
-/* Loading and Load More */
+.btn-success {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Removed all price/currency related styles */
+
+/* Loading States */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  background: var(--color-background-white);
-  border-radius: 8px;
-  margin-bottom: 2rem;
+  padding: 3rem;
+  color: var(--color-text-secondary);
 }
 
 .loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-border);
-  border-top: 3px solid var(--color-primary);
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -284,28 +266,25 @@
 }
 
 .loading-container p {
-  color: var(--color-text-secondary);
-  margin: 0;
+  margin-top: 1rem;
   font-size: 1rem;
 }
 
 .load-more-section {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
+  text-align: center;
+  margin: 2rem 0;
 }
 
 .load-more-btn {
   min-width: 150px;
 }
 
-/* Sales Summary */
 .sales-summary {
   text-align: center;
   padding: 1rem;
   background: var(--color-background-white);
-  border-radius: 6px;
-  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
 }
 
 .sales-summary p {
@@ -328,7 +307,6 @@
 
   .sales-orders-header h1 {
     font-size: 1.5rem;
-    text-align: center;
   }
 
   .sales-orders-grid {
@@ -340,14 +318,14 @@
     padding: 1rem;
   }
 
-  .sale-header {
+  .sale-secondary-info {
     flex-direction: column;
-    gap: 0.5rem;
-    align-items: flex-start;
+    gap: 0.75rem;
+    align-items: stretch;
   }
 
-  .sale-date {
-    text-align: left;
+  .sale-date-primary {
+    font-size: 1rem;
   }
 
   .sale-actions {
@@ -355,7 +333,8 @@
   }
 
   .btn-small {
-    width: 100%;
+    font-size: 0.9rem;
+    padding: 0.75rem;
   }
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sale, Customer } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { CustomerContext } from '@/contexts/CustomerContext';
@@ -12,7 +13,9 @@ interface SaleDetailModalProps {
 
 const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const { getCustomerByIdFunction } = useContext(CustomerContext);
+  const navigate = useNavigate();
+  const customerContext = useContext(CustomerContext);
+  const { getCustomerByIdFunction } = customerContext || {};
 
   // Fetch customer data when sale changes
   useEffect(() => {
@@ -48,8 +51,9 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !sale) return null;
+  // No longer needed - removed print view modal
 
+  // Helper functions
   const formatCurrency = (amount?: number) => {
     if (!amount) return '-';
     return new Intl.NumberFormat('es-CL', {
@@ -60,12 +64,20 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
   const getTotalBoxes = () => {
     return (
-      sale.items?.reduce(
+      sale?.items?.reduce(
         (total, item) => total + (item.boxIds?.length || 0),
         0
       ) || 0
     );
   };
+
+  const handleShowPrintView = () => {
+    if (sale?.saleId) {
+      navigate(`/sales/print/${sale.saleId}`);
+    }
+  };
+
+  if (!isOpen || !sale) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -204,6 +216,12 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
           {/* Actions */}
           <div className="modal-actions">
+            <button
+              className="action-button primary"
+              onClick={handleShowPrintView}
+            >
+              📄 Ver Guía de Despacho
+            </button>
             {sale.reportUrl && (
               <a
                 href={sale.reportUrl}

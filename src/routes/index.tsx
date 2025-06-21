@@ -16,7 +16,14 @@ const CreateSaleForm = lazy(
 const CreateCustomerForm = lazy(
   () => import('../views/Sale/CreateCustomerForm')
 );
-const SalesOrders = lazy(() => import('../views/Sale/SalesOrdersList'));
+const SalesOrders = lazy(() => import('../views/Sale/DraftSalesOrdersList'));
+const SaleReportPrintView = lazy(
+  () => import('../views/Sale/SaleReportPrintView')
+);
+const ConfirmedSalesOrdersList = lazy(
+  () => import('../views/Sale/ConfirmedSalesOrdersList')
+);
+
 export const routes = [
   {
     path: '/',
@@ -57,5 +64,17 @@ export const routes = [
   {
     path: '/sales/orders',
     element: <SalesOrders />,
+  },
+  {
+    path: '/sales/confirmed',
+    element: <ConfirmedSalesOrdersList />,
+  },
+];
+
+// Routes that don't use the Layout component (no sidebar)
+export const standaloneRoutes = [
+  {
+    path: '/sales/print/:saleId',
+    element: <SaleReportPrintView />,
   },
 ];

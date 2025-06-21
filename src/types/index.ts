@@ -36,6 +36,7 @@ export interface GetSalesOrdersParamsPaginated extends PaginationParams {
   ubicacion?: string;
   fechaDesde?: string;
   fechaHasta?: string;
+  state?: string;
 }
 
 // Respuesta de la API paginada

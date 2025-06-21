@@ -72,8 +72,13 @@ const sidebarItems: SidebarItem[] = [
       },
       {
         path: '/sales/orders',
-        label: 'Ventas',
-        icon: '💰',
+        label: 'Borradores de Ventas',
+        icon: '📌',
+      },
+      {
+        path: '/sales/confirmed',
+        label: 'Ventas Confirmadas',
+        icon: '✅',
       },
     ],
   },
@@ -81,7 +86,7 @@ const sidebarItems: SidebarItem[] = [
 
 const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Packing']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['']);
 
   const toggleSidebar = () => {
     const newCollapsedState = !isCollapsed;

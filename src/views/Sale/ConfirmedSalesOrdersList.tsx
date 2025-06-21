@@ -1,17 +1,22 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SalesContext } from '@/contexts/SalesContext';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import '@/styles/SalesOrdersList.css';
 
-const SalesOrdersList: React.FC = () => {
-  const { salesOrdersPaginated } = useContext(SalesContext);
+const ConfirmedSalesOrdersList: React.FC = () => {
+  const navigate = useNavigate();
+  const { salesOrdersCONFIRMEDPaginated } = useContext(SalesContext);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
-    if (salesOrdersPaginated && salesOrdersPaginated.data.length === 0) {
-      salesOrdersPaginated.refresh();
+    if (
+      salesOrdersCONFIRMEDPaginated &&
+      salesOrdersCONFIRMEDPaginated.data.length === 0
+    ) {
+      salesOrdersCONFIRMEDPaginated.refresh();
     }
   }, []);
 
@@ -25,21 +30,13 @@ const SalesOrdersList: React.FC = () => {
     });
   };
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return '-';
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-    }).format(amount);
-  };
-
   const handleLoadMore = () => {
     if (
-      salesOrdersPaginated &&
-      salesOrdersPaginated.hasMore &&
-      !salesOrdersPaginated.loading
+      salesOrdersCONFIRMEDPaginated &&
+      salesOrdersCONFIRMEDPaginated.hasMore &&
+      !salesOrdersCONFIRMEDPaginated.loading
     ) {
-      salesOrdersPaginated.loadMore();
+      salesOrdersCONFIRMEDPaginated.loadMore();
     }
   };
 
@@ -53,8 +50,12 @@ const SalesOrdersList: React.FC = () => {
     setSelectedSale(null);
   };
 
+  const handlePrintSale = (sale: Sale) => {
+    navigate(`/sales/print/${sale.saleId}`);
+  };
+
   // Early return if context is not available
-  if (!salesOrdersPaginated) {
+  if (!salesOrdersCONFIRMEDPaginated) {
     return (
       <div className="sales-orders-list">
         <div className="loading-container">
@@ -70,68 +71,51 @@ const SalesOrdersList: React.FC = () => {
       <div className="sales-orders-header">
         <h1>Órdenes de Venta</h1>
         <button
-          onClick={() => salesOrdersPaginated.refresh()}
+          onClick={() => salesOrdersCONFIRMEDPaginated.refresh()}
           className="btn btn-secondary refresh-btn"
-          disabled={salesOrdersPaginated.loading}
+          disabled={salesOrdersCONFIRMEDPaginated.loading}
         >
-          {salesOrdersPaginated.loading ? 'Actualizando...' : 'Actualizar'}
+          {salesOrdersCONFIRMEDPaginated.loading ? 'Actualizando...' : 'Actualizar'}
         </button>
       </div>
 
-      {salesOrdersPaginated.error && (
+      {salesOrdersCONFIRMEDPaginated.error && (
         <div className="error-message">
-          <p>Error al cargar las órdenes: {salesOrdersPaginated.error}</p>
+          <p>Error al cargar las órdenes: {salesOrdersCONFIRMEDPaginated.error}</p>
         </div>
       )}
 
-      {salesOrdersPaginated.data.length === 0 &&
-      !salesOrdersPaginated.loading ? (
+      {salesOrdersCONFIRMEDPaginated.data.length === 0 &&
+      !salesOrdersCONFIRMEDPaginated.loading ? (
         <div className="no-sales-message">
           <p>No hay órdenes de venta disponibles.</p>
         </div>
       ) : (
         <div className="sales-orders-grid">
-          {salesOrdersPaginated.data.map((sale: Sale) => {
+            {salesOrdersCONFIRMEDPaginated.data.map((sale: Sale) => {
             return (
               <div key={sale.saleId} className="sale-card">
-                <div className="sale-header">
-                  <div className="sale-id">
+                <div className="sale-main-info">
+                  <div className="sale-date-primary">
+                    {formatDate(sale.createdAt)}
+                  </div>
+                  <div className="sale-customer-primary">
+                    <span className="customer-name">
+                      {sale.customerInfo?.name}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="sale-secondary-info">
+                  <div className="sale-id-secondary">
                     <span className="label">ID:</span>
                     <span className="value">{sale.saleId}</span>
                   </div>
-                  <div className="sale-date">{formatDate(sale.createdAt)}</div>
-                </div>
 
-                <div className="sale-customer">
-                  <div className="customer-info">
-                    <span className="label">Cliente:</span>
-                    <span className="value">{sale.customerInfo?.name}</span>
-                  </div>
-                </div>
-
-                <div className="sale-details">
-                  <div className="detail-row">
+                  <div className="sale-boxes-info">
                     <span className="label">Total Cajas:</span>
                     <span className="value">{sale.totalBoxes}</span>
                   </div>
-
-                  {sale.unitPrice && (
-                    <div className="detail-row">
-                      <span className="label">Precio/Caja:</span>
-                      <span className="value">
-                        {formatCurrency(sale.unitPrice)}
-                      </span>
-                    </div>
-                  )}
-
-                  {sale.totalAmount && (
-                    <div className="detail-row total-amount">
-                      <span className="label">Total:</span>
-                      <span className="value">
-                        {formatCurrency(sale.totalAmount)}
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="sale-items">
@@ -173,6 +157,12 @@ const SalesOrdersList: React.FC = () => {
                     </a>
                   )}
                   <button
+                    className="btn btn-success btn-small"
+                    onClick={() => handlePrintSale(sale)}
+                  >
+                    🖨️ Imprimir
+                  </button>
+                  <button
                     className="btn btn-primary btn-small"
                     onClick={() => handleViewDetails(sale)}
                   >
@@ -185,29 +175,30 @@ const SalesOrdersList: React.FC = () => {
         </div>
       )}
 
-      {salesOrdersPaginated.loading && (
+      {salesOrdersCONFIRMEDPaginated.loading && (
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Cargando órdenes de venta...</p>
         </div>
       )}
 
-      {salesOrdersPaginated.hasMore && !salesOrdersPaginated.loading && (
-        <div className="load-more-section">
-          <button
-            onClick={handleLoadMore}
-            className="btn btn-secondary load-more-btn"
-          >
-            Cargar Más
-          </button>
-        </div>
-      )}
+      {salesOrdersCONFIRMEDPaginated.hasMore &&
+        !salesOrdersCONFIRMEDPaginated.loading && (
+          <div className="load-more-section">
+            <button
+              onClick={handleLoadMore}
+              className="btn btn-secondary load-more-btn"
+            >
+              Cargar Más
+            </button>
+          </div>
+        )}
 
-      {salesOrdersPaginated.data.length > 0 && (
+      {salesOrdersCONFIRMEDPaginated.data.length > 0 && (
         <div className="sales-summary">
           <p>
-            Mostrando {salesOrdersPaginated.data.length} órdenes
-            {salesOrdersPaginated.hasMore && ' (hay más disponibles)'}
+            Mostrando {salesOrdersCONFIRMEDPaginated.data.length} órdenes
+            {salesOrdersCONFIRMEDPaginated.hasMore && ' (hay más disponibles)'}
           </p>
         </div>
       )}
@@ -222,4 +213,4 @@ const SalesOrdersList: React.FC = () => {
   );
 };
 
-export default SalesOrdersList;
+export default ConfirmedSalesOrdersList;
