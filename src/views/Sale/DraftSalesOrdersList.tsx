@@ -3,13 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { SalesContext } from '@/contexts/SalesContext';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
+import { confirmSale } from '@/api/post';
 import '@/styles/SalesOrdersList.css';
 
 const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
-  const { salesOrdersDRAFTPaginated } = useContext(SalesContext);
+  const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
+    useContext(SalesContext);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [confirmingStates, setConfirmingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   useEffect(() => {
     if (
@@ -52,6 +57,32 @@ const SalesOrdersList: React.FC = () => {
 
   const handlePrintSale = (sale: Sale) => {
     navigate(`/sales/print/${sale.saleId}`);
+  };
+
+  const handleConfirmSale = async (sale: Sale) => {
+    try {
+      // Establecer el estado de carga para esta venta específica
+      setConfirmingStates((prev) => ({ ...prev, [sale.saleId]: true }));
+
+      await confirmSale(sale.saleId);
+
+      // Refrescar ambas listas después de confirmar
+      salesOrdersDRAFTPaginated?.refresh();
+      salesOrdersCONFIRMEDPaginated?.refresh();
+
+      // TODO: Mostrar mensaje de éxito
+      console.log('Venta confirmada exitosamente');
+    } catch (error) {
+      console.error('Error al confirmar la venta:', error);
+      // TODO: Mostrar mensaje de error
+    } finally {
+      // Remover el estado de carga
+      setConfirmingStates((prev) => {
+        const newStates = { ...prev };
+        delete newStates[sale.saleId];
+        return newStates;
+      });
+    }
   };
 
   // Early return if context is not available
@@ -146,6 +177,15 @@ const SalesOrdersList: React.FC = () => {
                 )}
 
                 <div className="sale-actions">
+                  <button
+                    className="btn btn-success btn-small"
+                    onClick={() => handleConfirmSale(sale)}
+                    disabled={confirmingStates[sale.saleId] || false}
+                  >
+                    {confirmingStates[sale.saleId]
+                      ? '⏳ Confirmando...'
+                      : '✅ Confirmar Venta'}
+                  </button>
                   {sale.reportUrl && (
                     <a
                       href={sale.reportUrl}
@@ -157,7 +197,7 @@ const SalesOrdersList: React.FC = () => {
                     </a>
                   )}
                   <button
-                    className="btn btn-success btn-small"
+                    className="btn btn-secondary btn-small"
                     onClick={() => handlePrintSale(sale)}
                   >
                     🖨️ Imprimir

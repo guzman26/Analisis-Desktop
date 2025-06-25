@@ -1,10 +1,5 @@
 import { apiRequest } from './api';
-import {
-  Customer,
-  CustomerFormData,
-  Sale,
-  SaleRequest,
-} from '@/types';
+import { Customer, CustomerFormData, Sale, SaleRequest } from '@/types';
 
 export const movePallet = async (
   codigo: string,
@@ -80,4 +75,24 @@ export const createSale = async (payload: SaleRequest): Promise<Sale> => {
   });
 };
 
+export const confirmSale = async (saleId: string): Promise<any> => {
+  return await apiRequest(`/sales/orders/${saleId}/confirm`, {
+    method: 'POST',
+  });
+};
 
+export const createPallet = async (
+  baseCode: string,
+  ubicacion: string
+): Promise<any> => {
+  return await apiRequest('/pallets', {
+    method: 'POST',
+    body: JSON.stringify({ baseCode, ubicacion }),
+  });
+};
+
+export const generateSaleReport = async (saleId: string): Promise<any> => {
+  return await apiRequest(`/reports/sales/${saleId}`, {
+    method: 'POST',
+  });
+};

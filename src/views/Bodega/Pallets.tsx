@@ -7,41 +7,43 @@ import { closePallet, movePallet } from '@/api/post';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
-  const { palletsInBodega, fetchPalletsInBodega } = useContext(PalletContext);
+  const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Cargar datos al montar el componente
   useEffect(() => {
-    fetchPalletsInBodega();
+    closedPalletsInBodegaPaginated.refresh();
   }, []); // Dependencias vacías para que solo se ejecute una vez al montar
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Pallets en Bodega</h1>
-        <button onClick={() => fetchPalletsInBodega()}>Refrescar</button>
+        <button onClick={() => closedPalletsInBodegaPaginated.refresh()}>
+          Refrescar
+        </button>
         <div className="open-pallets-count">
-          {palletsInBodega.length} pallets
+          {closedPalletsInBodegaPaginated.data.length} pallets
         </div>
       </div>
 
       {/* Empty State */}
-      {palletsInBodega.length === 0 ? (
+      {closedPalletsInBodegaPaginated.data.length === 0 ? (
         <div className="open-pallets-empty">
-          <p>No hay pallets abiertos</p>
+          <p>No hay pallets en bodega</p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {palletsInBodega.map((pallet) => (
+          {closedPalletsInBodegaPaginated.data.map((pallet) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
               closePallet={closePallet}
-              fetchActivePallets={fetchPalletsInBodega}
+              fetchActivePallets={closedPalletsInBodegaPaginated.refresh}
             />
           ))}
         </div>
@@ -57,7 +59,7 @@ const OpenPallets = () => {
         onClosePallet={(codigo) => {
           closePallet(codigo);
           setIsModalOpen(false);
-          fetchPalletsInBodega();
+          closedPalletsInBodegaPaginated.refresh();
         }}
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);
