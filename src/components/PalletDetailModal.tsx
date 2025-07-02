@@ -136,15 +136,28 @@ const PalletDetailModal = ({
           </div>
 
           {/* Actions */}
-          {pallet.estado === 'open' && (
-            <div className="modal-actions">
-              <button
-                className="action-button secondary"
-                onClick={() => onAddBox?.(pallet.codigo)}
-              >
-                + Añadir Caja
-              </button>
+          <div className="modal-actions">
+            {/* Actions for Open Pallets */}
+            {pallet.estado === 'open' && (
+              <>
+                <button
+                  className="action-button secondary"
+                  onClick={() => onAddBox?.(pallet.codigo)}
+                >
+                  + Añadir Caja
+                </button>
 
+                <button
+                  className="action-button primary"
+                  onClick={() => onClosePallet?.(pallet.codigo)}
+                >
+                  Cerrar Pallet
+                </button>
+              </>
+            )}
+
+            {/* Actions for Closed Pallets */}
+            {pallet.estado === 'closed' && (
               <div className="move-dropdown">
                 <button
                   className="action-button warning"
@@ -170,15 +183,8 @@ const PalletDetailModal = ({
                   </div>
                 )}
               </div>
-
-              <button
-                className="action-button primary"
-                onClick={() => onClosePallet?.(pallet.codigo)}
-              >
-                Cerrar Pallet
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       <BoxDetailModal

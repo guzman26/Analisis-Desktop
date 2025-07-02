@@ -1,8 +1,10 @@
 import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sale, Customer } from '@/types';
+import { Sale, Customer, Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { CustomerContext } from '@/contexts/CustomerContext';
+import { getBoxByCode } from '@/api/get';
+import BoxDetailModal from './BoxDetailModal';
 import '@/styles/SaleDetailModal.css';
 
 interface SaleDetailModalProps {
@@ -13,6 +15,9 @@ interface SaleDetailModalProps {
 
 const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [showBoxModal, setShowBoxModal] = useState(false);
+  const [loadingBox, setLoadingBox] = useState<string | null>(null);
   const navigate = useNavigate();
   const customerContext = useContext(CustomerContext);
   const { getCustomerByIdFunction } = customerContext || {};
@@ -39,7 +44,14 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (showBoxModal) {
+          setShowBoxModal(false);
+          setSelectedBox(null);
+        } else {
+          onClose();
+        }
+      }
     };
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
@@ -49,19 +61,41 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'auto';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, showBoxModal, onClose]);
+
+  // Handle box click to open box detail modal
+  const handleBoxClick = async (boxCode: string) => {
+    try {
+      setLoadingBox(boxCode);
+      const response = await getBoxByCode(boxCode);
+
+      // Extract the box data from the response
+      // The API might return { data: boxData } or just boxData directly
+      const boxData = response?.data || response;
+
+      if (!boxData) {
+        console.error('No box data received for code:', boxCode);
+        return;
+      }
+
+      setSelectedBox(boxData);
+      setShowBoxModal(true);
+    } catch (error) {
+      console.error('Error fetching box details:', error);
+      // TODO: Show error message to user
+    } finally {
+      setLoadingBox(null);
+    }
+  };
+
+  const handleCloseBoxModal = () => {
+    setShowBoxModal(false);
+    setSelectedBox(null);
+  };
 
   // No longer needed - removed print view modal
 
   // Helper functions
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return '-';
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-    }).format(amount);
-  };
-
   const getTotalBoxes = () => {
     return (
       sale?.items?.reduce(
@@ -145,22 +179,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                   {sale.items?.length || 0}
                 </span>
               </div>
-              {sale.unitPrice && (
-                <div className="info-item">
-                  <span className="info-label">Precio por Caja</span>
-                  <span className="info-value price-text">
-                    {formatCurrency(sale.unitPrice)}
-                  </span>
-                </div>
-              )}
-              {sale.totalAmount && (
-                <div className="info-item total-amount-item">
-                  <span className="info-label">Monto Total</span>
-                  <span className="info-value large total-amount-text">
-                    {formatCurrency(sale.totalAmount)}
-                  </span>
-                </div>
-              )}
+
               <div className="info-item">
                 <span className="info-label">Fecha de Creación</span>
                 <span className="info-value">{formatDate(sale.createdAt)}</span>
@@ -188,8 +207,17 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                       <span className="boxes-label">Cajas incluidas:</span>
                       <div className="boxes-grid">
                         {item.boxIds?.map((boxId, boxIndex) => (
-                          <div key={boxIndex} className="box-item">
-                            {boxId}
+                          <div
+                            key={boxIndex}
+                            className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
+                            onClick={() => handleBoxClick(boxId)}
+                            title="Clic para ver detalles de la caja"
+                          >
+                            {loadingBox === boxId ? (
+                              <span className="loading-text">Cargando...</span>
+                            ) : (
+                              boxId
+                            )}
                           </div>
                         )) || (
                           <span className="no-boxes">
@@ -237,6 +265,13 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
             </button>
           </div>
         </div>
+
+        {/* Box Detail Modal */}
+        <BoxDetailModal
+          box={selectedBox}
+          isOpen={showBoxModal}
+          onClose={handleCloseBoxModal}
+        />
       </div>
     </div>
   );

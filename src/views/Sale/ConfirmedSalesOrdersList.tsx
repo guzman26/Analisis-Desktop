@@ -30,6 +30,18 @@ const ConfirmedSalesOrdersList: React.FC = () => {
     });
   };
 
+  // Función para calcular el total de cajas desde los items
+  const getTotalBoxes = (sale: Sale): number => {
+    return (
+      sale.totalBoxes ||
+      sale.items?.reduce(
+        (total, item) => total + (item.boxIds?.length || 0),
+        0
+      ) ||
+      0
+    );
+  };
+
   const handleLoadMore = () => {
     if (
       salesOrdersCONFIRMEDPaginated &&
@@ -75,13 +87,17 @@ const ConfirmedSalesOrdersList: React.FC = () => {
           className="btn btn-secondary refresh-btn"
           disabled={salesOrdersCONFIRMEDPaginated.loading}
         >
-          {salesOrdersCONFIRMEDPaginated.loading ? 'Actualizando...' : 'Actualizar'}
+          {salesOrdersCONFIRMEDPaginated.loading
+            ? 'Actualizando...'
+            : 'Actualizar'}
         </button>
       </div>
 
       {salesOrdersCONFIRMEDPaginated.error && (
         <div className="error-message">
-          <p>Error al cargar las órdenes: {salesOrdersCONFIRMEDPaginated.error}</p>
+          <p>
+            Error al cargar las órdenes: {salesOrdersCONFIRMEDPaginated.error}
+          </p>
         </div>
       )}
 
@@ -92,7 +108,7 @@ const ConfirmedSalesOrdersList: React.FC = () => {
         </div>
       ) : (
         <div className="sales-orders-grid">
-            {salesOrdersCONFIRMEDPaginated.data.map((sale: Sale) => {
+          {salesOrdersCONFIRMEDPaginated.data.map((sale: Sale) => {
             return (
               <div key={sale.saleId} className="sale-card">
                 <div className="sale-main-info">
@@ -114,7 +130,7 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
                   <div className="sale-boxes-info">
                     <span className="label">Total Cajas:</span>
-                    <span className="value">{sale.totalBoxes}</span>
+                    <span className="value">{getTotalBoxes(sale)}</span>
                   </div>
                 </div>
 

@@ -6,7 +6,7 @@ import '@/styles/OpenPallets.css';
 import { closePallet, movePallet } from '@/api/post';
 import PalletCard from '@/components/PalletCard';
 
-const OpenPallets = () => {
+const BodegaPallets = () => {
   const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,12 +64,27 @@ const OpenPallets = () => {
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);
         }}
-        onMovePallet={(codigo, location) => {
-          movePallet(codigo, location as 'TRANSITO' | 'BODEGA' | 'VENTA');
+        onMovePallet={async (codigo, location) => {
+          try {
+            await movePallet(
+              codigo,
+              location as 'TRANSITO' | 'BODEGA' | 'VENTA'
+            );
+            // Cerrar el modal después del movimiento exitoso
+            setIsModalOpen(false);
+            setSelectedPallet(null);
+            // Refrescar la lista de pallets
+            closedPalletsInBodegaPaginated.refresh();
+            // TODO: Mostrar mensaje de éxito
+            console.log(`Pallet ${codigo} movido exitosamente a ${location}`);
+          } catch (error) {
+            console.error('Error al mover pallet:', error);
+            // TODO: Mostrar mensaje de error
+          }
         }}
       />
     </div>
   );
 };
 
-export default OpenPallets;
+export default BodegaPallets;

@@ -246,6 +246,7 @@
   border-collapse: collapse;
   margin-bottom: 20px;
   font-size: 10px;
+  page-break-inside: auto;
 }
 
 .items-table th {
@@ -263,6 +264,40 @@
   padding: 4px;
   vertical-align: top;
   font-size: 10px;
+}
+
+/* Compact view for many pallets */
+.compact-items-container {
+  page-break-inside: avoid;
+}
+
+.compact-summary {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.compact-summary p {
+  margin: 0;
+  font-size: 11px;
+  color: #495057;
+}
+
+.items-table.compact {
+  font-size: 9px;
+}
+
+.items-table.compact th {
+  padding: 3px;
+  font-size: 8px;
+}
+
+.items-table.compact td {
+  padding: 3px;
+  font-size: 9px;
 }
 
 .item-number {
@@ -296,6 +331,48 @@
   padding: 1px 2px;
   font-size: 7px;
   font-family: monospace;
+  white-space: nowrap;
+}
+
+/* Compact box codes styles */
+.box-codes-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.box-codes-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.remaining-count {
+  font-size: 8px;
+  color: #666;
+  font-style: italic;
+  background-color: #f8f9fa;
+  padding: 1px 3px;
+  border-radius: 2px;
+  border: 1px solid #dee2e6;
+}
+
+.remaining-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.remaining-info small {
+  font-size: 7px;
+  color: #999;
+}
+
+.no-boxes {
+  font-style: italic;
+  color: #999;
+  font-size: 8px;
 }
 
 .subtotal {
@@ -429,7 +506,7 @@
 @media print {
   @page {
     size: Carta;
-    margin: 0;
+    margin: 1cm;
   }
 
   /* Hide interactive elements */
@@ -438,40 +515,83 @@
     display: none !important;
   }
 
-  /* Reset container */
   body,
-  .print-view-container {
-    background: none;
+  html {
+    margin: 0;
     padding: 0;
-    margin: 0;
-  }
-  .sale-report-print {
-    box-shadow: none;
-    border-radius: 0;
-    margin: 0;
   }
 
-  /* Preserve colors */
+  .sale-report-print {
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    font-size: 10px;
+    page-break-after: avoid;
+  }
+
   * {
     -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Avoid breaking inside key sections */
+  /* Better page break control */
   .report-header,
-  .section-title,
-  .items-section,
-  .summary-section,
-  .report-footer,
-  .items-table {
+  .customer-section,
+  .sale-info-section {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .items-section {
+    page-break-inside: auto;
+  }
+
+  .compact-items-container {
     page-break-inside: avoid;
   }
 
-  /* Ensure table borders */
-  .items-table th,
-  .items-table td {
-    border: 1px solid #333 !important;
-    background: #fff !important;
+  .items-table {
+    page-break-inside: auto;
+  }
+
+  .items-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .summary-section,
+  .report-footer {
+    page-break-inside: avoid;
+    margin-top: 20px;
+  }
+
+  /* Compact styles for print */
+  .items-table.compact {
+    font-size: 8px;
+  }
+
+  .items-table.compact th,
+  .items-table.compact td {
+    padding: 2px;
+    font-size: 7px;
+  }
+
+  .box-code {
+    font-size: 6px;
+  }
+
+  .remaining-count {
+    font-size: 7px;
+  }
+
+  /* Ensure table headers repeat on new pages */
+  .items-table thead {
+    display: table-header-group;
+  }
+
+  .items-table tbody {
+    display: table-row-group;
   }
 }
 

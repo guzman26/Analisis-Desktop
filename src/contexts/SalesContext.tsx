@@ -30,7 +30,11 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
   // Hook de paginación específico para sales orders
   const salesOrdersDRAFTPaginatedHook = usePagination<Sale>({
     fetchFunction: async (params: GetSalesOrdersParamsPaginated) => {
-      const response = await getSalesOrdersPaginated(params);
+      const response = await getSalesOrdersPaginated({
+        ...params,
+        state: 'DRAFT',
+      });
+      console.log('response', response);
 
       const responseData = response as any;
 
@@ -51,7 +55,7 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
 
       return {
         data: {
-          items: salesData.salesOrders || [],
+          items: salesData.items || [],
           nextKey: salesData.nextKey,
           count: salesData.count || 0,
         },
@@ -85,7 +89,7 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
 
       return {
         data: {
-          items: salesData.salesOrders || [],
+          items: salesData.items || [],
           nextKey: salesData.nextKey,
           count: salesData.count || 0,
         },

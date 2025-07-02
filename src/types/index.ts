@@ -84,7 +84,6 @@ export interface Customer {
   metadata?: Record<string, any>;
   // Sales tracking - using strings to match DynamoDB GSI requirements
   totalPurchases: string;
-  totalSpent: string;
   lastPurchaseDate: string | null;
 }
 
@@ -111,6 +110,8 @@ export interface SaleItem {
 export interface Sale {
   saleId: string;
   customerId: string;
+  type: 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+  state?: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
   customerInfo?: {
     name: string;
     email?: string;
@@ -119,18 +120,25 @@ export interface Sale {
   items: SaleItem[];
   createdAt: string;
   reportUrl?: string;
-  totalBoxes: number;
-  unitPrice?: number;
-  totalAmount?: number;
+  totalBoxes?: number;
   notes?: string;
+  metadata?: {
+    deliveryDate?: string;
+    priority?: 'low' | 'medium' | 'high';
+    [key: string]: any;
+  };
 }
 
 export interface SaleRequest {
   customerId: string;
+  type: 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
   items: SaleItem[];
-  unitPrice?: number;
-  totalAmount?: number;
   notes?: string;
+  metadata?: {
+    deliveryDate?: string;
+    priority?: 'low' | 'medium' | 'high';
+    [key: string]: any;
+  };
 }
 
 export interface SaleReport {

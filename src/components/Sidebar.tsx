@@ -72,7 +72,7 @@ const sidebarItems: SidebarItem[] = [
       },
       {
         path: '/sales/orders',
-        label: 'Borradores de Ventas',
+        label: 'Preventas',
         icon: '📌',
       },
       {

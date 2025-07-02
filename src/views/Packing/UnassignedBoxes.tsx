@@ -4,22 +4,53 @@ import '@/styles/BoxCard.css';
 import { BoxesContext } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
+import { createSingleBoxPallet } from '@/api/post';
 
 const UnassignedBoxes = () => {
   const { unassignedBoxesInPacking, fetchUnassignedBoxesInPacking } =
     useContext(BoxesContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [creatingPalletStates, setCreatingPalletStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   useEffect(() => {
     fetchUnassignedBoxesInPacking();
   }, [fetchUnassignedBoxesInPacking]);
 
+  const handleCreateSinglePallet = async (boxCode: string) => {
+    try {
+      // Establecer el estado de carga para esta caja específica
+      setCreatingPalletStates((prev) => ({ ...prev, [boxCode]: true }));
+
+      await createSingleBoxPallet(boxCode, 'PACKING');
+
+      // Refrescar la lista después de crear el pallet
+      fetchUnassignedBoxesInPacking();
+
+      // TODO: Mostrar mensaje de éxito
+      console.log('Pallet individual creado exitosamente');
+    } catch (error) {
+      console.error('Error al crear pallet individual:', error);
+      // TODO: Mostrar mensaje de error
+    } finally {
+      // Remover el estado de carga
+      setCreatingPalletStates((prev) => {
+        const newStates = { ...prev };
+        delete newStates[boxCode];
+        return newStates;
+      });
+    }
+  };
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={() => fetchUnassignedBoxesInPacking()}>Refrescar</button>
+        <button onClick={() => fetchUnassignedBoxesInPacking()}>
+          Refrescar
+        </button>
         <div className="open-pallets-count">
           {unassignedBoxesInPacking.length} cajas
         </div>
@@ -39,6 +70,12 @@ const UnassignedBoxes = () => {
               box={box}
               setSelectedBox={setSelectedBox}
               setIsModalOpen={setIsModalOpen}
+              showCreatePalletButton={true}
+              onCreateSinglePallet={
+                creatingPalletStates[box.codigo]
+                  ? undefined
+                  : handleCreateSinglePallet
+              }
             />
           ))}
         </div>

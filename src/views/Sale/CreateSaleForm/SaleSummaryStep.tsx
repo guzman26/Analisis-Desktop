@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Customer } from '@/types';
 
+type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+
 interface BoxData {
   boxId: string;
   palletCode: string;
@@ -9,67 +11,115 @@ interface BoxData {
 
 interface SaleSummaryStepProps {
   customer: Customer;
+  saleType: SaleType;
   boxes: BoxData[];
-  onConfirm: (unitPrice: number) => void;
+  onConfirm: (notes?: string) => void;
   isSubmitting: boolean;
 }
 
 const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
   customer,
+  saleType,
   boxes,
   onConfirm,
   isSubmitting,
 }) => {
-  const [unitPrice, setUnitPrice] = useState<number>(0);
   const [notes, setNotes] = useState<string>('');
+  const [expandedPallets, setExpandedPallets] = useState<Set<string>>(
+    new Set()
+  );
 
   const totalBoxes = boxes.length;
-  const totalPrice = unitPrice * totalBoxes;
 
-  const handleUnitPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(e.target.value) || 0;
-    setUnitPrice(value);
-  };
+  // Group boxes by pallet for counting
+  const palletGroups = boxes.reduce(
+    (acc, box) => {
+      if (!acc[box.palletCode]) {
+        acc[box.palletCode] = {
+          calibre: box.calibre,
+          boxes: [],
+        };
+      }
+      acc[box.palletCode].boxes.push(box.boxId);
+      return acc;
+    },
+    {} as Record<string, { calibre: string; boxes: string[] }>
+  );
+
+  const totalPallets = Object.keys(palletGroups).length;
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
   };
 
   const handleConfirm = () => {
-    onConfirm(unitPrice);
+    onConfirm(notes);
   };
 
-  const isValidPrice = unitPrice > 0;
+  const togglePalletExpansion = (palletCode: string) => {
+    const newExpanded = new Set(expandedPallets);
+    if (newExpanded.has(palletCode)) {
+      newExpanded.delete(palletCode);
+    } else {
+      newExpanded.add(palletCode);
+    }
+    setExpandedPallets(newExpanded);
+  };
+
+  const formatBoxCodesPreview = (boxes: string[], maxVisible: number = 6) => {
+    if (boxes.length <= maxVisible) {
+      return boxes;
+    }
+    return boxes.slice(0, maxVisible);
+  };
 
   return (
     <div className="sale-summary-step">
       <div className="summary-section">
-        <h2>Resumen de Venta</h2>
+        <h2>Resumen de {saleType}</h2>
 
-        {/* Customer Details */}
-        <div className="customer-details">
-          <h3>Cliente Seleccionado</h3>
-          <div className="customer-info">
-            <div className="info-row">
+        {/* Quick Summary Card */}
+        <div className="quick-summary-card">
+          <div className="summary-header">
+            <div className="summary-main">
+              <h3>{saleType}</h3>
+              <p className="customer-name-large">{customer.name}</p>
+            </div>
+            <div className="summary-totals-compact">
+              <div className="total-compact">
+                <span className="number">{totalPallets}</span>
+                <span className="label">
+                  Pallet{totalPallets !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="total-compact">
+                <span className="number">{totalBoxes}</span>
+                <span className="label">Caja{totalBoxes !== 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Details - Collapsible */}
+        <div className="customer-details-compact">
+          <div className="section-header">
+            <h3>Cliente Seleccionado</h3>
+          </div>
+          <div className="customer-info-grid">
+            <div className="info-item">
               <span className="label">Nombre:</span>
               <span className="value">{customer.name}</span>
             </div>
-            <div className="info-row">
+            <div className="info-item">
               <span className="label">Email:</span>
               <span className="value">{customer.email}</span>
             </div>
-            <div className="info-row">
+            <div className="info-item">
               <span className="label">Teléfono:</span>
               <span className="value">{customer.phone}</span>
             </div>
-            {customer.address && (
-              <div className="info-row">
-                <span className="label">Dirección:</span>
-                <span className="value">{customer.address}</span>
-              </div>
-            )}
             {customer.taxId && (
-              <div className="info-row">
+              <div className="info-item">
                 <span className="label">RUT:</span>
                 <span className="value">{customer.taxId}</span>
               </div>
@@ -77,51 +127,62 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
           </div>
         </div>
 
-        {/* Pricing Section */}
-        <div className="pricing-section">
-          <h3>Información de Precio</h3>
-          <div className="price-input-group">
-            <label htmlFor="unitPrice">Precio por Caja:</label>
-            <div className="price-input-wrapper">
-              <span className="currency-symbol">$</span>
-              <input
-                type="number"
-                id="unitPrice"
-                value={unitPrice || ''}
-                onChange={handleUnitPriceChange}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                className="price-input"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Boxes Summary */}
-        <div className="boxes-summary">
-          <h3>Cajas Seleccionadas</h3>
-          <div className="boxes-total">
-            <span className="total-count">Total de cajas: {totalBoxes}</span>
+        {/* Pallets & Boxes Summary - Improved */}
+        <div className="pallets-summary-compact">
+          <div className="section-header">
+            <h3>Pallets y Cajas Seleccionadas</h3>
           </div>
 
-          <div className="boxes-list">
-            {boxes.map((box) => (
-              <div key={box.boxId} className="box-item">
-                <div className="box-code">
-                  <span className="label">Código:</span>
-                  <span className="value">{box.boxId}</span>
+          <div className="pallets-list-compact">
+            {Object.entries(palletGroups).map(([palletCode, palletData]) => {
+              const isExpanded = expandedPallets.has(palletCode);
+              const previewBoxes = formatBoxCodesPreview(palletData.boxes, 6);
+              const hasMoreBoxes = palletData.boxes.length > 6;
+
+              return (
+                <div key={palletCode} className="pallet-item-compact">
+                  <div className="pallet-header-compact">
+                    <div className="pallet-main-info">
+                      <h4 className="pallet-code">Pallet {palletCode}</h4>
+                      <div className="pallet-meta-compact">
+                        <span className="calibre-tag">
+                          Calibre: {palletData.calibre}
+                        </span>
+                        <span className="box-count-tag">
+                          {palletData.boxes.length} cajas
+                        </span>
+                      </div>
+                    </div>
+                    {hasMoreBoxes && (
+                      <button
+                        type="button"
+                        onClick={() => togglePalletExpansion(palletCode)}
+                        className="expand-button"
+                      >
+                        {isExpanded ? '▼ Contraer' : '▶ Ver todas'}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="boxes-preview">
+                    <div className="boxes-grid-compact">
+                      {(isExpanded ? palletData.boxes : previewBoxes).map(
+                        (boxId) => (
+                          <span key={boxId} className="box-code-compact">
+                            {boxId}
+                          </span>
+                        )
+                      )}
+                      {!isExpanded && hasMoreBoxes && (
+                        <span className="more-boxes-indicator">
+                          +{palletData.boxes.length - previewBoxes.length} más
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="box-calibre">
-                  <span className="label">Calibre:</span>
-                  <span className="value">{box.calibre}</span>
-                </div>
-                <div className="box-location">
-                  <span className="label">Pallet:</span>
-                  <span className="value">{box.palletCode}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -131,7 +192,7 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
           <textarea
             value={notes}
             onChange={handleNotesChange}
-            placeholder="Agregar notas sobre la venta (opcional)..."
+            placeholder="Agregar notas sobre la operación (opcional)..."
             className="notes-textarea"
             rows={3}
             maxLength={500}
@@ -139,45 +200,29 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
           <div className="notes-counter">{notes.length}/500 caracteres</div>
         </div>
 
-        {/* Summary Totals */}
-        <div className="summary-totals">
-          <div className="total-item">
-            <span className="total-label">Total de Cajas:</span>
-            <span className="total-value">{totalBoxes}</span>
-          </div>
-          <div className="total-item">
-            <span className="total-label">Precio por Caja:</span>
-            <span className="total-value">${unitPrice.toFixed(2)}</span>
-          </div>
-          <div className="total-item total-final">
-            <span className="total-label">Total de la Venta:</span>
-            <span className="total-value">${totalPrice.toFixed(2)}</span>
-          </div>
-        </div>
-
         {/* Confirmation */}
         <div className="confirmation-section">
-          <p className="confirmation-text">
-            ¿Confirma que desea procesar esta venta de {totalBoxes} cajas por un
-            total de ${totalPrice.toFixed(2)} para el cliente {customer.name}?
-          </p>
+          <div className="confirmation-summary">
+            <p className="confirmation-text">
+              ¿Confirma que desea procesar esta {saleType.toLowerCase()} de{' '}
+              <strong>
+                {totalPallets} pallet{totalPallets !== 1 ? 's' : ''}
+              </strong>{' '}
+              ({totalBoxes} cajas) para el cliente{' '}
+              <strong>{customer.name}</strong>?
+            </p>
+          </div>
 
           <div className="confirmation-actions">
             <button
               type="button"
               onClick={handleConfirm}
               className="btn btn-primary btn-confirm"
-              disabled={isSubmitting || !isValidPrice}
+              disabled={isSubmitting}
             >
-              {isSubmitting ? 'Procesando...' : 'Confirmar Venta'}
+              {isSubmitting ? 'Procesando...' : `Confirmar ${saleType}`}
             </button>
           </div>
-
-          {!isValidPrice && (
-            <p className="price-error">
-              Por favor ingrese un precio válido mayor a $0.00
-            </p>
-          )}
         </div>
       </div>
     </div>

@@ -40,7 +40,9 @@ const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
     });
   };
 
-  const getStatusColor = (estado: string) => {
+  const getStatusColor = (estado: string | undefined) => {
+    if (!estado) return 'info';
+
     switch (estado.toLowerCase()) {
       case 'activo':
       case 'active':
@@ -54,7 +56,7 @@ const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
   };
 
   const moveLocations = ['PACKING', 'TRANSITO', 'BODEGA', 'VENTA'].filter(
-    (loc) => loc !== box.ubicacion
+    (loc) => loc !== box?.ubicacion
   );
 
   const handleUnassignBox = async (codigo: string) => {
@@ -71,9 +73,11 @@ const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
             <h2 className="modal-title">Caja {box.codigo}</h2>
             <div className="modal-badges">
               <span className={`status-badge ${getStatusColor(box.estado)}`}>
-                {box.estado.toUpperCase()}
+                {box.estado?.toUpperCase()}
               </span>
-              <span className={`location-badge ${box.ubicacion.toLowerCase()}`}>
+              <span
+                className={`location-badge ${box.ubicacion?.toLowerCase()}`}
+              >
                 {box.ubicacion}
               </span>
             </div>
@@ -101,7 +105,9 @@ const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
               <div className="info-item">
                 <span className="info-label">Calibre</span>
                 <span className="info-value calibre-text">
-                  {formatCalibreName(box.calibre.toString().padStart(2, '0'))}
+                  {formatCalibreName(
+                    box.calibre?.toString().padStart(2, '0') || '00'
+                  )}
                 </span>
               </div>
               <div className="info-item">
@@ -112,18 +118,11 @@ const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
                 <span className="info-label">Operario</span>
                 <span className="info-value">{box.operario}</span>
               </div>
-              <div className="info-item">
-                <span className="info-label">Estado</span>
-                <span
-                  className={`info-value status-text ${getStatusColor(box.estado)}`}
-                >
-                  {box.estado.toUpperCase()}
-                </span>
-              </div>
+
               <div className="info-item">
                 <span className="info-label">Ubicación</span>
                 <span
-                  className={`info-value location-text ${box.ubicacion.toLowerCase()}`}
+                  className={`info-value location-text ${box.ubicacion?.toLowerCase()}`}
                 >
                   {box.ubicacion}
                 </span>

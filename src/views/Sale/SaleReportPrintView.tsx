@@ -15,16 +15,29 @@ const SaleReportPrintView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
 
-  const { salesOrdersDRAFTPaginated } = useContext(SalesContext) || {};
+  const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
+    useContext(SalesContext) || {};
   const customerContext = useContext(CustomerContext);
   const { getCustomerByIdFunction } = customerContext || {};
 
-  // Find sale by ID from context
+  // Find sale by ID from both DRAFT and CONFIRMED contexts
   useEffect(() => {
-    if (saleId && salesOrdersDRAFTPaginated?.data) {
-      const foundSale = salesOrdersDRAFTPaginated.data.find(
+    if (
+      saleId &&
+      (salesOrdersDRAFTPaginated?.data || salesOrdersCONFIRMEDPaginated?.data)
+    ) {
+      // Search in DRAFT sales first
+      let foundSale = salesOrdersDRAFTPaginated?.data?.find(
         (s) => s.saleId === saleId
       );
+
+      // If not found in DRAFT, search in CONFIRMED sales
+      if (!foundSale) {
+        foundSale = salesOrdersCONFIRMEDPaginated?.data?.find(
+          (s) => s.saleId === saleId
+        );
+      }
+
       if (foundSale) {
         setSale(foundSale);
       } else {
@@ -35,7 +48,7 @@ const SaleReportPrintView: React.FC = () => {
       setError('No se pudo cargar la información de ventas');
       setLoading(false);
     }
-  }, [saleId, salesOrdersDRAFTPaginated]);
+  }, [saleId, salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated]);
 
   // Fetch customer data when sale is found
   useEffect(() => {
@@ -73,6 +86,24 @@ const SaleReportPrintView: React.FC = () => {
       ) || 0
     );
   };
+
+  // Función para mostrar códigos de cajas de manera más eficiente
+  const formatBoxCodes = (boxIds: string[], maxVisible: number = 6) => {
+    if (!boxIds || boxIds.length === 0) return 'Sin cajas';
+
+    if (boxIds.length <= maxVisible) {
+      return boxIds;
+    }
+
+    return {
+      visible: boxIds.slice(0, maxVisible),
+      remaining: boxIds.length - maxVisible,
+      total: boxIds.length,
+    };
+  };
+
+  // Determinar si usar vista compacta (muchos pallets)
+  const useCompactView = (sale?.items?.length || 0) > 10;
 
   const handlePrint = () => {
     // Simply print the current preview directly
@@ -215,62 +246,126 @@ const SaleReportPrintView: React.FC = () => {
               <span className="field-label">Total Cajas:</span>
               <span className="field-value">{getTotalBoxes()}</span>
             </div>
-            {sale.unitPrice && (
-              <div className="info-field">
-                <span className="field-label">Precio por Caja:</span>
-                <span className="field-value">
-                  {formatCurrency(sale.unitPrice)}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
         {/* Items Detail */}
         <div className="items-section">
           <h3 className="section-title">DETALLE DE PRODUCTOS</h3>
-          <table className="items-table">
-            <thead>
-              <tr>
-                <th>N°</th>
-                <th>Pallet ID</th>
-                <th>Cantidad Cajas</th>
-                <th>Códigos de Cajas</th>
-                {sale.unitPrice && <th>Subtotal</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {sale.items?.map((item, index) => (
-                <tr key={index}>
-                  <td className="item-number">{index + 1}</td>
-                  <td className="pallet-id">{item.palletId}</td>
-                  <td className="box-count">{item.boxIds?.length || 0}</td>
-                  <td className="box-codes">
-                    <div className="box-codes-grid">
-                      {item.boxIds?.map((boxId, boxIndex) => (
-                        <span key={boxIndex} className="box-code">
-                          {boxId}
-                        </span>
-                      )) || 'Sin cajas'}
-                    </div>
-                  </td>
-                  {sale.unitPrice && (
-                    <td className="subtotal">
-                      {formatCurrency(
-                        (item.boxIds?.length || 0) * sale.unitPrice
-                      )}
-                    </td>
-                  )}
-                </tr>
-              )) || (
+          {useCompactView ? (
+            // Vista compacta para muchos pallets
+            <div className="compact-items-container">
+              <div className="compact-summary">
+                <p>
+                  <strong>Resumen:</strong> {sale.items?.length || 0} pallets
+                  con {getTotalBoxes()} cajas en total
+                </p>
+              </div>
+              <table className="items-table compact">
+                <thead>
+                  <tr>
+                    <th>N°</th>
+                    <th>Pallet ID</th>
+                    <th>Cajas</th>
+                    <th>Primeras Cajas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sale.items?.map((item, index) => {
+                    const boxCodesData = formatBoxCodes(item.boxIds || [], 4);
+                    return (
+                      <tr key={index}>
+                        <td className="item-number">{index + 1}</td>
+                        <td className="pallet-id">{item.palletId}</td>
+                        <td className="box-count">
+                          {item.boxIds?.length || 0}
+                        </td>
+                        <td className="box-codes">
+                          {typeof boxCodesData === 'string' ? (
+                            <span className="no-boxes">{boxCodesData}</span>
+                          ) : Array.isArray(boxCodesData) ? (
+                            <div className="box-codes-grid">
+                              {boxCodesData.map((boxId, boxIndex) => (
+                                <span key={boxIndex} className="box-code">
+                                  {boxId}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="box-codes-compact">
+                              <div className="box-codes-grid">
+                                {boxCodesData.visible.map((boxId, boxIndex) => (
+                                  <span key={boxIndex} className="box-code">
+                                    {boxId}
+                                  </span>
+                                ))}
+                              </div>
+                              <span className="remaining-count">
+                                +{boxCodesData.remaining} más
+                              </span>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            // Vista normal para pocos pallets
+            <table className="items-table">
+              <thead>
                 <tr>
-                  <td colSpan={sale.unitPrice ? 5 : 4} className="no-items">
-                    No hay productos en esta venta
-                  </td>
+                  <th>N°</th>
+                  <th>Pallet ID</th>
+                  <th>Cantidad Cajas</th>
+                  <th>Códigos de Cajas</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sale.items?.map((item, index) => {
+                  const boxCodesData = formatBoxCodes(item.boxIds || [], 8);
+                  return (
+                    <tr key={index}>
+                      <td className="item-number">{index + 1}</td>
+                      <td className="pallet-id">{item.palletId}</td>
+                      <td className="box-count">{item.boxIds?.length || 0}</td>
+                      <td className="box-codes">
+                        {typeof boxCodesData === 'string' ? (
+                          <span className="no-boxes">{boxCodesData}</span>
+                        ) : Array.isArray(boxCodesData) ? (
+                          <div className="box-codes-grid">
+                            {boxCodesData.map((boxId, boxIndex) => (
+                              <span key={boxIndex} className="box-code">
+                                {boxId}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="box-codes-detailed">
+                            <div className="box-codes-grid">
+                              {boxCodesData.visible.map((boxId, boxIndex) => (
+                                <span key={boxIndex} className="box-code">
+                                  {boxId}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="remaining-info">
+                              <span className="remaining-count">
+                                +{boxCodesData.remaining} cajas adicionales
+                              </span>
+                              <small>(Total: {boxCodesData.total} cajas)</small>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Summary */}
@@ -294,22 +389,6 @@ const SaleReportPrintView: React.FC = () => {
                   <span className="total-label">Total Cajas:</span>
                   <span className="total-value">{getTotalBoxes()}</span>
                 </div>
-                {sale.unitPrice && (
-                  <div className="total-row">
-                    <span className="total-label">Precio por Caja:</span>
-                    <span className="total-value">
-                      {formatCurrency(sale.unitPrice)}
-                    </span>
-                  </div>
-                )}
-                {sale.totalAmount && (
-                  <div className="total-row final-total">
-                    <span className="total-label">TOTAL GENERAL:</span>
-                    <span className="total-value">
-                      {formatCurrency(sale.totalAmount)}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

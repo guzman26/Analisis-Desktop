@@ -6,6 +6,18 @@ interface SaleSuccessStepProps {
 }
 
 const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
+  // Función para calcular el total de cajas desde los items
+  const getTotalBoxes = (sale: Sale): number => {
+    return (
+      sale.totalBoxes ||
+      sale.items?.reduce(
+        (total, item) => total + (item.boxIds?.length || 0),
+        0
+      ) ||
+      0
+    );
+  };
+
   const handleDownloadReport = () => {
     if (saleResult.reportUrl) {
       window.open(saleResult.reportUrl, '_blank');
@@ -55,7 +67,7 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
           </div>
           <div className="detail-item">
             <span className="detail-label">Total de Cajas:</span>
-            <span className="detail-value">{saleResult.totalBoxes}</span>
+            <span className="detail-value">{getTotalBoxes(saleResult)}</span>
           </div>
           <div className="detail-item">
             <span className="detail-label">Fecha:</span>

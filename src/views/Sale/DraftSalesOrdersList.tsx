@@ -35,6 +35,18 @@ const SalesOrdersList: React.FC = () => {
     });
   };
 
+  // Función para calcular el total de cajas desde los items
+  const getTotalBoxes = (sale: Sale): number => {
+    return (
+      sale.totalBoxes ||
+      sale.items?.reduce(
+        (total, item) => total + (item.boxIds?.length || 0),
+        0
+      ) ||
+      0
+    );
+  };
+
   const handleLoadMore = () => {
     if (
       salesOrdersDRAFTPaginated &&
@@ -145,7 +157,7 @@ const SalesOrdersList: React.FC = () => {
 
                   <div className="sale-boxes-info">
                     <span className="label">Total Cajas:</span>
-                    <span className="value">{sale.totalBoxes}</span>
+                    <span className="value">{getTotalBoxes(sale)}</span>
                   </div>
                 </div>
 

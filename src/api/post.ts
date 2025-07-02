@@ -69,7 +69,7 @@ export const deleteCustomer = async (customerId: string): Promise<any> => {
 };
 
 export const createSale = async (payload: SaleRequest): Promise<Sale> => {
-  return await apiRequest('/sales/orders/from-pallets', {
+  return await apiRequest('/sales/orders', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -94,5 +94,41 @@ export const createPallet = async (
 export const generateSaleReport = async (saleId: string): Promise<any> => {
   return await apiRequest(`/reports/sales/${saleId}`, {
     method: 'POST',
+  });
+};
+
+export const createSingleBoxPallet = async (
+  boxCode: string,
+  ubicacion: string
+): Promise<any> => {
+  return await apiRequest('/createSingleBoxPallet', {
+    method: 'POST',
+    body: JSON.stringify({ boxCode, ubicacion }),
+  });
+};
+
+// Endpoint para Power BI - exportar datos agregados
+export const exportPowerBIData = async (
+  dataType: 'pallets' | 'sales' | 'customers' | 'all'
+) => {
+  return await apiRequest(`/powerbi/export/${dataType}`, {
+    method: 'GET',
+  });
+};
+
+// Endpoint para obtener datos analíticos agregados
+export const getAnalyticsData = async (
+  startDate?: string,
+  endDate?: string,
+  groupBy?: 'day' | 'week' | 'month'
+) => {
+  const queryParams = new URLSearchParams();
+  if (startDate) queryParams.append('startDate', startDate);
+  if (endDate) queryParams.append('endDate', endDate);
+  if (groupBy) queryParams.append('groupBy', groupBy);
+
+  const queryString = queryParams.toString();
+  return await apiRequest(`/analytics${queryString ? `?${queryString}` : ''}`, {
+    method: 'GET',
   });
 };

@@ -94,10 +94,13 @@ export const getCustomerByEmail = async (
   return await apiRequest(`/customers/email?${queryString}`);
 };
 
+export const getSaleById = async (saleId: string): Promise<Sale | null> => {
+  return await apiRequest(`/sales/orders/${saleId}`);
+};
+
 export const getSalesOrdersPaginated = async (
   params: GetSalesOrdersParamsPaginated = {}
 ): Promise<PaginatedResponse<Sale>> => {
-
   // Build query string
   const queryParams = new URLSearchParams();
   if (params.state) queryParams.append('state', params.state);

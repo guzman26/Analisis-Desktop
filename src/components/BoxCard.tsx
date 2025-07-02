@@ -10,6 +10,8 @@ interface BoxCardProps {
   isSelectable?: boolean;
   isSelected?: boolean;
   onSelectionToggle?: (boxCode: string) => void;
+  onCreateSinglePallet?: (boxCode: string) => void;
+  showCreatePalletButton?: boolean;
 }
 
 const BoxCard = ({
@@ -19,6 +21,8 @@ const BoxCard = ({
   isSelectable = false,
   isSelected = false,
   onSelectionToggle,
+  onCreateSinglePallet,
+  showCreatePalletButton = false,
 }: BoxCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't toggle selection if clicking on buttons
@@ -90,6 +94,17 @@ const BoxCard = ({
         >
           Ver Detalles
         </button>
+        {showCreatePalletButton && onCreateSinglePallet && (
+          <button
+            className="btn-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCreateSinglePallet(box.codigo);
+            }}
+          >
+            Crear Pallet Individual
+          </button>
+        )}
         {box.estado === 'open' && (
           <button className="btn-primary">Cerrar Pallet</button>
         )}

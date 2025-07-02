@@ -1,24 +1,21 @@
 import React, { useState, useContext } from 'react';
 import { PalletContext } from '@/contexts/PalletContext';
-import {
-  Customer,
-  Pallet,
-  Sale,
-  SaleRequest,
-  SaleItem,
-} from '@/types';
+import { Customer, Pallet, Sale, SaleRequest, SaleItem } from '@/types';
 import { createSale } from '@/api/post';
+import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
 import BoxSelectionStep from './BoxSelectionStep';
 import SaleSummaryStep from './SaleSummaryStep';
 import SaleSuccessStep from './SaleSuccessStep';
 import '@/styles/CreateSaleForm.css';
 
+type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+
 interface CreateSaleFormState {
   step: number;
+  selectedSaleType: SaleType | null;
   selectedCustomer: Customer | null;
   selectedBoxCodes: string[];
-  unitPrice: number;
   isSubmitting: boolean;
   saleResult: Sale | null;
 }
@@ -26,9 +23,9 @@ interface CreateSaleFormState {
 const CreateSaleForm: React.FC = () => {
   const [state, setState] = useState<CreateSaleFormState>({
     step: 0,
+    selectedSaleType: null,
     selectedCustomer: null,
     selectedBoxCodes: [],
-    unitPrice: 0,
     isSubmitting: false,
     saleResult: null,
   });
@@ -51,56 +48,52 @@ const CreateSaleForm: React.FC = () => {
     setState((prev) => ({ ...prev, selectedBoxCodes: boxCodes }));
   };
 
-  // Group selected box codes by their pallets
-  const groupBoxesByPallet = (): SaleItem[] => {
-    const palletGroups: Record<string, string[]> = {};
-
-    // Iterate through pallets to find which ones contain our selected box codes
-    closedPalletsInBodegaPaginated.data.forEach((pallet: Pallet) => {
-      const selectedBoxesInPallet = pallet.cajas.filter((boxId: string) =>
-        state.selectedBoxCodes.includes(boxId)
-      );
-
-      if (selectedBoxesInPallet.length > 0) {
-        palletGroups[pallet.codigo] = selectedBoxesInPallet;
-      }
-    });
-
-    const result = Object.entries(palletGroups).map(([palletId, boxIds]) => ({
-      palletId,
-      boxIds,
-    }));
-
-    return result;
-  };
-
-  const handleSubmit = async (unitPrice: number) => {
+  const handleSubmit = async (notes?: string) => {
     if (
+      !state.selectedSaleType ||
       !state.selectedCustomer ||
-      state.selectedBoxCodes.length === 0 ||
-      unitPrice <= 0
+      state.selectedBoxCodes.length === 0
     ) {
       return;
     }
 
-    setState((prev) => ({ ...prev, isSubmitting: true, unitPrice }));
+    setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
+      // Group selected boxes by their pallets
+      const palletGroupedBoxes = new Map<string, string[]>();
+
+      closedPalletsInBodegaPaginated.data.forEach((pallet: Pallet) => {
+        const selectedBoxesInPallet = pallet.cajas.filter((boxId) =>
+          state.selectedBoxCodes.includes(boxId)
+        );
+
+        if (selectedBoxesInPallet.length > 0) {
+          palletGroupedBoxes.set(pallet.codigo, selectedBoxesInPallet);
+        }
+      });
+
+      // Create items array with pallets containing their boxes
+      const items: SaleItem[] = Array.from(palletGroupedBoxes.entries()).map(
+        ([palletId, boxIds]) => ({
+          palletId,
+          boxIds,
+        })
+      );
+
       const saleRequest: SaleRequest = {
         customerId: state.selectedCustomer.customerId,
-        items: groupBoxesByPallet(),
-        unitPrice: unitPrice,
-        totalAmount: unitPrice * state.selectedBoxCodes.length,
+        type: state.selectedSaleType,
+        items,
+        notes,
       };
 
       const sale = await createSale(saleRequest);
 
-      
-
       setState((prev) => ({
         ...prev,
         saleResult: sale,
-        step: 3,
+        step: 4,
         isSubmitting: false,
       }));
 
@@ -115,10 +108,12 @@ const CreateSaleForm: React.FC = () => {
   const canProceedToNext = () => {
     switch (state.step) {
       case 0:
-        return state.selectedCustomer !== null;
+        return state.selectedSaleType !== null;
       case 1:
-        return state.selectedBoxCodes.length > 0;
+        return state.selectedCustomer !== null;
       case 2:
+        return state.selectedBoxCodes.length > 0;
+      case 3:
         return true;
       default:
         return false;
@@ -152,28 +147,38 @@ const CreateSaleForm: React.FC = () => {
     switch (state.step) {
       case 0:
         return (
+          <SaleTypeSelectionStep
+            selectedType={state.selectedSaleType}
+            onSelect={(saleType) =>
+              setState((prev) => ({ ...prev, selectedSaleType: saleType }))
+            }
+          />
+        );
+      case 1:
+        return (
           <CustomerSelectionStep
             selectedCustomer={state.selectedCustomer}
             onSelect={handleCustomerSelect}
           />
         );
-      case 1:
+      case 2:
         return (
           <BoxSelectionStep
             selectedBoxCodes={state.selectedBoxCodes}
             onSelectionChange={handleBoxCodesSelect}
           />
         );
-      case 2:
+      case 3:
         return (
           <SaleSummaryStep
             customer={state.selectedCustomer!}
+            saleType={state.selectedSaleType!}
             boxes={getSelectedBoxData()}
             onConfirm={handleSubmit}
             isSubmitting={state.isSubmitting}
           />
         );
-      case 3:
+      case 4:
         return <SaleSuccessStep saleResult={state.saleResult!} />;
       default:
         return null;
@@ -183,12 +188,14 @@ const CreateSaleForm: React.FC = () => {
   const getStepTitle = () => {
     switch (state.step) {
       case 0:
-        return 'Seleccionar Cliente';
+        return 'Seleccionar Tipo de Venta';
       case 1:
-        return 'Seleccionar Cajas';
+        return 'Seleccionar Cliente';
       case 2:
-        return 'Confirmar Venta';
+        return 'Seleccionar Cajas';
       case 3:
+        return 'Confirmar Venta';
+      case 4:
         return 'Venta Completada';
       default:
         return '';
@@ -201,13 +208,13 @@ const CreateSaleForm: React.FC = () => {
         <h1>Nueva Venta</h1>
         <div className="step-indicator">
           <span className="step-title">{getStepTitle()}</span>
-          <span className="step-counter">Paso {state.step + 1} de 4</span>
+          <span className="step-counter">Paso {state.step + 1} de 5</span>
         </div>
       </div>
 
       <div className="sale-form-content">{renderStepContent()}</div>
 
-      {state.step < 3 && (
+      {state.step < 4 && (
         <div className="sale-form-controls">
           {state.step > 0 && (
             <button
@@ -220,7 +227,7 @@ const CreateSaleForm: React.FC = () => {
             </button>
           )}
 
-          {state.step < 2 && (
+          {state.step < 3 && (
             <button
               type="button"
               onClick={handleNext}
