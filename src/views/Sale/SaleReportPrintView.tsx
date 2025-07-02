@@ -68,16 +68,6 @@ const SaleReportPrintView: React.FC = () => {
     }
   }, [sale, getCustomerByIdFunction]);
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return '$0';
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
   const getTotalBoxes = () => {
     return (
       sale?.items?.reduce(
