@@ -1,45 +1,19 @@
-export interface Pallet {
-  codigo: string;
-  baseCode: string;
-  suffix: string;
-  pkFecha: string;
-  fechaCalibreFormato: string;
-  estado: 'open' | 'closed';
-  cajas: string[];
-  cantidadCajas: number;
-  fechaCreacion: string;
-  ubicacion: 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA';
-  calibre: string;
-}
+// Core domain types
+export type PalletState = 'open' | 'closed';
+export type Location = 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA';
+export type CustomerStatus = 'ACTIVE' | 'INACTIVE';
+export type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+export type SaleState = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
+export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+export type Priority = 'low' | 'medium' | 'high';
 
-export interface GetPalletsParams {
-  estado?: 'open' | 'closed';
-  ubicacion?: 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA';
-  fechaDesde?: string;
-  fechaHasta?: string;
-}
-
-// Parámetros de paginación para activePallets
+// Pagination params
 export interface PaginationParams {
   limit?: number;
   lastEvaluatedKey?: string;
 }
 
-// Parámetros para obtener pallets con paginación
-export interface GetPalletsParamsPaginated
-  extends GetPalletsParams,
-    PaginationParams {}
-
-// Parámetros para obtener órdenes de venta con paginación
-export interface GetSalesOrdersParamsPaginated extends PaginationParams {
-  estado?: string;
-  ubicacion?: string;
-  fechaDesde?: string;
-  fechaHasta?: string;
-  state?: string;
-}
-
-// Respuesta de la API paginada
+// Paginated response
 export interface PaginatedResponse<T> {
   statusCode: number;
   message: string;
@@ -48,6 +22,21 @@ export interface PaginatedResponse<T> {
     count: number;
     nextKey: string | null;
   };
+}
+
+// Domain entities
+export interface Pallet {
+  codigo: string;
+  baseCode: string;
+  suffix: string;
+  pkFecha: string;
+  fechaCalibreFormato: string;
+  estado: PalletState;
+  cajas: string[];
+  cantidadCajas: number;
+  fechaCreacion: string;
+  ubicacion: Location;
+  calibre: string;
 }
 
 export interface Box {
@@ -78,15 +67,71 @@ export interface Customer {
   address?: string;
   taxId?: string;
   contactPerson?: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: CustomerStatus;
   createdAt: string;
   updatedAt: string;
   metadata?: Record<string, any>;
-  // Sales tracking - using strings to match DynamoDB GSI requirements
   totalPurchases: string;
   lastPurchaseDate: string | null;
 }
 
+export interface Sale {
+  saleId: string;
+  customerId: string;
+  type: SaleType;
+  state?: SaleState;
+  customerInfo?: {
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  items: Array<{
+    palletId: string;
+    boxIds: string[];
+  }>;
+  createdAt: string;
+  reportUrl?: string;
+  totalBoxes?: number;
+  notes?: string;
+  metadata?: {
+    deliveryDate?: string;
+    priority?: Priority;
+    [key: string]: any;
+  };
+}
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  status: IssueStatus | string;
+  createdAt: string;
+}
+
+// Query parameters
+export interface GetPalletsParams {
+  estado?: PalletState;
+  ubicacion?: Location;
+  fechaDesde?: string;
+  fechaHasta?: string;
+}
+
+export interface GetPalletsParamsPaginated extends GetPalletsParams, PaginationParams {}
+
+export interface GetCustomersParams {
+  status?: CustomerStatus;
+  searchTerm?: string;
+}
+
+export interface GetSalesOrdersParamsPaginated extends PaginationParams {
+  state?: string;
+  fechaDesde?: string;
+  fechaHasta?: string;
+}
+
+export interface GetIssuesParamsPaginated extends PaginationParams {}
+
+// Form data types
 export interface CustomerFormData {
   name: string;
   email: string;
@@ -97,64 +142,17 @@ export interface CustomerFormData {
   metadata?: Record<string, any>;
 }
 
-export interface GetCustomersParams {
-  status?: 'ACTIVE' | 'INACTIVE';
-  searchTerm?: string;
-}
-
-export interface SaleItem {
-  palletId: string;
-  boxIds: string[];
-}
-
-export interface Sale {
-  saleId: string;
-  customerId: string;
-  type: 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
-  state?: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
-  customerInfo?: {
-    name: string;
-    email?: string;
-    phone?: string;
-  };
-  items: SaleItem[];
-  createdAt: string;
-  reportUrl?: string;
-  totalBoxes?: number;
-  notes?: string;
-  metadata?: {
-    deliveryDate?: string;
-    priority?: 'low' | 'medium' | 'high';
-    [key: string]: any;
-  };
-}
-
 export interface SaleRequest {
   customerId: string;
-  type: 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
-  items: SaleItem[];
+  type: SaleType;
+  items: Array<{
+    palletId: string;
+    boxIds: string[];
+  }>;
   notes?: string;
   metadata?: {
     deliveryDate?: string;
-    priority?: 'low' | 'medium' | 'high';
+    priority?: Priority;
     [key: string]: any;
   };
-}
-
-export interface SaleReport {
-  url: string;
-  generatedAt: string;
-  format: string;
-}
-
-export interface Issue {
-  id: string;
-  title: string;
-  description: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED' | string;
-  createdAt: string;
-}
-
-export interface GetIssuesParamsPaginated extends PaginationParams {
-  // Future filters can be added here
 }
