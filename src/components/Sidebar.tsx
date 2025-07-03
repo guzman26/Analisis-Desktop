@@ -82,6 +82,17 @@ const sidebarItems: SidebarItem[] = [
       },
     ],
   },
+  {
+    label: 'Administracion',
+    icon: '🔧',
+    children: [
+      {
+        path: '/admin/issues',
+        label: 'Problemas',
+        icon: '🔍',
+      },
+    ],
+  },
 ];
 
 const Sidebar = ({ onToggle }: SidebarProps) => {

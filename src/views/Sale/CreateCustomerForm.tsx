@@ -250,5 +250,4 @@ const CreateCustomerForm = ({
   );
 };
 
-
 export default CreateCustomerForm;

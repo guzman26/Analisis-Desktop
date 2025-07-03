@@ -11,7 +11,11 @@ interface BoxCardProps {
   isSelected?: boolean;
   onSelectionToggle?: (boxCode: string) => void;
   onCreateSinglePallet?: (boxCode: string) => void;
+  onAssignToCompatiblePallet?: (boxCode: string) => void;
   showCreatePalletButton?: boolean;
+  showAssignToCompatibleButton?: boolean;
+  isCreatingPallet?: boolean;
+  isAssigningToCompatible?: boolean;
 }
 
 const BoxCard = ({
@@ -22,7 +26,11 @@ const BoxCard = ({
   isSelected = false,
   onSelectionToggle,
   onCreateSinglePallet,
+  onAssignToCompatiblePallet,
   showCreatePalletButton = false,
+  showAssignToCompatibleButton = false,
+  isCreatingPallet = false,
+  isAssigningToCompatible = false,
 }: BoxCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't toggle selection if clicking on buttons
@@ -101,8 +109,21 @@ const BoxCard = ({
               e.stopPropagation();
               onCreateSinglePallet(box.codigo);
             }}
+            disabled={isCreatingPallet || isAssigningToCompatible}
           >
-            Crear Pallet Individual
+            {isCreatingPallet ? 'Creando...' : 'Crear Pallet Individual'}
+          </button>
+        )}
+        {showAssignToCompatibleButton && onAssignToCompatiblePallet && (
+          <button
+            className="btn-success"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAssignToCompatiblePallet(box.codigo);
+            }}
+            disabled={isCreatingPallet || isAssigningToCompatible}
+          >
+            {isAssigningToCompatible ? 'Asignando...' : 'Asignar a Compatible'}
           </button>
         )}
         {box.estado === 'open' && (

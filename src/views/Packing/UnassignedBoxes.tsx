@@ -4,7 +4,7 @@ import '@/styles/BoxCard.css';
 import { BoxesContext } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
-import { createSingleBoxPallet } from '@/api/post';
+import { createSingleBoxPallet, assignBoxToCompatiblePallet } from '@/api/post';
 
 const UnassignedBoxes = () => {
   const { unassignedBoxesInPacking, fetchUnassignedBoxesInPacking } =
@@ -14,6 +14,10 @@ const UnassignedBoxes = () => {
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [assigningToCompatibleStates, setAssigningToCompatibleStates] =
+    useState<{
+      [key: string]: boolean;
+    }>({});
 
   useEffect(() => {
     fetchUnassignedBoxesInPacking();
@@ -29,14 +33,35 @@ const UnassignedBoxes = () => {
       // Refrescar la lista después de crear el pallet
       fetchUnassignedBoxesInPacking();
 
-      // TODO: Mostrar mensaje de éxito
       console.log('Pallet individual creado exitosamente');
     } catch (error) {
       console.error('Error al crear pallet individual:', error);
-      // TODO: Mostrar mensaje de error
     } finally {
       // Remover el estado de carga
       setCreatingPalletStates((prev) => {
+        const newStates = { ...prev };
+        delete newStates[boxCode];
+        return newStates;
+      });
+    }
+  };
+
+  const handleAssignToCompatiblePallet = async (boxCode: string) => {
+    try {
+      // Establecer el estado de carga para esta caja específica
+      setAssigningToCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
+
+      await assignBoxToCompatiblePallet(boxCode);
+
+      // Refrescar la lista después de asignar a pallet compatible
+      fetchUnassignedBoxesInPacking();
+
+      console.log('Caja asignada a pallet compatible exitosamente');
+    } catch (error) {
+      console.error('Error al asignar caja a pallet compatible:', error);
+    } finally {
+      // Remover el estado de carga
+      setAssigningToCompatibleStates((prev) => {
         const newStates = { ...prev };
         delete newStates[boxCode];
         return newStates;
@@ -71,10 +96,20 @@ const UnassignedBoxes = () => {
               setSelectedBox={setSelectedBox}
               setIsModalOpen={setIsModalOpen}
               showCreatePalletButton={true}
+              showAssignToCompatibleButton={true}
+              isCreatingPallet={creatingPalletStates[box.codigo] || false}
+              isAssigningToCompatible={
+                assigningToCompatibleStates[box.codigo] || false
+              }
               onCreateSinglePallet={
                 creatingPalletStates[box.codigo]
                   ? undefined
                   : handleCreateSinglePallet
+              }
+              onAssignToCompatiblePallet={
+                assigningToCompatibleStates[box.codigo]
+                  ? undefined
+                  : handleAssignToCompatiblePallet
               }
             />
           ))}

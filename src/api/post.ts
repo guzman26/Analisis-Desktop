@@ -107,6 +107,15 @@ export const createSingleBoxPallet = async (
   });
 };
 
+export const assignBoxToCompatiblePallet = async (
+  codigo: string
+): Promise<any> => {
+  return await apiRequest('/assignBoxToCompatiblePallet', {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  });
+};
+
 // Endpoint para Power BI - exportar datos agregados
 export const exportPowerBIData = async (
   dataType: 'pallets' | 'sales' | 'customers' | 'all'

@@ -8,6 +8,8 @@ import {
   GetCustomersParams,
   Sale,
   GetSalesOrdersParamsPaginated,
+  Issue,
+  GetIssuesParamsPaginated,
 } from '@/types';
 
 export const getPallets = async (
@@ -114,4 +116,19 @@ export const getSalesOrdersPaginated = async (
   const endpoint = `/sales/orders${queryString ? `?${queryString}` : ''}`;
   const response = await apiRequest(endpoint);
   return response.data;
+};
+
+export const getAdminIssuesPaginated = async (
+  params: GetIssuesParamsPaginated = {}
+): Promise<PaginatedResponse<Issue>> => {
+  // Build query string
+  const queryParams = new URLSearchParams();
+  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (params.lastEvaluatedKey)
+    queryParams.append('lastKey', params.lastEvaluatedKey);
+
+  const queryString = queryParams.toString();
+  const endpoint = `/admin/issues${queryString ? `?${queryString}` : ''}`;
+  const response = await apiRequest(endpoint, { method: 'GET' });
+  return response;
 };

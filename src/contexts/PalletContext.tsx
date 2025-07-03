@@ -62,25 +62,37 @@ export const PalletProvider: React.FC<Props> = ({ children }) => {
 
   const closedPalletsInPackingPaginatedHook = usePagination<Pallet>({
     fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({ estado: 'closed', ubicacion: 'PACKING', ...params });
+      const response = await getPalletsPaginated({
+        estado: 'closed',
+        ubicacion: 'PACKING',
+        ...params,
+      });
       return response;
     },
   });
 
   const closedPalletsInTransitPaginatedHook = usePagination<Pallet>({
     fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({ estado: 'closed', ubicacion: 'TRANSITO', ...params });
+      const response = await getPalletsPaginated({
+        estado: 'closed',
+        ubicacion: 'TRANSITO',
+        ...params,
+      });
       return response;
     },
   });
 
   const closedPalletsInBodegaPaginatedHook = usePagination<Pallet>({
     fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({ estado: 'closed', ubicacion: 'BODEGA', ...params });
+      const response = await getPalletsPaginated({
+        estado: 'closed',
+        ubicacion: 'BODEGA',
+        ...params,
+      });
       return response;
     },
   });
-  
+
   const movePalletFunction = useCallback(
     async (codigo: string, ubicacion: 'TRANSITO' | 'BODEGA' | 'VENTA') => {
       return await movePallet(codigo, ubicacion);

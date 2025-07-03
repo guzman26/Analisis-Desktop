@@ -16,9 +16,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
   selectedBoxCodes,
   onSelectionChange,
 }) => {
-  const { closedPalletsInBodegaPaginated } =
-    useContext(PalletContext);
-
+  const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
 
   const [selectedPallet, setSelectedPallet] = useState<string | null>(null);
 
@@ -30,12 +28,14 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
   }, []);
 
   // Process pallets and track selected boxes
-  const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.data.map((pallet) => ({
-    pallet,
-    selectedBoxIds: pallet.cajas.filter((boxId) =>
-      selectedBoxCodes.includes(boxId)
-    ),
-  }));
+  const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.data.map(
+    (pallet) => ({
+      pallet,
+      selectedBoxIds: pallet.cajas.filter((boxId) =>
+        selectedBoxCodes.includes(boxId)
+      ),
+    })
+  );
 
   const selectedPalletGroup = palletGroups.find(
     (group) => group.pallet.codigo === selectedPallet

@@ -146,3 +146,15 @@ export interface SaleReport {
   generatedAt: string;
   format: string;
 }
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED' | string;
+  createdAt: string;
+}
+
+export interface GetIssuesParamsPaginated extends PaginationParams {
+  // Future filters can be added here
+}

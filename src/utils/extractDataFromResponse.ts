@@ -1,9 +1,38 @@
 export const extractDataFromResponse = (response: any) => {
-
   // Si la respuesta es null o undefined, retornar array vacío
   if (!response) {
     console.warn('Response is null or undefined');
     return [];
+  }
+
+  // Si la respuesta es un array (por ejemplo, un array con objetos que contienen "body" como string)
+  if (Array.isArray(response)) {
+    // Intentar procesar cada elemento del array y combinar los resultados extraídos
+    const combinedResults: any[] = [];
+
+    response.forEach((item) => {
+      // Caso común: los objetos envueltos por API Gateway traen un campo body como string
+      if (item?.body && typeof item.body === 'string') {
+        try {
+          const parsedItem = JSON.parse(item.body);
+          // Reutilizar la misma función para extraer datos del objeto ya parseado
+          const extracted = extractDataFromResponse(parsedItem);
+          combinedResults.push(...extracted);
+        } catch (error) {
+          console.error('❌ Error parsing item body:', error);
+        }
+      } else if (Array.isArray(item)) {
+        // Si el elemento ya es un array, agregarlo directamente
+        combinedResults.push(...item);
+      }
+    });
+
+    // Si encontramos resultados, retornarlos; de lo contrario, devolver la respuesta original
+    if (combinedResults.length > 0) {
+      return combinedResults;
+    }
+
+    return response as any[];
   }
 
   // Si tiene una propiedad 'data'

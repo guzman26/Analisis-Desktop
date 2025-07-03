@@ -129,7 +129,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       </div>
 
       {selectedCustomer && (
-        <div >
+        <div>
           <h3>Cliente Seleccionado:</h3>
           <div className="customer-details">
             <p>

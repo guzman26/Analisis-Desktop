@@ -23,6 +23,7 @@ const SaleReportPrintView = lazy(
 const ConfirmedSalesOrdersList = lazy(
   () => import('../views/Sale/ConfirmedSalesOrdersList')
 );
+const AdminIssues = lazy(() => import('../views/Admin/Issues'));
 
 export const routes = [
   {
@@ -68,6 +69,10 @@ export const routes = [
   {
     path: '/sales/confirmed',
     element: <ConfirmedSalesOrdersList />,
+  },
+  {
+    path: '/admin/issues',
+    element: <AdminIssues />,
   },
 ];
 
