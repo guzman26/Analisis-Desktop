@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Pallet } from '@/types';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import '@/styles/PalletDetailModal.css';
-import { getBoxByCode } from '@/api/get';
+import { getBoxByCode } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import { formatDate } from '@/utils/formatDate';

@@ -67,7 +67,9 @@ const CALIBRE_MAP: Record<string, string> = {
 };
 
 // Type detection
-export const detectCodigoType = (codigo: string): 'box' | 'pallet' | 'unknown' => {
+export const detectCodigoType = (
+  codigo: string
+): 'box' | 'pallet' | 'unknown' => {
   if (FORMATS.box.pattern.test(codigo)) return 'box';
   if (FORMATS.pallet.pattern.test(codigo)) return 'pallet';
   return 'unknown';
@@ -109,12 +111,15 @@ export const getBoxInfo = (codigo: string) => {
   if (detectCodigoType(codigo) !== 'box') {
     throw new Error('Código de caja debe tener exactamente 17 dígitos');
   }
-  
+
   const format = FORMATS.box;
-  return Object.entries(format.fields).reduce((acc, [field, range]) => {
-    acc[field] = codigo.slice(range[0], range[1]);
-    return acc;
-  }, {} as Record<string, string>);
+  return Object.entries(format.fields).reduce(
+    (acc, [field, range]) => {
+      acc[field] = codigo.slice(range[0], range[1]);
+      return acc;
+    },
+    {} as Record<string, string>
+  );
 };
 
 // Validation functions

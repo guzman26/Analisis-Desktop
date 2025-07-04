@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
-import { PalletContext } from '@/contexts/PalletContext';
+import React, { useState } from 'react';
+import { useFilteredPallets } from '@/contexts/PalletContext';
 import { Customer, Pallet, Sale, SaleRequest, SaleItem } from '@/types';
-import { createSale } from '@/api/post';
+import { createSale } from '@/api/endpoints';
 import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
 import BoxSelectionStep from './BoxSelectionStep';
@@ -30,7 +30,7 @@ const CreateSaleForm: React.FC = () => {
     saleResult: null,
   });
 
-  const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
+  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
 
   const handleNext = () => {
     setState((prev) => ({ ...prev, step: prev.step + 1 }));
@@ -63,7 +63,7 @@ const CreateSaleForm: React.FC = () => {
       // Group selected boxes by their pallets
       const palletGroupedBoxes = new Map<string, string[]>();
 
-      closedPalletsInBodegaPaginated.data.forEach((pallet: Pallet) => {
+      closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
         const selectedBoxesInPallet = pallet.cajas.filter((boxId) =>
           state.selectedBoxCodes.includes(boxId)
         );
@@ -98,7 +98,7 @@ const CreateSaleForm: React.FC = () => {
       }));
 
       // Refresh available pallets
-      closedPalletsInBodegaPaginated.refresh();
+      // TODO: Implement refresh functionality
     } catch (error) {
       console.error('Error creating sale:', error);
       setState((prev) => ({ ...prev, isSubmitting: false }));
@@ -128,7 +128,7 @@ const CreateSaleForm: React.FC = () => {
       calibre: string;
     }[] = [];
 
-    closedPalletsInBodegaPaginated.data.forEach((pallet: Pallet) => {
+    closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
       pallet.cajas.forEach((boxId: string) => {
         if (state.selectedBoxCodes.includes(boxId)) {
           selectedBoxData.push({

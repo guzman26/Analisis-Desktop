@@ -16,7 +16,7 @@ import {
 } from '@/types';
 
 // Pallet operations
-export const getPallets = (params?: GetPalletsParamsPaginated) => 
+export const getPallets = (params?: GetPalletsParamsPaginated) =>
   get<PaginatedResponse<Pallet>>('/getPallets', params);
 
 export const getOpenPallets = () => get<Pallet[]>('/pallets/open');
@@ -37,6 +37,12 @@ export const movePalletWithBoxes = (codigo: string, destino: string) =>
   put<{ boxesUpdated: number }>(`/pallets/${codigo}/move`, { destino });
 
 export const deletePallet = (codigo: string) => del(`/pallets/${codigo}`);
+
+export const getPalletByCode = (codigo: string) =>
+  get<Pallet>(`/pallets/${codigo}`);
+
+export const updatePalletStatus = (codigo: string, status: string) =>
+  put<Pallet>(`/pallets/${codigo}/status`, { status });
 
 // Box operations
 export const getBoxByCode = (codigo: string) =>
@@ -82,8 +88,7 @@ export const deleteCustomer = (id: string) => del(`/customers/${id}`);
 export const getSalesOrders = (params?: GetSalesOrdersParamsPaginated) =>
   get<PaginatedResponse<Sale>>('/sales/orders', params);
 
-export const getSaleById = (id: string) =>
-  get<Sale>(`/sales/orders/${id}`);
+export const getSaleById = (id: string) => get<Sale>(`/sales/orders/${id}`);
 
 export const createSale = (data: SaleRequest) =>
   post<Sale>('/sales/orders', data);

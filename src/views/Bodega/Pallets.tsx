@@ -1,49 +1,53 @@
-import { useContext, useEffect, useState } from 'react';
-import { PalletContext } from '@/contexts/PalletContext';
+import { useEffect, useState } from 'react';
+import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import '@/styles/OpenPallets.css';
-import { closePallet, movePallet } from '@/api/post';
+import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const BodegaPallets = () => {
-  const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
+  const [, palletAPI] = usePalletContext();
+  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
+
+  // Create refresh function
+  const refresh = () => {
+    palletAPI.fetchPallets(1, 'completed');
+  };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Cargar datos al montar el componente
   useEffect(() => {
-    closedPalletsInBodegaPaginated.refresh();
+    refresh();
   }, []); // Dependencias vacías para que solo se ejecute una vez al montar
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Pallets en Bodega</h1>
-        <button onClick={() => closedPalletsInBodegaPaginated.refresh()}>
-          Refrescar
-        </button>
+        <button onClick={() => refresh()}>Refrescar</button>
         <div className="open-pallets-count">
-          {closedPalletsInBodegaPaginated.data.length} pallets
+          {closedPalletsInBodegaPaginated.length} pallets
         </div>
       </div>
 
       {/* Empty State */}
-      {closedPalletsInBodegaPaginated.data.length === 0 ? (
+      {closedPalletsInBodegaPaginated.length === 0 ? (
         <div className="open-pallets-empty">
           <p>No hay pallets en bodega</p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {closedPalletsInBodegaPaginated.data.map((pallet) => (
+          {closedPalletsInBodegaPaginated.map((pallet: any) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
               closePallet={closePallet}
-              fetchActivePallets={closedPalletsInBodegaPaginated.refresh}
+              fetchActivePallets={refresh}
             />
           ))}
         </div>
@@ -59,7 +63,7 @@ const BodegaPallets = () => {
         onClosePallet={(codigo) => {
           closePallet(codigo);
           setIsModalOpen(false);
-          closedPalletsInBodegaPaginated.refresh();
+          refresh();
         }}
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);
@@ -74,7 +78,7 @@ const BodegaPallets = () => {
             setIsModalOpen(false);
             setSelectedPallet(null);
             // Refrescar la lista de pallets
-            closedPalletsInBodegaPaginated.refresh();
+            refresh();
             // TODO: Mostrar mensaje de éxito
             console.log(`Pallet ${codigo} movido exitosamente a ${location}`);
           } catch (error) {

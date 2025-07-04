@@ -1,47 +1,51 @@
-import { useContext, useEffect, useState } from 'react';
-import { PalletContext } from '@/contexts/PalletContext';
+import { useEffect, useState } from 'react';
+import { usePalletContext, useFilteredPallets } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import '@/styles/OpenPallets.css';
-import { closePallet, movePallet } from '@/api/post';
+import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const ClosedPallets = () => {
-  const { closedPalletsInPackingPaginated } = useContext(PalletContext);
+  const [, palletAPI] = usePalletContext();
+  const { pallets: closedPalletsInPackingPaginated } = useFilteredPallets();
+
+  // Create refresh function
+  const refresh = () => {
+    palletAPI.fetchPallets(1, 'completed');
+  };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    closedPalletsInPackingPaginated.refresh();
+    refresh();
   }, []);
 
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Pallets Cerrados</h1>
-        <button onClick={() => closedPalletsInPackingPaginated.refresh()}>
-          Refrescar
-        </button>
+        <button onClick={() => refresh()}>Refrescar</button>
         <div className="open-pallets-count">
-          {closedPalletsInPackingPaginated.data.length} pallets
+          {closedPalletsInPackingPaginated.length} pallets
         </div>
       </div>
 
       {/* Empty State */}
-      {closedPalletsInPackingPaginated.data.length === 0 ? (
+      {closedPalletsInPackingPaginated.length === 0 ? (
         <div className="open-pallets-empty">
           <p>No hay pallets cerrados</p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {closedPalletsInPackingPaginated.data.map((pallet) => (
+          {closedPalletsInPackingPaginated.map((pallet: any) => (
             <PalletCard
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
               closePallet={closePallet}
-              fetchActivePallets={closedPalletsInPackingPaginated.refresh}
+              fetchActivePallets={refresh}
             />
           ))}
         </div>
@@ -67,7 +71,7 @@ const ClosedPallets = () => {
             setIsModalOpen(false);
             setSelectedPallet(null);
             // Refrescar la lista de pallets
-            closedPalletsInPackingPaginated.refresh();
+            refresh();
             // TODO: Mostrar mensaje de éxito
             console.log(`Pallet ${codigo} movido exitosamente a ${location}`);
           } catch (error) {

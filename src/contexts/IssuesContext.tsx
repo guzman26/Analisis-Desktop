@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode } from 'react';
 import { Issue, GetIssuesParamsPaginated } from '@/types';
-import { getAdminIssuesPaginated } from '@/api/get';
+import { getIssues } from '@/api/endpoints';
 import usePagination from '@/hooks/usePagination';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 
@@ -28,7 +28,7 @@ interface Props {
 export const IssuesProvider: React.FC<Props> = ({ children }) => {
   const issuesPaginatedHook = usePagination<Issue>({
     fetchFunction: async (params: GetIssuesParamsPaginated) => {
-      const response = await getAdminIssuesPaginated(params);
+      const response = await getIssues(params);
       const issues = extractDataFromResponse(response);
       return issues;
     },

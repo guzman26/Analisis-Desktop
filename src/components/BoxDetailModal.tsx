@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box } from '@/types';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import '@/styles/BoxDetailModal.css';
-import { unassignBox } from '@/api/post';
+import { unassignBox } from '@/api/endpoints';
 
 interface BoxDetailModalProps {
   box: Box | null;

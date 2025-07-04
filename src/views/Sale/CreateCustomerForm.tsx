@@ -1,7 +1,8 @@
-import React, { useState, useContext } from 'react';
-import { CustomerContext } from '@/contexts/CustomerContext';
+import React, { useState } from 'react';
+import { useCustomerContext } from '@/contexts/CustomerContext';
 import { CustomerFormData } from '@/types';
 import '@/styles/CreateCustomerForm.css';
+import { createCustomer } from '@/api/endpoints';
 
 interface CreateCustomerFormProps {
   onSuccess?: (customer: any) => void;
@@ -12,8 +13,8 @@ const CreateCustomerForm = ({
   onSuccess,
   onCancel,
 }: CreateCustomerFormProps) => {
-  const { createCustomerFunction, loading, error } =
-    useContext(CustomerContext);
+  const [customerState] = useCustomerContext();
+  const { status: loading, error } = customerState;
 
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
@@ -76,7 +77,7 @@ const CreateCustomerForm = ({
     setIsSubmitting(true);
 
     try {
-      const customer = await createCustomerFunction(formData);
+      const customer = await createCustomer(formData);
 
       // Limpiar formulario
       setFormData({
@@ -122,7 +123,7 @@ const CreateCustomerForm = ({
         <p>Complete los datos del cliente para crear un nuevo registro</p>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <div className="alert alert-error">{error.message}</div>}
 
       <form onSubmit={handleSubmit} className="customer-form">
         <div className="form-section">
@@ -233,16 +234,16 @@ const CreateCustomerForm = ({
             type="button"
             onClick={handleCancel}
             className="btn btn-secondary"
-            disabled={isSubmitting || loading}
+            disabled={isSubmitting || loading === 'loading'}
           >
             Cancelar
           </button>
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={isSubmitting || loading}
+            disabled={isSubmitting || loading === 'loading'}
           >
-            {isSubmitting || loading ? 'Creando...' : 'Crear Cliente'}
+            {isSubmitting || loading === 'loading' ? 'Creando...' : 'Crear Cliente'}
           </button>
         </div>
       </form>

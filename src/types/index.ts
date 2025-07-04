@@ -2,7 +2,12 @@
 export type PalletState = 'open' | 'closed';
 export type Location = 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA';
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE';
-export type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+export type SaleType =
+  | 'Venta'
+  | 'Reposición'
+  | 'Donación'
+  | 'Inutilizado'
+  | 'Ración';
 export type SaleState = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
@@ -85,10 +90,7 @@ export interface Sale {
     email?: string;
     phone?: string;
   };
-  items: Array<{
-    palletId: string;
-    boxIds: string[];
-  }>;
+  items: SaleItem[];
   createdAt: string;
   reportUrl?: string;
   totalBoxes?: number;
@@ -116,7 +118,9 @@ export interface GetPalletsParams {
   fechaHasta?: string;
 }
 
-export interface GetPalletsParamsPaginated extends GetPalletsParams, PaginationParams {}
+export interface GetPalletsParamsPaginated
+  extends GetPalletsParams,
+    PaginationParams {}
 
 export interface GetCustomersParams {
   status?: CustomerStatus;
@@ -142,13 +146,15 @@ export interface CustomerFormData {
   metadata?: Record<string, any>;
 }
 
+export interface SaleItem {
+  palletId: string;
+  boxIds: string[];
+}
+
 export interface SaleRequest {
   customerId: string;
   type: SaleType;
-  items: Array<{
-    palletId: string;
-    boxIds: string[];
-  }>;
+  items: SaleItem[];
   notes?: string;
   metadata?: {
     deliveryDate?: string;

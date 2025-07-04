@@ -22,7 +22,7 @@ export const api = async <T = any>(
   options: RequestInit = {}
 ): Promise<T> => {
   const url = `${API_URL}${endpoint}`;
-  
+
   try {
     const response = await fetch(url, {
       headers: { 'Content-Type': 'application/json', ...options.headers },
@@ -34,17 +34,17 @@ export const api = async <T = any>(
     }
 
     const data = await response.json();
-    
+
     // Handle paginated responses
     if (data?.data?.items !== undefined) {
       return data as T;
     }
-    
+
     // Handle wrapped responses
     if (data?.data !== undefined) {
       return data.data as T;
     }
-    
+
     return data as T;
   } catch (error) {
     console.error('API request failed:', error);
@@ -53,16 +53,19 @@ export const api = async <T = any>(
 };
 
 // Convenience methods
-export const get = <T = any>(endpoint: string, params?: Record<string, any>) => {
+export const get = <T = any>(
+  endpoint: string,
+  params?: Record<string, any>
+) => {
   const query = params ? `?${buildQuery(params)}` : '';
   return api<T>(`${endpoint}${query}`);
 };
 
-export const post = <T = any>(endpoint: string, body?: any) => 
+export const post = <T = any>(endpoint: string, body?: any) =>
   api<T>(endpoint, { method: 'POST', body: JSON.stringify(body) });
 
-export const put = <T = any>(endpoint: string, body?: any) => 
+export const put = <T = any>(endpoint: string, body?: any) =>
   api<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) });
 
-export const del = <T = any>(endpoint: string) => 
+export const del = <T = any>(endpoint: string) =>
   api<T>(endpoint, { method: 'DELETE' });

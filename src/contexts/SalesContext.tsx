@@ -1,6 +1,6 @@
 import { createContext, ReactNode } from 'react';
 import { GetSalesOrdersParamsPaginated, Sale } from '@/types';
-import { getSalesOrdersPaginated } from '@/api/get';
+import { getSalesOrders } from '@/api/endpoints';
 import usePagination from '@/hooks/usePagination';
 
 // Interfaz para los datos paginados de sales orders
@@ -30,7 +30,7 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
   // Hook de paginación específico para sales orders
   const salesOrdersDRAFTPaginatedHook = usePagination<Sale>({
     fetchFunction: async (params: GetSalesOrdersParamsPaginated) => {
-      const response = await getSalesOrdersPaginated({
+      const response = await getSalesOrders({
         ...params,
         state: 'DRAFT',
       });
@@ -65,7 +65,7 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
 
   const salesOrdersCONFIRMEDPaginatedHook = usePagination<Sale>({
     fetchFunction: async (params: GetSalesOrdersParamsPaginated) => {
-      const response = await getSalesOrdersPaginated({
+      const response = await getSalesOrders({
         ...params,
         state: 'CONFIRMED',
       });

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { SalesContext } from '@/contexts/SalesContext';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
-import { confirmSale } from '@/api/post';
+import { confirmSale } from '@/api/endpoints';
 import '@/styles/SalesOrdersList.css';
 
 const SalesOrdersList: React.FC = () => {

@@ -1,9 +1,8 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sale, Customer, Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
-import { CustomerContext } from '@/contexts/CustomerContext';
-import { getBoxByCode } from '@/api/get';
+import { getBoxByCode, getCustomerById } from '@/api/endpoints';
 import BoxDetailModal from './BoxDetailModal';
 import '@/styles/SaleDetailModal.css';
 
@@ -19,15 +18,13 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const [showBoxModal, setShowBoxModal] = useState(false);
   const [loadingBox, setLoadingBox] = useState<string | null>(null);
   const navigate = useNavigate();
-  const customerContext = useContext(CustomerContext);
-  const { getCustomerByIdFunction } = customerContext || {};
 
   // Fetch customer data when sale changes
   useEffect(() => {
     const fetchCustomer = async () => {
-      if (sale?.customerId && getCustomerByIdFunction) {
+      if (sale?.customerId) {
         try {
-          const customerData = await getCustomerByIdFunction(sale.customerId);
+          const customerData = await getCustomerById(sale.customerId);
           setCustomer(customerData);
         } catch (error) {
           console.error('Error fetching customer:', error);
@@ -39,7 +36,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
     if (sale) {
       fetchCustomer();
     }
-  }, [sale, getCustomerByIdFunction]);
+  }, [sale]);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -71,7 +68,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
       // Extract the box data from the response
       // The API might return { data: boxData } or just boxData directly
-      const boxData = response?.data || response;
+      const boxData = response as Box;
 
       if (!boxData) {
         console.error('No box data received for code:', boxCode);

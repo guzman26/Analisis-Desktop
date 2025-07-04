@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sale, Customer } from '@/types';
 import { SalesContext } from '@/contexts/SalesContext';
-import { CustomerContext } from '@/contexts/CustomerContext';
+import { useCustomerContext } from '@/contexts/CustomerContext';
 import { formatDate } from '@/utils/formatDate';
 import '@/styles/SaleReportPrintView.css';
 
@@ -17,10 +17,8 @@ const SaleReportPrintView: React.FC = () => {
 
   const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
     useContext(SalesContext) || {};
-  const customerContext = useContext(CustomerContext);
-  const { getCustomerByIdFunction } = customerContext || {};
+  const [, customerAPI] = useCustomerContext();
 
-  // Find sale by ID from both DRAFT and CONFIRMED contexts
   useEffect(() => {
     if (
       saleId &&
@@ -53,9 +51,11 @@ const SaleReportPrintView: React.FC = () => {
   // Fetch customer data when sale is found
   useEffect(() => {
     const fetchCustomer = async () => {
-      if (sale?.customerId && getCustomerByIdFunction) {
+      if (sale?.customerId && customerAPI) {
         try {
-          const customerData = await getCustomerByIdFunction(sale.customerId);
+          const customerData = await customerAPI.getCustomerById(
+            sale.customerId
+          );
           setCustomer(customerData);
         } catch (error) {
           console.error('Error fetching customer:', error);
@@ -66,7 +66,7 @@ const SaleReportPrintView: React.FC = () => {
     if (sale) {
       fetchCustomer();
     }
-  }, [sale, getCustomerByIdFunction]);
+  }, [sale, customerAPI]);
 
   const getTotalBoxes = () => {
     return (

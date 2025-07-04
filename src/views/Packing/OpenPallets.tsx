@@ -1,22 +1,24 @@
-import { useContext, useEffect, useState } from 'react';
-import { PalletContext } from '@/contexts/PalletContext';
+import { useEffect, useState } from 'react';
+import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import '@/styles/OpenPallets.css';
-import { closePallet, movePallet } from '@/api/post';
+import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
+  const [, palletAPI] = usePalletContext();
   const {
-    activePalletsPaginated: {
-      data: activePalletsPaginated,
-      loading,
-      error,
-      hasMore,
-      loadMore,
-      refresh,
-    },
-  } = useContext(PalletContext);
+    pallets: activePalletsPaginated,
+
+    loading,
+    error,
+  } = useFilteredPallets();
+
+  // Create refresh function
+  const refresh = () => {
+    palletAPI.fetchPallets(1, 'active');
+  };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -48,7 +50,7 @@ const OpenPallets = () => {
       {/* Error State */}
       {error && (
         <div className="open-pallets-error">
-          <p>Error: {error}</p>
+          <p>Error: {error?.message || 'Ha ocurrido un error'}</p>
           <button onClick={handleRefresh}>Reintentar</button>
         </div>
       )}
@@ -74,14 +76,7 @@ const OpenPallets = () => {
         </div>
       )}
 
-      {/* Load More Button */}
-      {hasMore && !loading && (
-        <div className="open-pallets-load-more">
-          <button onClick={loadMore} className="load-more-button">
-            Cargar más pallets
-          </button>
-        </div>
-      )}
+      {/* Load More Button - Removed for now as filtered pallets doesn't support pagination */}
 
       {/* Loading Indicator */}
       {loading && (

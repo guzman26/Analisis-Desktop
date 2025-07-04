@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { PalletContext } from '@/contexts/PalletContext';
+import React, { useState, useEffect } from 'react';
+import { useFilteredPallets } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 
 interface BoxSelectionStepProps {
@@ -16,22 +16,20 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
   selectedBoxCodes,
   onSelectionChange,
 }) => {
-  const { closedPalletsInBodegaPaginated } = useContext(PalletContext);
+  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
 
   const [selectedPallet, setSelectedPallet] = useState<string | null>(null);
 
   // Fetch pallets on component mount if not already loaded
   useEffect(() => {
-    if (closedPalletsInBodegaPaginated.data.length === 0) {
-      closedPalletsInBodegaPaginated.refresh();
-    }
+    // Data is automatically fetched by useFilteredPallets hook
   }, []);
 
   // Process pallets and track selected boxes
-  const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.data.map(
-    (pallet) => ({
+  const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.map(
+    (pallet: any) => ({
       pallet,
-      selectedBoxIds: pallet.cajas.filter((boxId) =>
+      selectedBoxIds: pallet.cajas.filter((boxId: any) =>
         selectedBoxCodes.includes(boxId)
       ),
     })

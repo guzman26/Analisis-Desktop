@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Customer } from '@/types';
-import { CustomerContext } from '@/contexts/CustomerContext';
+import { useCustomerContext } from '@/contexts/CustomerContext';
 
 interface CustomerSelectionStepProps {
   selectedCustomer: Customer | null;
@@ -11,8 +11,8 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   selectedCustomer,
   onSelect,
 }) => {
-  const { customers, fetchCustomers, createCustomerFunction, loading, error } =
-    useContext(CustomerContext);
+  const [state, customerAPI] = useCustomerContext();
+  const { customers, status: loading, error } = state;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -28,19 +28,19 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
   useEffect(() => {
     if (customers.length === 0) {
-      fetchCustomers();
+      customerAPI.fetchCustomers();
     }
-  }, [customers.length, fetchCustomers]);
+  }, [customers.length, customerAPI]);
 
   const filteredCustomers = customers.filter(
-    (customer) =>
+    (customer: any) =>
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone?.includes(searchTerm)
   );
 
   const handleCustomerSelect = (customerId: string) => {
-    const customer = customers.find((c) => c.customerId === customerId);
+    const customer = customers.find((c: any) => c.customerId === customerId);
     if (customer) {
       onSelect(customer);
     }
@@ -51,7 +51,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
     setIsCreatingCustomer(true);
 
     try {
-      const newCustomer = await createCustomerFunction(newCustomerData);
+      const newCustomer = await customerAPI.createCustomer(newCustomerData);
       onSelect(newCustomer);
       setShowAddCustomerModal(false);
       setNewCustomerData({
@@ -89,8 +89,10 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
     return (
       <div className="customer-selection-step">
         <h2>Seleccionar Cliente</h2>
-        <div className="error">Error: {error}</div>
-        <button onClick={fetchCustomers}>Reintentar</button>
+        <div className="error">
+          Error: {error?.message || 'Error desconocido'}
+        </div>
+        <button onClick={customerAPI.fetchCustomers}>Reintentar</button>
       </div>
     );
   }
@@ -120,7 +122,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
           className="customer-select"
         >
           <option value="">-- Seleccionar un cliente --</option>
-          {filteredCustomers.map((customer) => (
+          {filteredCustomers.map((customer: any) => (
             <option key={customer.customerId} value={customer.customerId}>
               {customer.name} - {customer.email} - {customer.phone}
             </option>

@@ -1,23 +1,21 @@
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Box } from '@/types';
 import '@/styles/BoxCard.css';
-import { BoxesContext } from '@/contexts/BoxesContext';
+import { useUnassignedBoxes } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
-import { createSingleBoxPallet } from '@/api/post';
+import { createSingleBoxPallet } from '@/api/endpoints';
 
 const UnassignedBoxes = () => {
-  const { unassignedBoxesInBodega, fetchUnassignedBoxesInBodega } =
-    useContext(BoxesContext);
+  const { unassignedBoxes: unassignedBoxesInBodega } =
+    useUnassignedBoxes('BODEGA');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
 
-  useEffect(() => {
-    fetchUnassignedBoxesInBodega();
-  }, [fetchUnassignedBoxesInBodega]);
+  // Data is automatically fetched by useUnassignedBoxes hook
 
   const handleCreateSinglePallet = async (boxCode: string) => {
     try {
@@ -27,7 +25,7 @@ const UnassignedBoxes = () => {
       await createSingleBoxPallet(boxCode, 'BODEGA');
 
       // Refrescar la lista después de crear el pallet
-      fetchUnassignedBoxesInBodega();
+      // TODO: Implement refresh functionality
 
       // TODO: Mostrar mensaje de éxito
       console.log('Pallet individual creado exitosamente');
@@ -48,7 +46,7 @@ const UnassignedBoxes = () => {
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={() => fetchUnassignedBoxesInBodega()}>
+        <button onClick={() => console.log('Refrescar - TODO: Implement')}>
           Refrescar
         </button>
         <div className="open-pallets-count">
@@ -64,7 +62,7 @@ const UnassignedBoxes = () => {
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {unassignedBoxesInBodega.map((box) => (
+          {unassignedBoxesInBodega.map((box: any) => (
             <BoxCard
               key={box.codigo}
               box={box}

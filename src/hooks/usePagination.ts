@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { PaginationParams } from '@/types';
 import { extractDataFromResponse } from '@/utils';
 
-interface UsePaginationOptions<T> {
+interface UsePaginationOptions {
   fetchFunction: (params: any) => Promise<any>;
   limit?: number;
 }
@@ -19,7 +19,7 @@ interface UsePaginationReturn<T> {
 export const usePagination = <T>({
   fetchFunction,
   limit = 15,
-}: UsePaginationOptions<T>): UsePaginationReturn<T> => {
+}: UsePaginationOptions): UsePaginationReturn<T> => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextKey, setNextKey] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export const usePagination = <T>({
   const fetchData = useCallback(
     async (isLoadMore = false, newFilters = filters) => {
       if (loading) return;
-      
+
       setLoading(true);
       setError(null);
 
@@ -41,20 +41,20 @@ export const usePagination = <T>({
       };
 
       // Remove empty params
-      Object.keys(params).forEach(key => {
+      Object.keys(params).forEach((key) => {
         if (!params[key]) delete params[key];
       });
 
       try {
         const response = await fetchFunction(params);
-        
+
         // Extract pagination metadata
         const paginationData = response?.data || response;
         const newNextKey = paginationData?.nextKey || null;
         const items = extractDataFromResponse(response);
 
         if (Array.isArray(items)) {
-          setData((prev: T[]) => isLoadMore ? [...prev, ...items] : items);
+          setData((prev: T[]) => (isLoadMore ? [...prev, ...items] : items));
           setNextKey(newNextKey);
           setHasMore(!!newNextKey);
         } else {
@@ -78,13 +78,16 @@ export const usePagination = <T>({
     if (hasMore && !loading) fetchData(true);
   }, [fetchData, hasMore, loading]);
 
-  const refresh = useCallback((newFilters = {}) => {
-    setFilters(newFilters);
-    setData([]);
-    setNextKey(null);
-    setHasMore(true);
-    fetchData(false, newFilters);
-  }, [fetchData]);
+  const refresh = useCallback(
+    (newFilters = {}) => {
+      setFilters(newFilters);
+      setData([]);
+      setNextKey(null);
+      setHasMore(true);
+      fetchData(false, newFilters);
+    },
+    [fetchData]
+  );
 
   return { data, loading, error, hasMore, loadMore, refresh };
 };
