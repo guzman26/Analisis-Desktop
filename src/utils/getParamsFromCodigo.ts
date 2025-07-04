@@ -16,59 +16,131 @@
  * FUNCIONES PARA CÓDIGOS DE CAJAS (17 dígitos)
  */
 
-export const getCalibreFromCodigoCaja = (codigo: string) => {
-  // Calibre está en posiciones 9-10 (2 dígitos)
-  const calibreNumber = codigo.slice(9, 11);
-  const calibreName = formatCalibreName(calibreNumber);
-  return calibreName;
+// Code parsing utilities with configuration-based approach
+
+// Code format configurations
+const FORMATS = {
+  box: {
+    length: 17,
+    pattern: /^\d{17}$/,
+    fields: {
+      dia: [0, 1],
+      semana: [1, 3],
+      ano: [3, 5],
+      operario: [5, 7],
+      empacadora: [7, 8],
+      turno: [8, 9],
+      calibre: [9, 11],
+      formato: [11, 12],
+      empresa: [12, 13],
+      contador: [13, 17],
+    },
+    baseCode: [0, 13],
+  },
+  pallet: {
+    length: 12,
+    pattern: /^\d{12}$/,
+    fields: {
+      calibre: [6, 8],
+    },
+    baseCode: [2, 10],
+  },
+} as const;
+
+// Calibre mappings
+const CALIBRE_MAP: Record<string, string> = {
+  '01': 'ESPECIAL BCO',
+  '02': 'EXTRA BCO',
+  '04': 'GRANDE BCO',
+  '07': 'MEDIANO BCO',
+  '09': 'TERCERA BCO',
+  '15': 'CUARTA BCO',
+  '12': 'JUMBO BCO',
+  '03': 'ESPECIAL COLOR',
+  '05': 'EXTRA COLOR',
+  '06': 'GRANDE COLOR',
+  '13': 'MEDIANO COLOR',
+  '11': 'TERCERA COLOR',
+  '16': 'CUARTA COLOR',
+  '14': 'JUMBO COLOR',
+  '08': 'SUCIO / TRIZADO',
 };
 
-export const getBaseCodeFromCodigoCaja = (codigo: string) => {
-  // Base code incluye desde día hasta empresa (sin contador): posiciones 0-12
-  const baseCode = codigo.slice(0, 13);
-  return baseCode;
+// Type detection
+export const detectCodigoType = (codigo: string): 'box' | 'pallet' | 'unknown' => {
+  if (FORMATS.box.pattern.test(codigo)) return 'box';
+  if (FORMATS.pallet.pattern.test(codigo)) return 'pallet';
+  return 'unknown';
 };
 
-/**
- * FUNCIONES PARA CÓDIGOS DE PALLETS (formato anterior)
- * Mantiene compatibilidad con el sistema existente
- */
-
-export const getCalibreFromCodigoPallet = (codigo: string) => {
-  // Para pallets, mantiene la lógica anterior (posiciones 6-8)
-  const calibreNumber = codigo.slice(6, 8);
-  const calibreName = formatCalibreName(calibreNumber);
-  return calibreName;
+// Generic field extractor
+const extractField = (
+  codigo: string,
+  type: 'box' | 'pallet',
+  field: string
+): string => {
+  const format = FORMATS[type];
+  const fields = format.fields as Record<string, readonly [number, number]>;
+  const [start, end] = fields[field] || [];
+  return start !== undefined ? codigo.slice(start, end) : '';
 };
 
-export const getBaseCodeFromCodigoPallet = (codigo: string) => {
-  // Para pallets, mantiene la lógica anterior (posiciones 2-10)
-  const baseCode = codigo.slice(2, 10);
-  return baseCode;
+// Calibre formatting
+export const formatCalibreName = (calibre: string): string =>
+  CALIBRE_MAP[calibre] || calibre;
+
+// Main extraction functions
+export const getCalibreFromCodigo = (codigo: string): string => {
+  const type = detectCodigoType(codigo);
+  if (type === 'unknown') return '';
+  const calibreNum = extractField(codigo, type, 'calibre');
+  return formatCalibreName(calibreNum);
 };
 
-/**
- * FUNCIONES GENÉRICAS (mantienen compatibilidad)
- * Detectan automáticamente si es código de caja o pallet
- */
+export const getBaseCodeFromCodigo = (codigo: string): string => {
+  const type = detectCodigoType(codigo);
+  if (type === 'unknown') return '';
+  const [start, end] = FORMATS[type].baseCode;
+  return codigo.slice(start, end);
+};
 
-export const getCalibreFromCodigo = (codigo: string) => {
-  if (validateCodigoCaja(codigo)) {
-    // Es código de caja (17 dígitos)
-    return getCalibreFromCodigoCaja(codigo);
-  } else {
-    // Es código de pallet (formato anterior)
-    return getCalibreFromCodigoPallet(codigo);
+// Box-specific extractors
+export const getBoxInfo = (codigo: string) => {
+  if (detectCodigoType(codigo) !== 'box') {
+    throw new Error('Código de caja debe tener exactamente 17 dígitos');
   }
+  
+  const format = FORMATS.box;
+  return Object.entries(format.fields).reduce((acc, [field, range]) => {
+    acc[field] = codigo.slice(range[0], range[1]);
+    return acc;
+  }, {} as Record<string, string>);
 };
 
-export const getBaseCodeFromCodigo = (codigo: string) => {
-  if (validateCodigoCaja(codigo)) {
-    // Es código de caja (17 dígitos)
-    return getBaseCodeFromCodigoCaja(codigo);
-  } else {
-    // Es código de pallet (formato anterior)
-    return getBaseCodeFromCodigoPallet(codigo);
+// Validation functions
+export const validateCodigoCaja = (codigo: string): boolean =>
+  FORMATS.box.pattern.test(codigo);
+
+export const validateCodigoPallet = (codigo: string): boolean =>
+  FORMATS.pallet.pattern.test(codigo);
+
+// Display formatting
+export const formatCodigoForDisplay = (codigo: string): string => {
+  if (detectCodigoType(codigo) === 'box') {
+    const info = getBoxInfo(codigo);
+    return `${info.dia}-${info.semana}-${info.ano}-${info.operario}-${info.empacadora}-${info.turno}-${info.calibre}-${info.formato}-${info.empresa}-${info.contador}`;
+  }
+  return codigo;
+};
+
+// Summary generator
+export const getCodigoSummary = (codigo: string): string => {
+  try {
+    const info = getBoxInfo(codigo);
+    const calibre = formatCalibreName(info.calibre);
+    return `Sem.${info.semana}/20${info.ano} - Op.${info.operario} - ${calibre} - Caja #${info.contador}`;
+  } catch {
+    return 'Código no válido';
   }
 };
 
@@ -119,117 +191,6 @@ export const getEmpresaFromCodigo = (codigo: string) => {
 export const getContadorFromCodigo = (codigo: string) => {
   // Contador: posiciones 13-16 (4 dígitos)
   return codigo.slice(13, 17);
-};
-
-export const formatCalibreName = (calibre: string): string => {
-  const calibreMap: Record<string, string> = {
-    '01': 'ESPECIAL BCO',
-    '02': 'EXTRA BCO',
-    '04': 'GRANDE BCO',
-    '07': 'MEDIANO BCO',
-    '09': 'TERCERA BCO',
-    '15': 'CUARTA BCO',
-    '12': 'JUMBO BCO',
-    '03': 'ESPECIAL COLOR',
-    '05': 'EXTRA COLOR',
-    '06': 'GRANDE COLOR',
-    '13': 'MEDIANO COLOR',
-    '11': 'TERCERA COLOR',
-    '16': 'CUARTA COLOR',
-    '14': 'JUMBO COLOR',
-    '08': 'SUCIO / TRIZADO',
-  };
-
-  return calibreMap[calibre] || `${calibre}`;
-};
-
-/**
- * VALIDACIONES
- */
-
-/**
- * Valida que un código de caja tenga el formato correcto (17 dígitos)
- */
-export const validateCodigoCaja = (codigo: string): boolean => {
-  return /^\d{17}$/.test(codigo);
-};
-
-/**
- * Valida que un código de pallet tenga el formato correcto (12 dígitos)
- */
-export const validateCodigoPallet = (codigo: string): boolean => {
-  return /^\d{12}$/.test(codigo);
-};
-
-/**
- * Obtiene información completa de un código de caja
- */
-export const getFullInfoFromCodigo = (codigo: string) => {
-  if (!validateCodigoCaja(codigo)) {
-    throw new Error('Código de caja debe tener exactamente 17 dígitos');
-  }
-
-  return {
-    dia: getDiaFromCodigo(codigo),
-    semana: getSemanaFromCodigo(codigo),
-    ano: getAnoFromCodigo(codigo),
-    operario: getOperarioFromCodigo(codigo),
-    empacadora: getEmpacadoraFromCodigo(codigo),
-    turno: getTurnoFromCodigo(codigo),
-    calibre: getCalibreFromCodigoCaja(codigo),
-    calibreNumero: codigo.slice(9, 11),
-    formato: getFormatoFromCodigo(codigo),
-    empresa: getEmpresaFromCodigo(codigo),
-    contador: getContadorFromCodigo(codigo),
-    baseCode: getBaseCodeFromCodigoCaja(codigo),
-  };
-};
-
-/**
- * FUNCIONES UTILITARIAS ADICIONALES
- */
-
-/**
- * Determina el tipo de código (caja o pallet) automáticamente
- */
-export const detectCodigoType = (
-  codigo: string
-): 'caja' | 'pallet' | 'unknown' => {
-  if (validateCodigoCaja(codigo)) {
-    return 'caja';
-  } else if (validateCodigoPallet(codigo)) {
-    return 'pallet';
-  } else {
-    return 'unknown';
-  }
-};
-
-/**
- * Formatea un código para mejor legibilidad
- * Para cajas: D-SS-AA-OO-E-T-CC-F-C-CCCC
- * Para pallets: mantiene formato original
- */
-export const formatCodigoForDisplay = (codigo: string): string => {
-  const type = detectCodigoType(codigo);
-
-  if (type === 'caja') {
-    // Formato: D-SS-AA-OO-E-T-CC-F-C-CCCC
-    return `${codigo[0]}-${codigo.slice(1, 3)}-${codigo.slice(3, 5)}-${codigo.slice(5, 7)}-${codigo[7]}-${codigo[8]}-${codigo.slice(9, 11)}-${codigo[11]}-${codigo[12]}-${codigo.slice(13, 17)}`;
-  }
-
-  return codigo; // Para pallets u otros, mantiene formato original
-};
-
-/**
- * Obtiene un resumen legible de un código de caja
- */
-export const getCodigoSummary = (codigo: string): string => {
-  if (!validateCodigoCaja(codigo)) {
-    return 'Código no válido para caja';
-  }
-
-  const info = getFullInfoFromCodigo(codigo);
-  return `Sem.${info.semana}/20${info.ano} - Op.${info.operario} - ${info.calibre} - Caja #${info.contador}`;
 };
 
 /**

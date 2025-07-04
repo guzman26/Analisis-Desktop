@@ -1,10 +1,8 @@
-import { Pallet, GetPalletsParamsPaginated } from '@/types';
-import { getPallets, getPalletsPaginated } from '@/api/get';
-import { createContext, ReactNode, useState, useCallback } from 'react';
-import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
-import { movePallet } from '@/api/post';
-import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
-import usePagination from '@/hooks/usePagination';
+import { createContext, ReactNode, useState, useCallback, useMemo } from 'react';
+import { Pallet, GetPalletsParamsPaginated, PalletState, Location } from '@/types';
+import { getPallets, movePallet } from '@/api/endpoints';
+import { extractDataFromResponse, getCalibreFromCodigo } from '@/utils';
+import { usePagination } from '@/hooks/usePagination';
 
 // Interfaz para los datos paginados de activePallets
 interface PaginatedPalletsData {
@@ -17,86 +15,54 @@ interface PaginatedPalletsData {
 }
 
 interface PalletContextType {
-  movePalletFunction: (
-    codigo: string,
-    ubicacion: 'TRANSITO' | 'BODEGA' | 'VENTA'
-  ) => Promise<any>;
+  movePalletFunction: (codigo: string, ubicacion: Exclude<Location, 'PACKING'>) => Promise<any>;
   palletsInBodega: Pallet[];
   fetchPalletsInBodega: () => Promise<void>;
-
-  // Nueva funcionalidad paginada solo para activePallets
   activePalletsPaginated: PaginatedPalletsData;
   closedPalletsInPackingPaginated: PaginatedPalletsData;
   closedPalletsInTransitPaginated: PaginatedPalletsData;
   closedPalletsInBodegaPaginated: PaginatedPalletsData;
 }
 
-export const PalletContext = createContext<PalletContextType>(
-  {} as PalletContextType
-);
+export const PalletContext = createContext<PalletContextType>({} as PalletContextType);
 
-interface Props {
-  children: ReactNode;
-}
-
-export const PalletProvider: React.FC<Props> = ({ children }) => {
+export const PalletProvider = ({ children }: { children: ReactNode }) => {
   const [palletsInBodega, setPalletsInBodega] = useState<Pallet[]>([]);
-  // Función auxiliar para procesar pallets y asignarles el calibre
-  const processPalletsWithCalibre = useCallback(
-    (pallets: Pallet[]): Pallet[] => {
-      return pallets.map((pallet) => ({
-        ...pallet,
-        calibre: getCalibreFromCodigo(pallet.codigo),
-      }));
-    },
-    []
+
+  // Generic hook creator for paginated pallets
+  const createPaginatedPalletsHook = (estado?: PalletState, ubicacion?: Location) =>
+    usePagination<Pallet>({
+      fetchFunction: (params: GetPalletsParamsPaginated) =>
+        getPallets({ estado, ubicacion, ...params }),
+    });
+
+  // Create hooks for different pallet states/locations
+  const activePallets = createPaginatedPalletsHook('open');
+  const closedPackingPallets = createPaginatedPalletsHook('closed', 'PACKING');
+  const closedTransitPallets = createPaginatedPalletsHook('closed', 'TRANSITO');
+  const closedBodegaPallets = createPaginatedPalletsHook('closed', 'BODEGA');
+
+  // Helper to add calibre to pallets
+  const addCalibreToPallets = useCallback((pallets: Pallet[]): Pallet[] =>
+    pallets.map(pallet => ({
+      ...pallet,
+      calibre: getCalibreFromCodigo(pallet.codigo),
+    })), []
   );
 
-  // Hook de paginación específico para activePallets
-  const activePalletsPaginatedHook = usePagination<Pallet>({
-    fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({ estado: 'open', ...params });
-      return response;
-    },
-  });
-
-  const closedPalletsInPackingPaginatedHook = usePagination<Pallet>({
-    fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({
-        estado: 'closed',
-        ubicacion: 'PACKING',
-        ...params,
-      });
-      return response;
-    },
-  });
-
-  const closedPalletsInTransitPaginatedHook = usePagination<Pallet>({
-    fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({
-        estado: 'closed',
-        ubicacion: 'TRANSITO',
-        ...params,
-      });
-      return response;
-    },
-  });
-
-  const closedPalletsInBodegaPaginatedHook = usePagination<Pallet>({
-    fetchFunction: async (params: GetPalletsParamsPaginated) => {
-      const response = await getPalletsPaginated({
-        estado: 'closed',
-        ubicacion: 'BODEGA',
-        ...params,
-      });
-      return response;
-    },
+  // Helper to create paginated data with calibre
+  const createPaginatedData = (hook: ReturnType<typeof createPaginatedPalletsHook>): PaginatedPalletsData => ({
+    data: addCalibreToPallets(hook.data),
+    loading: hook.loading,
+    error: hook.error,
+    hasMore: hook.hasMore,
+    loadMore: hook.loadMore,
+    refresh: () => hook.refresh({}),
   });
 
   const movePalletFunction = useCallback(
-    async (codigo: string, ubicacion: 'TRANSITO' | 'BODEGA' | 'VENTA') => {
-      return await movePallet(codigo, ubicacion);
-    },
+    async (codigo: string, ubicacion: Exclude<Location, 'PACKING'>) =>
+      await movePallet(codigo, ubicacion),
     []
   );
 
@@ -104,66 +70,31 @@ export const PalletProvider: React.FC<Props> = ({ children }) => {
     try {
       const response = await getPallets({ ubicacion: 'BODEGA' });
       const pallets = extractDataFromResponse(response);
-      const palletsWithCalibre = processPalletsWithCalibre(pallets);
-      setPalletsInBodega(palletsWithCalibre);
+      setPalletsInBodega(addCalibreToPallets(pallets));
     } catch (error) {
-      console.error('PalletContext: Error fetching pallets in bodega:', error);
+      console.error('Error fetching pallets in bodega:', error);
       setPalletsInBodega([]);
     }
-  }, [processPalletsWithCalibre]);
+  }, [addCalibreToPallets]);
 
-  const value: PalletContextType = {
+  const value = useMemo<PalletContextType>(() => ({
     movePalletFunction,
     palletsInBodega,
     fetchPalletsInBodega,
+    activePalletsPaginated: createPaginatedData(activePallets),
+    closedPalletsInPackingPaginated: createPaginatedData(closedPackingPallets),
+    closedPalletsInTransitPaginated: createPaginatedData(closedTransitPallets),
+    closedPalletsInBodegaPaginated: createPaginatedData(closedBodegaPallets),
+  }), [
+    movePalletFunction,
+    palletsInBodega,
+    fetchPalletsInBodega,
+    activePallets,
+    closedPackingPallets,
+    closedTransitPallets,
+    closedBodegaPallets,
+    addCalibreToPallets,
+  ]);
 
-    // Nueva funcionalidad paginada solo para activePallets
-    activePalletsPaginated: {
-      data: activePalletsPaginatedHook.data.map((pallet) => ({
-        ...pallet,
-        calibre: getCalibreFromCodigo(pallet.codigo),
-      })),
-      loading: activePalletsPaginatedHook.loading,
-      error: activePalletsPaginatedHook.error,
-      hasMore: activePalletsPaginatedHook.hasMore,
-      loadMore: activePalletsPaginatedHook.loadMore,
-      refresh: () => activePalletsPaginatedHook.refresh({}),
-    },
-    closedPalletsInPackingPaginated: {
-      data: closedPalletsInPackingPaginatedHook.data.map((pallet) => ({
-        ...pallet,
-        calibre: getCalibreFromCodigo(pallet.codigo),
-      })),
-      loading: closedPalletsInPackingPaginatedHook.loading,
-      error: closedPalletsInPackingPaginatedHook.error,
-      hasMore: closedPalletsInPackingPaginatedHook.hasMore,
-      loadMore: closedPalletsInPackingPaginatedHook.loadMore,
-      refresh: () => closedPalletsInPackingPaginatedHook.refresh({}),
-    },
-    closedPalletsInTransitPaginated: {
-      data: closedPalletsInTransitPaginatedHook.data.map((pallet) => ({
-        ...pallet,
-        calibre: getCalibreFromCodigo(pallet.codigo),
-      })),
-      loading: closedPalletsInTransitPaginatedHook.loading,
-      error: closedPalletsInTransitPaginatedHook.error,
-      hasMore: closedPalletsInTransitPaginatedHook.hasMore,
-      loadMore: closedPalletsInTransitPaginatedHook.loadMore,
-      refresh: () => closedPalletsInTransitPaginatedHook.refresh({}),
-    },
-    closedPalletsInBodegaPaginated: {
-      data: closedPalletsInBodegaPaginatedHook.data.map((pallet) => ({
-        ...pallet,
-        calibre: getCalibreFromCodigo(pallet.codigo),
-      })),
-      loading: closedPalletsInBodegaPaginatedHook.loading,
-      error: closedPalletsInBodegaPaginatedHook.error,
-      hasMore: closedPalletsInBodegaPaginatedHook.hasMore,
-      loadMore: closedPalletsInBodegaPaginatedHook.loadMore,
-      refresh: () => closedPalletsInBodegaPaginatedHook.refresh({}),
-    },
-  };
-  return (
-    <PalletContext.Provider value={value}>{children}</PalletContext.Provider>
-  );
+  return <PalletContext.Provider value={value}>{children}</PalletContext.Provider>;
 };

@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { PaginationParams } from '@/types';
-import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
+import { extractDataFromResponse } from '@/utils';
 
-interface UsePaginationOptions {
+interface UsePaginationOptions<T> {
   fetchFunction: (params: any) => Promise<any>;
+  limit?: number;
 }
 
 interface UsePaginationReturn<T> {
@@ -15,74 +16,52 @@ interface UsePaginationReturn<T> {
   refresh: (filters?: Record<string, any>) => void;
 }
 
-const usePagination = <T>({
+export const usePagination = <T>({
   fetchFunction,
-}: UsePaginationOptions): UsePaginationReturn<T> => {
+  limit = 15,
+}: UsePaginationOptions<T>): UsePaginationReturn<T> => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextKey, setNextKey] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, any>>({});
 
   const fetchData = useCallback(
-    async (isLoadMore = false, filters = {}) => {
+    async (isLoadMore = false, newFilters = filters) => {
+      if (loading) return;
+      
       setLoading(true);
       setError(null);
 
-      const queryParams: PaginationParams & Record<string, any> = {
-        limit: 15,
-        ...filters,
+      const params: PaginationParams & Record<string, any> = {
+        limit,
+        ...newFilters,
         ...(isLoadMore && nextKey ? { lastEvaluatedKey: nextKey } : {}),
       };
 
-      // Eliminar parámetros vacíos
-      Object.keys(queryParams).forEach((key) => {
-        if (
-          queryParams[key] === '' ||
-          queryParams[key] === null ||
-          queryParams[key] === undefined
-        ) {
-          delete queryParams[key];
-        }
+      // Remove empty params
+      Object.keys(params).forEach(key => {
+        if (!params[key]) delete params[key];
       });
 
       try {
-        const rawResponse = await fetchFunction(queryParams);
+        const response = await fetchFunction(params);
+        
+        // Extract pagination metadata
+        const paginationData = response?.data || response;
+        const newNextKey = paginationData?.nextKey || null;
+        const items = extractDataFromResponse(response);
 
-        // Check if response has the expected structure
-        if (rawResponse) {
-          // Extract pagination metadata BEFORE processing with extractDataFromResponse
-          const paginationData = rawResponse.data || rawResponse;
-          const nextPageKey = paginationData.nextKey || null;
-          const hasMoreItems = !!nextPageKey;
-
-          // Extract the actual data array
-          const extractedItems = extractDataFromResponse(rawResponse);
-
-          if (extractedItems && Array.isArray(extractedItems)) {
-            setData((prev) => {
-              const newData = isLoadMore
-                ? [...prev, ...extractedItems]
-                : extractedItems;
-              return newData;
-            });
-            setNextKey(nextPageKey);
-            setHasMore(hasMoreItems);
-          } else {
-            console.warn('usePagination: No valid items found in response');
-            setData(isLoadMore ? data : []);
-            setNextKey(null);
-            setHasMore(false);
-          }
+        if (Array.isArray(items)) {
+          setData((prev: T[]) => isLoadMore ? [...prev, ...items] : items);
+          setNextKey(newNextKey);
+          setHasMore(!!newNextKey);
         } else {
-          throw new Error(rawResponse?.message || 'Error al obtener los datos');
+          throw new Error('Invalid response format');
         }
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Error desconocido';
-        setError(errorMessage);
-        console.error('Error de paginación:', err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
         if (!isLoadMore) {
           setData([]);
           setNextKey(null);
@@ -92,34 +71,22 @@ const usePagination = <T>({
         setLoading(false);
       }
     },
-    [nextKey, fetchFunction, data]
+    [nextKey, fetchFunction, filters, loading, limit]
   );
 
   const loadMore = useCallback(() => {
-    if (hasMore && !loading) {
-      fetchData(true, currentFilters);
-    }
-  }, [fetchData, hasMore, loading, currentFilters]);
+    if (hasMore && !loading) fetchData(true);
+  }, [fetchData, hasMore, loading]);
 
-  const refresh = useCallback(
-    (newFilters = {}) => {
-      setCurrentFilters(newFilters);
-      setData([]);
-      setNextKey(null);
-      setHasMore(true);
-      fetchData(false, newFilters);
-    },
-    [fetchData]
-  );
+  const refresh = useCallback((newFilters = {}) => {
+    setFilters(newFilters);
+    setData([]);
+    setNextKey(null);
+    setHasMore(true);
+    fetchData(false, newFilters);
+  }, [fetchData]);
 
-  return {
-    data,
-    loading,
-    error,
-    hasMore,
-    loadMore,
-    refresh,
-  };
+  return { data, loading, error, hasMore, loadMore, refresh };
 };
 
 export default usePagination;
