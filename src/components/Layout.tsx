@@ -1,6 +1,5 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
-import '@/styles/Layout.css';
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,10 +13,16 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="layout">
+    <div className="flex h-screen bg-macos-bg">
       <Sidebar onToggle={handleToggleSidebar} />
-      <main className={`main-content ${isCollapsed ? 'collapsed' : ''}`}>
-        {children}
+      <main className={`
+        flex-1 overflow-auto
+        transition-all duration-300 ease-out
+        ${isCollapsed ? 'ml-16' : 'ml-64'}
+      `}>
+        <div className="p-6">
+          {children}
+        </div>
       </main>
     </div>
   );
