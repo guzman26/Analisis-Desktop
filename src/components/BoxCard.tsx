@@ -32,6 +32,7 @@ const BoxCard = ({
   isCreatingPallet = false,
   isAssigningToCompatible = false,
 }: BoxCardProps) => {
+  console.log('box', box);
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't toggle selection if clicking on buttons
     if ((e.target as HTMLElement).closest('button')) {

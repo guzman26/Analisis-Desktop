@@ -7,6 +7,7 @@ import {
   BaseAction,
 } from './core/createContext';
 import { ActionType } from './core/apiUtils';
+import { extractDataFromResponse } from '@/utils';
 // Removing unused import
 // import { useDataFetch, useDataMutation } from './core/dataHooks';
 
@@ -126,9 +127,10 @@ const { Provider, useContext } = createContextFactory<
         // Get the boxes and ensure proper typing
         const boxes = await getUnassignedBoxesByLocation(location);
         // Make sure we're passing an array to fetchSuccess
-        const boxesArray = Array.isArray(boxes)
-          ? boxes
-          : [boxes].filter(Boolean);
+        const parsedBoxes = extractDataFromResponse(boxes);
+        const boxesArray = Array.isArray(parsedBoxes)
+          ? parsedBoxes
+          : [parsedBoxes].filter(Boolean);
         dispatch(boxesActions.fetchSuccess(boxesArray));
       } catch (error) {
         dispatch(boxesActions.fetchError(error as Error));

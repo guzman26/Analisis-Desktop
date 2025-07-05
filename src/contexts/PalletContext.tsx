@@ -203,8 +203,8 @@ const { Provider, useContext } = createContextFactory<
         // Then fetch the pallets with the specified filter
         // Assuming getPallets now takes pagination params
         const response = await getPallets({ limit: 10 });
-        const palletData = response.data || [];
-        dispatch(palletActions.fetchSuccess(palletData as unknown as Pallet));
+        const palletData = response.data?.items || [];
+        dispatch(palletActions.fetchSuccess(palletData as any));
       } catch (error) {
         dispatch(palletActions.fetchError(error as Error));
         throw error;
@@ -278,10 +278,8 @@ const { Provider, useContext } = createContextFactory<
       // Reload pallets with new filter
       getPallets({ limit: 10 })
         .then((response) => {
-          const palletData = response.data || [];
-          dispatch(
-            palletActions.fetchSuccess(palletData as unknown as Pallet)
-          );
+          const palletData = response.data?.items || [];
+          dispatch(palletActions.fetchSuccess(palletData as any));
         })
         .catch((error) => {
           dispatch(palletActions.fetchError(error as Error));
@@ -293,10 +291,8 @@ const { Provider, useContext } = createContextFactory<
       // Reload pallets with new page
       getPallets({ limit: 10 })
         .then((response) => {
-          const palletData = response.data || [];
-          dispatch(
-            palletActions.fetchSuccess(palletData as unknown as Pallet)
-          );
+          const palletData = response.data?.items || [];
+          dispatch(palletActions.fetchSuccess(palletData as any));
         })
         .catch((error) => {
           dispatch(palletActions.fetchError(error as Error));
