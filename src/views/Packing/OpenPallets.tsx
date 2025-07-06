@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import '@/styles/OpenPallets.css';
-import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { Card, Button, Input } from '@/components/design-system';
 import { Search, Plus, Filter, MoreVertical } from 'lucide-react';
 import '../../styles/designSystem.css';
+import { closePallet, movePallet } from '@/api/endpoints';
 
 const OpenPallets = () => {
   const [, palletAPI] = usePalletContext();
