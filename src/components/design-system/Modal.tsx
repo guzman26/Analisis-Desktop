@@ -27,8 +27,8 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const sizes = {
     small: 'w-80',
-    medium: 'w-96',
-    large: 'w-[28rem]',
+    medium: 'w-110',
+    large: 'w-[36rem]',
   };
 
   // Handle escape key

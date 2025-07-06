@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Customer } from '@/types';
+import { Card, Button } from '@/components/design-system';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
 
@@ -74,136 +76,145 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
   };
 
   return (
-    <div className="sale-summary-step">
-      <div className="summary-section">
-        <h2>Resumen de {saleType}</h2>
+    <Card className="sale-summary-step p-6" variant="elevated">
+      <div className="summary-section space-y-6">
+        <h2 className="text-xl font-medium mb-2">Resumen de {saleType}</h2>
 
         {/* Quick Summary Card */}
-        <div className="quick-summary-card">
-          <div className="summary-header">
+        <Card className="quick-summary-card p-4" variant="flat">
+          <div className="flex justify-between items-center">
             <div className="summary-main">
-              <h3>{saleType}</h3>
-              <p className="customer-name-large">{customer.name}</p>
+              <h3 className="text-lg font-medium text-blue-600">{saleType}</h3>
+              <p className="text-xl font-semibold">{customer.name}</p>
             </div>
-            <div className="summary-totals-compact">
-              <div className="total-compact">
-                <span className="number">{totalPallets}</span>
-                <span className="label">
+            <div className="flex gap-6">
+              <div className="text-center">
+                <span className="block text-2xl font-bold">{totalPallets}</span>
+                <span className="block text-sm text-gray-500">
                   Pallet{totalPallets !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div className="total-compact">
-                <span className="number">{totalBoxes}</span>
-                <span className="label">Caja{totalBoxes !== 1 ? 's' : ''}</span>
+              <div className="text-center">
+                <span className="block text-2xl font-bold">{totalBoxes}</span>
+                <span className="block text-sm text-gray-500">Caja{totalBoxes !== 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Customer Details - Collapsible */}
-        <div className="customer-details-compact">
-          <div className="section-header">
-            <h3>Cliente Seleccionado</h3>
+        <Card className="p-4" variant="flat">
+          <div className="mb-3">
+            <h3 className="text-lg font-medium">Cliente Seleccionado</h3>
           </div>
-          <div className="customer-info-grid">
-            <div className="info-item">
-              <span className="label">Nombre:</span>
-              <span className="value">{customer.name}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Nombre:</span>
+              <span className="font-medium">{customer.name}</span>
             </div>
-            <div className="info-item">
-              <span className="label">Email:</span>
-              <span className="value">{customer.email}</span>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Email:</span>
+              <span className="font-medium">{customer.email}</span>
             </div>
-            <div className="info-item">
-              <span className="label">Teléfono:</span>
-              <span className="value">{customer.phone}</span>
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-500">Teléfono:</span>
+              <span className="font-medium">{customer.phone}</span>
             </div>
             {customer.taxId && (
-              <div className="info-item">
-                <span className="label">RUT:</span>
-                <span className="value">{customer.taxId}</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">RUT:</span>
+                <span className="font-medium">{customer.taxId}</span>
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Pallets & Boxes Summary - Improved */}
-        <div className="pallets-summary-compact">
-          <div className="section-header">
-            <h3>Pallets y Cajas Seleccionadas</h3>
+        <Card className="p-4" variant="flat">
+          <div className="mb-4">
+            <h3 className="text-lg font-medium">Pallets y Cajas Seleccionadas</h3>
           </div>
 
-          <div className="pallets-list-compact">
+          <div className="space-y-3">
             {Object.entries(palletGroups).map(([palletCode, palletData]) => {
               const isExpanded = expandedPallets.has(palletCode);
               const previewBoxes = formatBoxCodesPreview(palletData.boxes, 6);
               const hasMoreBoxes = palletData.boxes.length > 6;
 
               return (
-                <div key={palletCode} className="pallet-item-compact">
-                  <div className="pallet-header-compact">
-                    <div className="pallet-main-info">
-                      <h4 className="pallet-code">Pallet {palletCode}</h4>
-                      <div className="pallet-meta-compact">
-                        <span className="calibre-tag">
+                <Card key={palletCode} className="mb-2 border border-gray-200" variant="flat">
+                  <div className="p-3 flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">Pallet {palletCode}</h4>
+                      <div className="flex gap-3 mt-1">
+                        <span className="text-xs py-1 px-2 bg-blue-50 text-blue-700 rounded">
                           Calibre: {palletData.calibre}
                         </span>
-                        <span className="box-count-tag">
+                        <span className="text-xs py-1 px-2 bg-gray-50 text-gray-700 rounded">
                           {palletData.boxes.length} cajas
                         </span>
                       </div>
                     </div>
                     {hasMoreBoxes && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="secondary"
+                        size="small"
                         onClick={() => togglePalletExpansion(palletCode)}
-                        className="expand-button"
+                        className="text-xs"
                       >
-                        {isExpanded ? '▼ Contraer' : '▶ Ver todas'}
-                      </button>
+                        {isExpanded ? (
+                          <>
+                            <ChevronDown size={14} /> Contraer
+                          </>
+                        ) : (
+                          <>
+                            <ChevronRight size={14} /> Ver todas
+                          </>
+                        )}
+                      </Button>
                     )}
                   </div>
 
-                  <div className="boxes-preview">
-                    <div className="boxes-grid-compact">
+                  <div className="p-3 pt-0 border-t border-gray-100">
+                    <div className="flex flex-wrap gap-2">
                       {(isExpanded ? palletData.boxes : previewBoxes).map(
                         (boxId) => (
-                          <span key={boxId} className="box-code-compact">
+                          <span key={boxId} className="py-1 px-2 text-xs bg-gray-100 rounded-md">
                             {boxId}
                           </span>
                         )
                       )}
                       {!isExpanded && hasMoreBoxes && (
-                        <span className="more-boxes-indicator">
+                        <span className="py-1 px-2 text-xs bg-blue-50 text-blue-600 rounded-md">
                           +{palletData.boxes.length - previewBoxes.length} más
                         </span>
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Notes Section */}
-        <div className="notes-section">
-          <h3>Notas Adicionales</h3>
+        <Card className="p-4" variant="flat">
+          <h3 className="text-lg font-medium mb-3">Notas Adicionales</h3>
           <textarea
             value={notes}
             onChange={handleNotesChange}
             placeholder="Agregar notas sobre la operación (opcional)..."
-            className="notes-textarea"
+            className="w-full p-2 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             rows={3}
             maxLength={500}
           />
-          <div className="notes-counter">{notes.length}/500 caracteres</div>
-        </div>
+          <div className="mt-1 text-xs text-right text-gray-500">{notes.length}/500 caracteres</div>
+        </Card>
 
         {/* Confirmation */}
-        <div className="confirmation-section">
-          <div className="confirmation-summary">
-            <p className="confirmation-text">
+        <Card className="p-4 bg-blue-50" variant="flat">
+          <div className="mb-4">
+            <p className="text-center text-lg">
               ¿Confirma que desea procesar esta {saleType.toLowerCase()} de{' '}
               <strong>
                 {totalPallets} pallet{totalPallets !== 1 ? 's' : ''}
@@ -213,19 +224,19 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
             </p>
           </div>
 
-          <div className="confirmation-actions">
-            <button
+          <div className="flex justify-center">
+            <Button
               type="button"
               onClick={handleConfirm}
-              className="btn btn-primary btn-confirm"
+              variant="primary"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Procesando...' : `Confirmar ${saleType}`}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
-    </div>
+    </Card>
   );
 };
 

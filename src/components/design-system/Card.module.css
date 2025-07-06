@@ -78,7 +78,9 @@
 /* Selected state */
 .selected {
   border-color: var(--macos-blue);
-  box-shadow: 0 0 0 1px var(--macos-blue), var(--macos-shadow-medium);
+  box-shadow:
+    0 0 0 1px var(--macos-blue),
+    var(--macos-shadow-medium);
 }
 
 /* Dark Mode Adjustments */

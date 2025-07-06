@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Customer } from '@/types';
 import { useCustomerContext } from '@/contexts/CustomerContext';
-import { Input, Button } from '@/components/design-system';
+import { Input, Button, Card } from '@/components/design-system';
 import { Modal } from '@/components/design-system';
+import { Search } from 'lucide-react';
 
 interface CustomerSelectionStepProps {
   selectedCustomer: Customer | null;
@@ -104,72 +105,100 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   }
 
   return (
-    <div className="customer-selection-step">
-      <h2>Seleccionar Cliente</h2>
+    <Card className="customer-selection-step p-6" variant="elevated">
+      <h2 className="text-xl font-medium mb-4">Seleccionar Cliente</h2>
 
-      <div className="search-section">
-        <label htmlFor="customer-search">Buscar Cliente:</label>
-        <Input
-          type="search"
-          id="customer-search"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Buscar por nombre, email o teléfono..."
-          className="search-input"
-        />
+      <div className="search-section mb-4">
+        <label htmlFor="customer-search" className="block text-sm font-medium mb-2">Buscar Cliente:</label>
+        <div className="relative">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search size={16} className="text-gray-400" />
+          </span>
+          <Input
+            type="search"
+            id="customer-search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nombre, email o teléfono..."
+            className="pl-10 w-full"
+          />
+        </div>
       </div>
 
-      <div className="customer-list-section">
-        <label htmlFor="customer-select">Seleccionar Cliente:</label>
-        <select
-          id="customer-select"
-          value={selectedCustomer?.customerId || ''}
-          onChange={(e: any) => handleCustomerSelect(e.target.value)}
-          className="customer-select"
-        >
-          <option value="">-- Seleccionar un cliente --</option>
-          {filteredCustomers.map((customer: any) => (
-            <option key={customer.customerId} value={customer.customerId}>
-              {customer.name} - {customer.email} - {customer.phone}
-            </option>
-          ))}
-        </select>
+      <div className="customer-list-section mb-6">
+        <label htmlFor="customer-select" className="block text-sm font-medium mb-2">Seleccionar Cliente:</label>
+        <Card className="max-h-60 overflow-y-auto">
+          <div className="py-2">
+            {filteredCustomers.length === 0 ? (
+              <p className="text-center py-4 text-gray-500">No se encontraron clientes</p>
+            ) : (
+              filteredCustomers.map((customer: any) => (
+                <div 
+                  key={customer.customerId}
+                  onClick={() => handleCustomerSelect(customer.customerId)}
+                  className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${selectedCustomer?.customerId === customer.customerId ? 'bg-blue-50' : ''}`}
+                >
+                  <div className="font-medium">{customer.name}</div>
+                  <div className="text-sm text-gray-500 flex items-center gap-2">
+                    <span>{customer.email}</span> 
+                    {customer.phone && <span>• {customer.phone}</span>}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
       </div>
 
       {selectedCustomer && (
-        <div>
-          <h3>Cliente Seleccionado:</h3>
-          <div className="customer-details">
-            <p>
-              <strong>Nombre:</strong> {selectedCustomer.name}
-            </p>
-            <p>
-              <strong>Email:</strong> {selectedCustomer.email}
-            </p>
-            <p>
-              <strong>Teléfono:</strong> {selectedCustomer.phone}
-            </p>
-            {selectedCustomer.address && (
-              <p>
-                <strong>Dirección:</strong> {selectedCustomer.address}
-              </p>
-            )}
-            {selectedCustomer.taxId && (
-              <p>
-                <strong>RUT:</strong> {selectedCustomer.taxId}
-              </p>
-            )}
-            {selectedCustomer.contactPerson && (
-              <p>
-                <strong>Persona de Contacto:</strong>{' '}
-                {selectedCustomer.contactPerson}
-              </p>
-            )}
+        <Card className="selected-customer-details mb-6" variant="flat">
+          <div className="p-4">
+            <h3 className="font-medium text-lg mb-3">Cliente Seleccionado</h3>
+            <div className="customer-details space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-sm text-gray-500">Nombre</p>
+                  <p className="font-medium">{selectedCustomer.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Email</p>
+                  <p className="font-medium">{selectedCustomer.email}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2">
+                {selectedCustomer.phone && (
+                  <div>
+                    <p className="text-sm text-gray-500">Teléfono</p>
+                    <p className="font-medium">{selectedCustomer.phone}</p>
+                  </div>
+                )}
+                {selectedCustomer.taxId && (
+                  <div>
+                    <p className="text-sm text-gray-500">RUT</p>
+                    <p className="font-medium">{selectedCustomer.taxId}</p>
+                  </div>
+                )}
+              </div>
+              
+              {selectedCustomer.address && (
+                <div>
+                  <p className="text-sm text-gray-500">Dirección</p>
+                  <p className="font-medium">{selectedCustomer.address}</p>
+                </div>
+              )}
+              {selectedCustomer.contactPerson && (
+                <div>
+                  <p className="text-sm text-gray-500">Persona de Contacto</p>
+                  <p className="font-medium">{selectedCustomer.contactPerson}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
-      <div className="add-customer-section">
+      <div className="add-customer-section flex justify-end">
         <Button
           type="button"
           onClick={() => setShowAddCustomerModal(true)}
@@ -181,74 +210,80 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
       {showAddCustomerModal && (
         <Modal isOpen={showAddCustomerModal} onClose={() => setShowAddCustomerModal(false)}>
-          <div className="modal">
-            <div className="modal-header">
-              <h3>Agregar Nuevo Cliente</h3>
+          <Card variant="elevated" className="p-0">
+            <div className="modal-header flex items-center justify-between p-4 border-b border-gray-100">
+              <h3 className="text-lg font-medium">Agregar Nuevo Cliente</h3>
               <Button
                 type="button"
                 onClick={() => setShowAddCustomerModal(false)}
-                variant="secondary"
+                variant="ghost"
+                className="p-1 h-8 w-8"
               >
                 ×
               </Button>
             </div>
 
-            <form onSubmit={handleAddCustomer} className="customer-form">
+            <form onSubmit={handleAddCustomer} className="customer-form p-4 space-y-4">
               <div className="form-group">
-                <label htmlFor="name">Nombre *</label>
+                <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre *</label>
                 <Input
                   type="text"
                   id="name"
                   value={newCustomerData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Email *</label>
+                <label htmlFor="email" className="block text-sm font-medium mb-1">Email *</label>
                 <Input
                   type="email"
                   id="email"
                   value={newCustomerData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone">Teléfono *</label>
+                <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono *</label>
                 <Input
                   type="tel"
                   id="phone"
                   value={newCustomerData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   required
+                  className="w-full"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="address">Dirección</label>
+                <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
                 <Input
                   type="text"
                   id="address"
                   value={newCustomerData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
+                  className="w-full"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="taxId">RUT</label>
+                <label htmlFor="taxId" className="block text-sm font-medium mb-1">RUT</label>
                 <Input
                   type="text"
                   id="taxId"
                   value={newCustomerData.taxId}
                   onChange={(e) => handleInputChange('taxId', e.target.value)}
+                  className="w-full"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="contactPerson">Persona de Contacto</label>
+                <label htmlFor="contactPerson" className="block text-sm font-medium mb-1">Persona de Contacto</label>
                 <Input
                   type="text"
                   id="contactPerson"
@@ -256,30 +291,31 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
                   onChange={(e) =>
                     handleInputChange('contactPerson', e.target.value)
                   }
+                  className="w-full"
                 />
               </div>
 
-              <div className="form-actions">
+              <div className="form-actions flex justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
                 <Button
                   type="button"
                   onClick={() => setShowAddCustomerModal(false)}
-                  className="cancel-btn"
+                  variant="secondary"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isCreatingCustomer}
-                  className="submit-btn"
+                  variant="primary"
                 >
                   {isCreatingCustomer ? 'Creando...' : 'Crear Cliente'}
                 </Button>
               </div>
             </form>
-          </div>
+          </Card>
         </Modal>
       )}
-    </div>
+    </Card>
   );
 };
 

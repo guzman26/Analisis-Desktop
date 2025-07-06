@@ -23,7 +23,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`macos-window ${fullscreen ? 'macos-window-fullscreen' : ''} ${className}`}>
+    <div
+      className={`macos-window ${fullscreen ? 'macos-window-fullscreen' : ''} ${className}`}
+    >
       {/* macOS Title Bar */}
       <header className="macos-titlebar">
         {showTrafficLights && (
@@ -93,9 +95,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       </header>
 
       {/* Content Area */}
-      <main className="macos-content macos-animate-fade-in">
-        {children}
-      </main>
+      <main className="macos-content macos-animate-fade-in">{children}</main>
     </div>
   );
 };

@@ -60,11 +60,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       ...props,
     };
 
-    return (
-      <div {...cardProps}>
-        {children}
-      </div>
-    );
+    return <div {...cardProps}>{children}</div>;
   }
 );
 

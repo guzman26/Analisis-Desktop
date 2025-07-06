@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { CustomerFormData } from '@/types';
-import '@/styles/CreateCustomerForm.css';
+import { Input, Button, Card } from '@/components/design-system';
 import { createCustomer } from '@/api/endpoints';
 
 interface CreateCustomerFormProps {
@@ -117,75 +117,75 @@ const CreateCustomerForm = ({
   };
 
   return (
-    <div className="customer-form-container">
-      <div className="customer-form-header">
-        <h2>Crear Nuevo Cliente</h2>
-        <p>Complete los datos del cliente para crear un nuevo registro</p>
+    <Card className="customer-form-container p-6" variant="elevated">
+      <div className="customer-form-header mb-6">
+        <h2 className="text-xl font-medium mb-2">Crear Nuevo Cliente</h2>
+        <p className="text-sm text-gray-500">Complete los datos del cliente para crear un nuevo registro</p>
       </div>
 
-      {error && <div className="alert alert-error">{error.message}</div>}
+      {error && <div className="p-3 mb-4 bg-red-50 border border-red-100 text-red-700 rounded">{error.message}</div>}
 
-      <form onSubmit={handleSubmit} className="customer-form">
-        <div className="form-section">
-          <h3>Información Básica</h3>
+      <form onSubmit={handleSubmit} className="customer-form space-y-6">
+        <Card className="form-section p-4" variant="flat">
+          <h3 className="font-medium mb-4">Información Básica</h3>
 
-          <div className="form-row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="form-group">
-              <label htmlFor="name">Nombre *</label>
-              <input
+              <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre *</label>
+              <Input
                 type="text"
                 id="name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className={formErrors.name ? 'error' : ''}
+                className={formErrors.name ? 'border-red-300' : ''}
                 placeholder="Nombre completo del cliente"
                 required
               />
               {formErrors.name && (
-                <span className="error-message">{formErrors.name}</span>
+                <span className="text-sm text-red-600 mt-1">{formErrors.name}</span>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email *</label>
-              <input
+              <label htmlFor="email" className="block text-sm font-medium mb-1">Email *</label>
+              <Input
                 type="email"
                 id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className={formErrors.email ? 'error' : ''}
+                className={formErrors.email ? 'border-red-300' : ''}
                 placeholder="correo@ejemplo.com"
                 required
               />
               {formErrors.email && (
-                <span className="error-message">{formErrors.email}</span>
+                <span className="text-sm text-red-600 mt-1">{formErrors.email}</span>
               )}
             </div>
           </div>
 
-          <div className="form-row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
-              <label htmlFor="phone">Teléfono *</label>
-              <input
+              <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono *</label>
+              <Input
                 type="tel"
                 id="phone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className={formErrors.phone ? 'error' : ''}
+                className={formErrors.phone ? 'border-red-300' : ''}
                 placeholder="+1234567890"
                 required
               />
               {formErrors.phone && (
-                <span className="error-message">{formErrors.phone}</span>
+                <span className="text-sm text-red-600 mt-1">{formErrors.phone}</span>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="contactPerson">Persona de Contacto</label>
-              <input
+              <label htmlFor="contactPerson" className="block text-sm font-medium mb-1">Persona de Contacto</label>
+              <Input
                 type="text"
                 id="contactPerson"
                 name="contactPerson"
@@ -195,14 +195,14 @@ const CreateCustomerForm = ({
               />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="form-section">
-          <h3>Información Adicional</h3>
+        <Card className="form-section p-4" variant="flat">
+          <h3 className="font-medium mb-4">Información Adicional</h3>
 
-          <div className="form-row">
-            <div className="form-group full-width">
-              <label htmlFor="address">Dirección</label>
+          <div className="mb-4">
+            <div className="form-group w-full">
+              <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
               <textarea
                 id="address"
                 name="address"
@@ -210,44 +210,46 @@ const CreateCustomerForm = ({
                 onChange={handleInputChange}
                 placeholder="Dirección completa del cliente"
                 rows={3}
+                className="w-full resize-none rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
               />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="taxId">ID Fiscal</label>
-              <input
+              <label htmlFor="taxId" className="block text-sm font-medium mb-1">ID Fiscal</label>
+              <Input
                 type="text"
                 id="taxId"
                 name="taxId"
                 value={formData.taxId}
                 onChange={handleInputChange}
                 placeholder="Número de identificación fiscal"
+                className="w-full md:w-1/2"
               />
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="form-actions">
-          <button
+        <div className="form-actions flex justify-end gap-3 pt-4">
+          <Button
             type="button"
             onClick={handleCancel}
-            className="btn btn-secondary"
+            variant="secondary"
             disabled={isSubmitting || loading === 'loading'}
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="btn btn-primary"
+            variant="primary"
             disabled={isSubmitting || loading === 'loading'}
           >
             {isSubmitting || loading === 'loading' ? 'Creando...' : 'Crear Cliente'}
-          </button>
+          </Button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 };
 
