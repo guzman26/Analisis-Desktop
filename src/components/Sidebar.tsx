@@ -1,11 +1,30 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import '@/styles/Sidebar.css';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  ChevronDown,
+  LayoutDashboard,
+  Package,
+  Warehouse,
+  ShoppingCart,
+  Settings,
+  ClipboardList,
+  CheckSquare,
+  Box,
+  Tag,
+  FileText,
+  UserPlus,
+  Pin,
+  CircleCheck,
+  Search
+} from 'lucide-react';
+import '../styles/designSystem.css';
 
 interface SidebarItem {
   path?: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   children?: SidebarItem[];
 }
 
@@ -17,79 +36,79 @@ const sidebarItems: SidebarItem[] = [
   {
     path: '/',
     label: 'Dashboard',
-    icon: '📊',
+    icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
     label: 'Packing',
-    icon: '📦',
+    icon: <Package className="w-5 h-5" />,
     children: [
       {
         path: '/packing/openPallets',
         label: 'Pallets Abiertos',
-        icon: '📋',
+        icon: <ClipboardList className="w-4 h-4" />,
       },
       {
         path: '/packing/closedPallets',
         label: 'Pallets Cerrados',
-        icon: '✅',
+        icon: <CheckSquare className="w-4 h-4" />,
       },
       {
         path: '/packing/unassignedBoxes',
         label: 'Cajas sin Pallet',
-        icon: '📦',
+        icon: <Box className="w-4 h-4" />,
       },
     ],
   },
   {
     label: 'Bodega',
-    icon: '🏬',
+    icon: <Warehouse className="w-5 h-5" />,
     children: [
       {
         path: '/bodega/pallets',
         label: 'Pallets en Bodega',
-        icon: '🏷️',
+        icon: <Tag className="w-4 h-4" />,
       },
       {
         path: '/bodega/unassignedBoxes',
         label: 'Cajas sin Pallet',
-        icon: '📦',
+        icon: <Box className="w-4 h-4" />,
       },
     ],
   },
   {
     label: 'Ventas',
-    icon: '💰',
+    icon: <ShoppingCart className="w-5 h-5" />,
     children: [
       {
         path: '/sales/new',
         label: 'Nueva Venta',
-        icon: '📝',
+        icon: <FileText className="w-4 h-4" />,
       },
       {
         path: '/sales/createCustomer',
         label: 'Crear Cliente',
-        icon: '📝',
+        icon: <UserPlus className="w-4 h-4" />,
       },
       {
         path: '/sales/orders',
         label: 'Preventas',
-        icon: '📌',
+        icon: <Pin className="w-4 h-4" />,
       },
       {
         path: '/sales/confirmed',
         label: 'Ventas Confirmadas',
-        icon: '✅',
+        icon: <CircleCheck className="w-4 h-4" />,
       },
     ],
   },
   {
     label: 'Administracion',
-    icon: '🔧',
+    icon: <Settings className="w-5 h-5" />,
     children: [
       {
         path: '/admin/issues',
         label: 'Problemas',
-        icon: '🔍',
+        icon: <Search className="w-4 h-4" />,
       },
     ],
   },
@@ -97,6 +116,12 @@ const sidebarItems: SidebarItem[] = [
 
 const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('macos-dark');
+    }
+    return false;
+  });
   const [expandedItems, setExpandedItems] = useState<string[]>(['']);
 
   const toggleSidebar = () => {
@@ -113,6 +138,17 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
     );
   };
 
+  const toggleDarkMode = () => {
+    const root = document.documentElement;
+    if (root.classList.contains('macos-dark')) {
+      root.classList.remove('macos-dark');
+      setIsDarkMode(false);
+    } else {
+      root.classList.add('macos-dark');
+      setIsDarkMode(true);
+    }
+  };
+
   useEffect(() => {
     onToggle?.(isCollapsed);
   }, []);
@@ -123,24 +159,52 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
 
     if (hasChildren) {
       return (
-        <li key={item.label} className="sidebar-menu-item">
+        <li key={item.label} style={{ marginBottom: 'var(--macos-space-1)' }}>
           <button
-            className="sidebar-link subfolder-toggle"
+            className="macos-interactive"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: isCollapsed ? 'center' : 'space-between',
+              gap: 'var(--macos-space-3)',
+              padding: 'var(--macos-space-3)',
+              color: 'var(--macos-text-primary)',
+              borderRadius: 'var(--macos-radius-medium)',
+              transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+            }}
             onClick={() => toggleSubfolder(item.label)}
             title={isCollapsed ? item.label : ''}
           >
-            <span className="sidebar-icon">{item.icon}</span>
-            <span className={`sidebar-label ${isCollapsed ? 'hidden' : ''}`}>
-              {item.label}
-            </span>
-            <span
-              className={`expand-icon ${isCollapsed ? 'hidden' : ''} ${isExpanded ? 'expanded' : ''}`}
-            >
-              ▼
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+              <span style={{ color: 'var(--macos-text-secondary)' }}>{item.icon}</span>
+              {!isCollapsed && (
+                <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+                  {item.label}
+                </span>
+              )}
+            </div>
+            {!isCollapsed && (
+              <div
+                style={{
+                  transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                  transition: 'transform var(--macos-duration-fast) var(--macos-ease-out)',
+                }}
+              >
+                <ChevronDown style={{ width: '16px', height: '16px', color: 'var(--macos-text-secondary)' }} />
+              </div>
+            )}
           </button>
           {isExpanded && !isCollapsed && (
-            <ul className="sidebar-submenu">
+            <ul
+              className="macos-animate-slide-in"
+              style={{
+                marginLeft: 'var(--macos-space-3)',
+                marginTop: 'var(--macos-space-1)',
+                listStyle: 'none',
+                padding: 0,
+              }}
+            >
               {item.children?.map((child) => renderMenuItem(child, depth + 1))}
             </ul>
           )}
@@ -149,49 +213,127 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
     }
 
     return (
-      <li
-        key={item.path}
-        className={`sidebar-menu-item ${depth > 0 ? 'submenu-item' : ''}`}
-      >
+      <li key={item.path} style={{ marginBottom: 'var(--macos-space-1)' }}>
         <NavLink
           to={item.path!}
-          className={({ isActive }) =>
-            `sidebar-link ${isActive ? 'active' : ''} ${depth > 0 ? 'submenu-link' : ''}`
-          }
+          className={({ isActive }) => {
+            return `macos-interactive ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
+          }}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--macos-space-3)',
+            padding: 'var(--macos-space-3)',
+            borderRadius: 'var(--macos-radius-medium)',
+            textDecoration: 'none',
+            transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            paddingLeft: depth > 0 ? 'calc(var(--macos-space-8) + var(--macos-space-3))' : 'var(--macos-space-3)',
+            backgroundColor: isActive ? 'var(--macos-blue)' : 'transparent',
+            color: isActive ? 'var(--macos-text-on-color)' : 'var(--macos-text-primary)',
+          })}
           title={isCollapsed ? item.label : ''}
         >
-          <span className="sidebar-icon">{item.icon}</span>
-          <span className={`sidebar-label ${isCollapsed ? 'hidden' : ''}`}>
-            {item.label}
+          <span style={{ flexShrink: 0 }}>
+            {item.icon}
           </span>
+          {!isCollapsed && (
+            <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+              {item.label}
+            </span>
+          )}
         </NavLink>
       </li>
     );
   };
 
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <div className="sidebar-header">
-        <h2 className={`sidebar-title ${isCollapsed ? 'hidden' : ''}`}>
-          Análisis Desktop
-        </h2>
+    <aside
+      style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        height: '100%',
+        width: isCollapsed ? 'var(--macos-width-sidebar-collapsed)' : 'var(--macos-width-sidebar)',
+        background: 'var(--macos-sidebar-bg)',
+        backdropFilter: 'var(--macos-backdrop-blur-light)',
+        WebkitBackdropFilter: 'var(--macos-backdrop-blur-light)',
+        borderRight: '1px solid var(--macos-border-primary)',
+        zIndex: 'var(--macos-z-fixed)',
+        transition: 'width var(--macos-duration-normal) var(--macos-ease-out)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--macos-space-5)',
+          borderBottom: '1px solid var(--macos-border-primary)',
+          minHeight: 'var(--macos-height-titlebar)',
+        }}
+      >
+        {!isCollapsed && (
+          <h2 className="macos-text-headline" style={{ margin: 0, color: 'var(--macos-text-primary)' }}>
+            Análisis Desktop
+          </h2>
+        )}
         <button
-          className="sidebar-toggle"
+          className="macos-focusable macos-interactive"
+          style={{
+            padding: 'var(--macos-space-2)',
+            borderRadius: 'var(--macos-radius-medium)',
+            color: 'var(--macos-text-secondary)',
+            margin: isCollapsed ? '0 auto' : '0',
+          }}
           onClick={toggleSidebar}
           aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
         >
-          <span className={`toggle-icon ${isCollapsed ? 'collapsed' : ''}`}>
-            {isCollapsed ? '➤' : '◀'}
-          </span>
+          {isCollapsed ? (
+            <ChevronRight style={{ width: '20px', height: '20px' }} />
+          ) : (
+            <ChevronLeft style={{ width: '20px', height: '20px' }} />
+          )}
         </button>
       </div>
 
-      <nav className="sidebar-nav">
-        <ul className="sidebar-menu">
+      {/* Navigation */}
+      <nav
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: 'var(--macos-space-3)',
+        }}
+      >
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {sidebarItems.map((item) => renderMenuItem(item))}
         </ul>
       </nav>
-    </div>
+
+      {/* Dark mode toggle button */}
+      <div
+        style={{
+          padding: 'var(--macos-space-3)',
+          borderTop: '1px solid var(--macos-border-primary)',
+          textAlign: 'center',
+        }}
+      >
+        <button
+          className="macos-focusable macos-interactive"
+          style={{
+            padding: 'var(--macos-space-2)',
+            borderRadius: 'var(--macos-radius-medium)',
+            color: 'var(--macos-text-secondary)',
+          }}
+          onClick={toggleDarkMode}
+        >
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
+    </aside>
   );
 };
 

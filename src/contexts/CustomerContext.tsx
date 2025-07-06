@@ -8,6 +8,7 @@ import {
   updateCustomer,
   deleteCustomer,
 } from '@/api/endpoints';
+import { extractDataFromResponse } from '@/utils';
 import {
   createContextFactory,
   BaseState,
@@ -167,7 +168,12 @@ const { Provider, useContext } = createContextFactory<
       dispatch(customerActions.fetchStart());
       try {
         const response = await getCustomers();
-        dispatch(customerActions.fetchSuccess(response as Customer[]));
+        // Ensure we always pass an array of customers, regardless of response shape
+        const responseData = Array.isArray(response)
+          ? response
+          : extractDataFromResponse(response);
+
+        dispatch(customerActions.fetchSuccess(responseData as Customer[]));
       } catch (error) {
         dispatch(customerActions.fetchError(error as Error));
         throw error;

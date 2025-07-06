@@ -1,228 +1,197 @@
-import { useEffect, useState } from 'react';
 import { Box } from '@/types';
+import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
-import '@/styles/BoxDetailModal.css';
-import { unassignBox } from '@/api/endpoints';
+import { Modal, Button, Card } from '@/components/design-system';
+import { 
+  Calendar, 
+  Package, 
+  MapPin, 
+  Barcode, 
+  User,
+  Layers,
+  Hash,
+  Clock,
+  CalendarDays,
+  FileText
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface BoxDetailModalProps {
-  box: Box | null;
   isOpen: boolean;
   onClose: () => void;
-  onMoveBox?: (codigo: string, location: string) => void;
-  onUnassignBox?: (codigo: string) => void;
+  box: Box | null;
 }
 
-const BoxDetailModal = ({ box, isOpen, onClose }: BoxDetailModalProps) => {
-  const [showUnassignBoxModal, setShowUnassignBoxModal] = useState(false);
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
+const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
+  if (!box) return null;
 
-  if (!isOpen || !box) return null;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const locationColors = {
+    packing: 'bg-blue-100 text-blue-700 border-blue-200',
+    bodega: 'bg-green-100 text-green-700 border-green-200',
+    venta: 'bg-purple-100 text-purple-700 border-purple-200',
+    transito: 'bg-orange-100 text-orange-700 border-orange-200',
+    default: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
-  const getStatusColor = (estado: string | undefined) => {
-    if (!estado) return 'info';
+  const locationColor = locationColors[box.ubicacion.toLowerCase() as keyof typeof locationColors] || locationColors.default;
 
-    switch (estado.toLowerCase()) {
-      case 'activo':
-      case 'active':
-        return 'success';
-      case 'inactivo':
-      case 'inactive':
-        return 'error';
-      default:
-        return 'info';
-    }
+  const statusColors = {
+    activo: 'bg-green-100 text-green-700 border-green-200',
+    inactivo: 'bg-red-100 text-red-700 border-red-200',
+    default: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
-  const moveLocations = ['PACKING', 'TRANSITO', 'BODEGA', 'VENTA'].filter(
-    (loc) => loc !== box?.ubicacion
+  const statusColor = statusColors[box.estado.toLowerCase() as keyof typeof statusColors] || statusColors.default;
+
+  const InfoRow = ({ icon, label, value, className }: { 
+    icon: React.ReactNode; 
+    label: string; 
+    value: React.ReactNode;
+    className?: string;
+  }) => (
+    <div className={clsx("flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors", className)}>
+      <div className="text-macos-text-secondary mt-0.5">{icon}</div>
+      <div className="flex-1">
+        <p className="text-sm text-macos-text-secondary">{label}</p>
+        <p className="text-base font-medium text-macos-text">{value}</p>
+      </div>
+    </div>
   );
 
-  const handleUnassignBox = async (codigo: string) => {
-    await unassignBox(codigo);
-    onClose();
-  };
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="modal-header">
-          <div>
-            <h2 className="modal-title">Caja {box.codigo}</h2>
-            <div className="modal-badges">
-              <span className={`status-badge ${getStatusColor(box.estado)}`}>
-                {box.estado?.toUpperCase()}
-              </span>
-              <span
-                className={`location-badge ${box.ubicacion?.toLowerCase()}`}
-              >
-                {box.ubicacion}
-              </span>
-            </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Detalles de Caja ${box.codigo}`}
+      size="large"
+      showTrafficLights={true}
+    >
+      <div className="space-y-6">
+        {/* Status Badges */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex gap-2">
+            <span className={clsx(
+              'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+              locationColor
+            )}>
+              <MapPin className="w-4 h-4" />
+              {box.ubicacion}
+            </span>
+            <span className={clsx(
+              'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+              statusColor
+            )}>
+              {box.estado}
+            </span>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
+          {box.palletId && (
+            <span className="text-sm text-macos-text-secondary">
+              Pallet: <span className="font-medium text-macos-accent">{box.palletId}</span>
+            </span>
+          )}
         </div>
 
-        {/* Content */}
-        <div className="modal-body">
-          {/* Basic Info */}
-          <div className="modal-section">
-            <h3 className="section-title">Información General</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Código</span>
-                <span className="info-value">{box.codigo}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Empacadora</span>
-                <span className="info-value">{box.empacadora}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Calibre</span>
-                <span className="info-value calibre-text">
-                  {formatCalibreName(
-                    box.calibre?.toString().padStart(2, '0') || '00'
-                  )}
-                </span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Formato Caja</span>
-                <span className="info-value">{box.formato_caja}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Operario</span>
-                <span className="info-value">{box.operario}</span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Ubicación</span>
-                <span
-                  className={`info-value location-text ${box.ubicacion?.toLowerCase()}`}
-                >
-                  {box.ubicacion}
-                </span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Número de Caja</span>
-                <span className="info-value">{box.contador}</span>
-              </div>
+        {/* Main Information */}
+        <Card variant="flat" padding="none">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
+            <div className="space-y-1">
+              <InfoRow
+                icon={<Barcode className="w-5 h-5" />}
+                label="Código"
+                value={box.codigo}
+              />
+              <InfoRow
+                icon={<Calendar className="w-5 h-5" />}
+                label="Fecha de Registro"
+                value={formatDate(box.fecha_registro)}
+              />
+              <InfoRow
+                icon={<User className="w-5 h-5" />}
+                label="Empacadora"
+                value={box.empacadora}
+              />
+              <InfoRow
+                icon={<User className="w-5 h-5" />}
+                label="Operario"
+                value={box.operario}
+              />
+            </div>
+            <div className="space-y-1">
+              <InfoRow
+                icon={<Package className="w-5 h-5" />}
+                label="Calibre"
+                value={formatCalibreName(box.calibre.toString())}
+              />
+              <InfoRow
+                icon={<Layers className="w-5 h-5" />}
+                label="Formato de Caja"
+                value={box.formato_caja}
+              />
+              <InfoRow
+                icon={<Hash className="w-5 h-5" />}
+                label="Contador"
+                value={box.contador}
+              />
+              <InfoRow
+                icon={<Hash className="w-5 h-5" />}
+                label="Cantidad"
+                value={box.quantity}
+              />
             </div>
           </div>
+        </Card>
 
-          {/* Production Info */}
-          <div className="modal-section">
-            <h3 className="section-title">Información de Producción</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Fecha Registro</span>
-                <span className="info-value">
-                  {formatDate(box.fecha_registro)}
-                </span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Semana</span>
-                <span className="info-value">{box.semana}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Año</span>
-                <span className="info-value">{box.año}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Día de la Semana</span>
-                <span className="info-value">{box.dia_semana}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Horario Proceso</span>
-                <span className="info-value">{box.horario_proceso}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Pallet ID</span>
-                <span className="info-value pallet-link">{box.palletId}</span>
-              </div>
+        {/* Production Information */}
+        <Card variant="flat">
+          <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+            <CalendarDays className="w-4 h-4" />
+            Información de Producción
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p className="text-macos-text-secondary">Semana</p>
+              <p className="font-medium text-macos-text">{box.semana}</p>
+            </div>
+            <div>
+              <p className="text-macos-text-secondary">Año</p>
+              <p className="font-medium text-macos-text">{box.año}</p>
+            </div>
+            <div>
+              <p className="text-macos-text-secondary">Día de la Semana</p>
+              <p className="font-medium text-macos-text">{box.dia_semana}</p>
+            </div>
+            <div>
+              <p className="text-macos-text-secondary">Horario</p>
+              <p className="font-medium text-macos-text flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {box.horario_proceso}
+              </p>
             </div>
           </div>
+        </Card>
 
-          {/* Description */}
-          {box.descripcion && (
-            <div className="modal-section">
-              <h3 className="section-title">Descripción</h3>
-              <div className="description-box">
-                <p>{box.descripcion}</p>
-              </div>
-            </div>
-          )}
+        {/* Description */}
+        {box.descripcion && (
+          <Card variant="flat">
+            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Descripción
+            </h3>
+            <p className="text-sm text-macos-text whitespace-pre-wrap">{box.descripcion}</p>
+          </Card>
+        )}
 
-          {/* Actions */}
-          <div className="modal-actions">
-            {moveLocations.length > 0 && (
-              <div className="move-dropdown">
-                <button
-                  className="action-button warning"
-                  onClick={() => {
-                    /* Toggle move options */
-                  }}
-                >
-                  Mover Caja ▼
-                </button>
-                {/* Move options would go here */}
-              </div>
-            )}
-
-            <button
-              className="action-button error"
-              onClick={() => setShowUnassignBoxModal(true)}
-            >
-              Dar caja de baja
-            </button>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+          <Button variant="secondary" onClick={onClose}>
+            Cerrar
+          </Button>
+          <Button variant="primary">
+            Editar Información
+          </Button>
         </div>
       </div>
-      {showUnassignBoxModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowUnassignBoxModal(false)}
-        >
-          <div
-            className="modal-content unassign-box-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Dar caja de baja</h2>
-            <p>¿Estás seguro de querer dar de baja la caja {box.codigo}?</p>
-            <button
-              className="action-button error"
-              onClick={() => handleUnassignBox(box.codigo)}
-            >
-              Confirmar
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    </Modal>
   );
 };
 

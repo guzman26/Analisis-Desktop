@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { usePalletContext, useFilteredPallets } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import '@/styles/OpenPallets.css';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
+import { Card, Button } from '@/components/design-system';
+import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
   const [, palletAPI] = usePalletContext();
@@ -22,25 +23,59 @@ const ClosedPallets = () => {
   }, []);
 
   return (
-    <div className="open-pallets">
-      <div className="open-pallets-header">
-        <h1 className="open-pallets-title">Pallets Cerrados</h1>
-        <button onClick={() => refresh()}>Refrescar</button>
-        <div className="open-pallets-count">
-          {closedPalletsInPackingPaginated.length} pallets
+    <div className="macos-animate-fade-in">
+      {/* Header */}
+      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+        <div className="macos-hstack" style={{ justifyContent: 'space-between', marginBottom: 'var(--macos-space-3)' }}>
+          <h1 className="macos-text-large-title" style={{ color: 'var(--macos-text-primary)' }}>
+            Pallets Cerrados
+          </h1>
+          <Button variant="secondary" size="medium" onClick={refresh}>
+            Refrescar
+          </Button>
         </div>
+        <p className="macos-text-body" style={{ color: 'var(--macos-text-secondary)' }}>
+          Lista de pallets que han sido cerrados en Packing
+        </p>
       </div>
 
-      {/* Empty State */}
+      {/* Stats */}
+      <div style={{ 
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 'var(--macos-space-5)',
+        marginBottom: 'var(--macos-space-7)'
+      }}>
+        <Card variant="flat">
+          <div style={{ textAlign: 'center' }}>
+            <p className="macos-text-footnote" style={{ 
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-1)'
+            }}>
+              Total Pallets
+            </p>
+            <p className="macos-text-title-1" style={{ 
+              color: 'var(--macos-blue)',
+              fontWeight: 700
+            }}>
+              {closedPalletsInPackingPaginated.length}
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Pallets Grid */}
       {closedPalletsInPackingPaginated.length === 0 ? (
-        <div className="open-pallets-empty">
-          <p>No hay pallets cerrados</p>
-        </div>
+        <Card>
+          <p className="macos-text-body" style={{ textAlign: 'center', padding: 'var(--macos-space-8)', color: 'var(--macos-text-secondary)' }}>
+            No hay pallets cerrados
+          </p>
+        </Card>
       ) : (
-        /* Pallets Grid */
-        <div className="open-pallets-grid">
+        <div className="macos-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
           {closedPalletsInPackingPaginated.map((pallet: any) => (
             <PalletCard
+              key={pallet.codigo}
               pallet={pallet}
               setSelectedPallet={setSelectedPallet}
               setIsModalOpen={setIsModalOpen}
@@ -67,16 +102,11 @@ const ClosedPallets = () => {
               codigo,
               location as 'TRANSITO' | 'BODEGA' | 'VENTA'
             );
-            // Cerrar el modal después del movimiento exitoso
             setIsModalOpen(false);
             setSelectedPallet(null);
-            // Refrescar la lista de pallets
             refresh();
-            // TODO: Mostrar mensaje de éxito
-            console.log(`Pallet ${codigo} movido exitosamente a ${location}`);
           } catch (error) {
             console.error('Error al mover pallet:', error);
-            // TODO: Mostrar mensaje de error
           }
         }}
       />

@@ -4,7 +4,9 @@ import { SalesContext } from '@/contexts/SalesContext';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { confirmSale } from '@/api/endpoints';
-import '@/styles/SalesOrdersList.css';
+import WindowContainer from '@/components/design-system/WindowContainer';
+import Card from '@/components/design-system/Card';
+import Button from '@/components/design-system/Button';
 
 const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
@@ -110,16 +112,17 @@ const SalesOrdersList: React.FC = () => {
   }
 
   return (
-    <div className="sales-orders-list">
+    <>
+    <WindowContainer title="Órdenes de Venta">
       <div className="sales-orders-header">
         <h1>Órdenes de Venta</h1>
-        <button
+        <Button
           onClick={() => salesOrdersDRAFTPaginated.refresh()}
-          className="btn btn-secondary refresh-btn"
+          variant="secondary"
           disabled={salesOrdersDRAFTPaginated.loading}
         >
           {salesOrdersDRAFTPaginated.loading ? 'Actualizando...' : 'Actualizar'}
-        </button>
+        </Button>
       </div>
 
       {salesOrdersDRAFTPaginated.error && (
@@ -137,7 +140,7 @@ const SalesOrdersList: React.FC = () => {
         <div className="sales-orders-grid">
           {salesOrdersDRAFTPaginated.data.map((sale: Sale) => {
             return (
-              <div key={sale.saleId} className="sale-card">
+              <Card key={sale.saleId}>
                 <div className="sale-main-info">
                   <div className="sale-date-primary">
                     {formatDate(sale.createdAt)}
@@ -189,15 +192,15 @@ const SalesOrdersList: React.FC = () => {
                 )}
 
                 <div className="sale-actions">
-                  <button
-                    className="btn btn-success btn-small"
+                  <Button
+                    variant="primary"
                     onClick={() => handleConfirmSale(sale)}
                     disabled={confirmingStates[sale.saleId] || false}
                   >
                     {confirmingStates[sale.saleId]
                       ? '⏳ Confirmando...'
                       : '✅ Confirmar Venta'}
-                  </button>
+                  </Button>
                   {sale.reportUrl && (
                     <a
                       href={sale.reportUrl}
@@ -208,20 +211,20 @@ const SalesOrdersList: React.FC = () => {
                       Ver Reporte
                     </a>
                   )}
-                  <button
-                    className="btn btn-secondary btn-small"
+                  <Button
+                    variant="secondary"
                     onClick={() => handlePrintSale(sale)}
                   >
                     🖨️ Imprimir
-                  </button>
-                  <button
-                    className="btn btn-primary btn-small"
+                  </Button>
+                  <Button
+                    variant="secondary"
                     onClick={() => handleViewDetails(sale)}
                   >
                     Ver Detalles
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -256,12 +259,13 @@ const SalesOrdersList: React.FC = () => {
       )}
 
       {/* Sale Detail Modal */}
-      <SaleDetailModal
-        sale={selectedSale}
-        isOpen={showDetailModal}
-        onClose={handleCloseModal}
-      />
-    </div>
+    </WindowContainer>
+    <SaleDetailModal
+    sale={selectedSale}
+    isOpen={showDetailModal}
+    onClose={handleCloseModal}
+  />
+  </>
   );
 };
 

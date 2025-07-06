@@ -1,0 +1,126 @@
+/* Card Component - macOS Style */
+
+.card {
+  position: relative;
+  background: var(--macos-content-bg);
+  backdrop-filter: var(--macos-backdrop-blur-light);
+  -webkit-backdrop-filter: var(--macos-backdrop-blur-light);
+  border-radius: var(--macos-radius-large);
+  border: 1px solid var(--macos-border-secondary);
+  transition: all var(--macos-duration-fast) var(--macos-ease-out);
+  overflow: hidden;
+}
+
+/* Card Variants */
+.default {
+  box-shadow: var(--macos-shadow-small);
+}
+
+.elevated {
+  box-shadow: var(--macos-shadow-medium);
+  border: none;
+}
+
+.flat {
+  background: var(--macos-gray-6);
+  box-shadow: none;
+  border: 1px solid var(--macos-border-primary);
+}
+
+/* Padding Variants */
+.paddingNone {
+  padding: 0;
+}
+
+.paddingSmall {
+  padding: var(--macos-space-4);
+}
+
+.paddingMedium {
+  padding: var(--macos-card-padding);
+}
+
+.paddingLarge {
+  padding: var(--macos-space-8);
+}
+
+/* Interactive States */
+.hoverable:hover {
+  box-shadow: var(--macos-shadow-large);
+  transform: translateY(-2px);
+  border-color: var(--macos-border-primary);
+}
+
+.pressable {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.pressable:active {
+  transform: scale(0.98);
+}
+
+.pressable:focus-visible {
+  outline: 2px solid var(--macos-blue);
+  outline-offset: 2px;
+}
+
+/* Hover + Pressable combination */
+.hoverable.pressable:hover {
+  transform: translateY(-1px);
+}
+
+.hoverable.pressable:active {
+  transform: scale(0.98) translateY(0);
+}
+
+/* Selected state */
+.selected {
+  border-color: var(--macos-blue);
+  box-shadow:
+    0 0 0 1px var(--macos-blue),
+    var(--macos-shadow-medium);
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .flat {
+    background: var(--macos-gray-5);
+    border-color: var(--macos-border-primary);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .hoverable:hover {
+    transform: none;
+  }
+
+  .pressable:active {
+    transform: none;
+  }
+
+  .hoverable.pressable:hover {
+    transform: none;
+  }
+
+  .hoverable.pressable:active {
+    transform: none;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid var(--macos-text-primary);
+  }
+
+  .selected {
+    border: 3px solid var(--macos-blue);
+  }
+}

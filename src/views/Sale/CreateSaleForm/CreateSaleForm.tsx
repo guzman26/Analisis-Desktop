@@ -8,6 +8,8 @@ import BoxSelectionStep from './BoxSelectionStep';
 import SaleSummaryStep from './SaleSummaryStep';
 import SaleSuccessStep from './SaleSuccessStep';
 import '@/styles/CreateSaleForm.css';
+import { Button } from '@/components/design-system';
+import { WindowContainer } from '@/components/design-system';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
 
@@ -203,7 +205,7 @@ const CreateSaleForm: React.FC = () => {
   };
 
   return (
-    <div className="create-sale-form">
+    <WindowContainer title="Nueva Venta" showTrafficLights={false}>
       <div className="sale-form-header">
         <h1>Nueva Venta</h1>
         <div className="step-indicator">
@@ -217,29 +219,29 @@ const CreateSaleForm: React.FC = () => {
       {state.step < 4 && (
         <div className="sale-form-controls">
           {state.step > 0 && (
-            <button
+            <Button
               type="button"
               onClick={handleBack}
-              className="btn btn-secondary"
+              variant="secondary"
               disabled={state.isSubmitting}
             >
               Atrás
-            </button>
+            </Button>
           )}
 
           {state.step < 3 && (
-            <button
+            <Button
               type="button"
               onClick={handleNext}
-              className="btn btn-primary"
+              variant="primary"
               disabled={!canProceedToNext()}
             >
               Siguiente
-            </button>
+            </Button>
           )}
         </div>
       )}
-    </div>
+    </WindowContainer>
   );
 };
 
