@@ -1,15 +1,15 @@
-import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Dashboard from './views/Dashboard';
+
+import { BrowserRouter  as Router } from 'react-router-dom';
+import { RouteRenderer } from './routes/RouteRenderer';
+import { AppProviders } from './contexts/AppProviders';
 
 function App() {
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        {/* Add other routes here */}
-      </Routes>
-    </Layout>
+    <Router>
+        <AppProviders>
+        <RouteRenderer />
+      </AppProviders>
+    </Router>
   );
 }
 

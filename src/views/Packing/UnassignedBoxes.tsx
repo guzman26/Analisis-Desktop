@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Box } from '@/types';
-import '@/styles/BoxCard.css';
 import { useUnassignedBoxes } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
