@@ -4,7 +4,8 @@ import { Sale, Customer, Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { getBoxByCode, getCustomerById } from '@/api/endpoints';
 import BoxDetailModal from './BoxDetailModal';
-import '@/styles/SaleDetailModal.css';
+import Button from '@/components/design-system/Button';
+import { Modal } from './design-system';
 
 interface SaleDetailModalProps {
   sale: Sale | null;
@@ -111,7 +112,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   if (!isOpen || !sale) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} title="Detalle de la Venta">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
@@ -241,25 +242,24 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
           {/* Actions */}
           <div className="modal-actions">
-            <button
-              className="action-button primary"
+            <Button
+              variant="primary"
               onClick={handleShowPrintView}
             >
               📄 Ver Guía de Despacho
-            </button>
+            </Button>
             {sale.reportUrl && (
               <a
                 href={sale.reportUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="action-button primary"
               >
                 Descargar Reporte
               </a>
             )}
-            <button className="action-button secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Cerrar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           onClose={handleCloseBoxModal}
         />
       </div>
-    </div>
+    </Modal>
   );
 };
 

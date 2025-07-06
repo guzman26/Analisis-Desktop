@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/design-system';
 import { Package, Warehouse, ShoppingCart, Settings, ArrowRight } from 'lucide-react';
 import '../styles/designSystem.css';
+import ModalDemo from '@/components/examples/ModalDemo';
 
 const Dashboard = () => {
   const quickActions = [
@@ -240,6 +241,7 @@ const Dashboard = () => {
           </div>
         </div>
       </Card>
+      <ModalDemo />
     </div>
   );
 };
