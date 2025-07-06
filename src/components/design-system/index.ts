@@ -9,3 +9,6 @@ export type { ModalProps } from './Modal';
 
 export { default as Input } from './Input';
 export type { InputProps } from './Input';
+
+export { default as WindowContainer } from './WindowContainer';
+export type { WindowContainerProps } from './WindowContainer';

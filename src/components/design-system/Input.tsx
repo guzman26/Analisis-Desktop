@@ -1,6 +1,6 @@
 import React from 'react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import styles from './Input.module.css';
+import '../../styles/designSystem.css';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -20,64 +20,73 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       leftIcon,
       rightIcon,
       disabled,
+      id,
       ...props
     },
     ref
   ) => {
-    const inputStyles = twMerge(
-      clsx(
-        'w-full px-3 py-2 text-sm font-normal',
-        'bg-white border rounded-macos-sm',
-        'transition-all duration-200',
-        'placeholder:text-macos-text-secondary',
-        'focus:outline-none focus:ring-2 focus:ring-macos-accent focus:border-transparent',
-        {
-          'border-macos-border': !error,
-          'border-macos-error': error,
-          'pl-9': leftIcon,
-          'pr-9': rightIcon,
-          'opacity-50 cursor-not-allowed bg-gray-50': disabled,
-        },
-        className
-      )
-    );
+    // Generate unique ID if not provided
+    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
+    const inputClasses = [
+      styles.input,
+      leftIcon && styles.hasLeftIcon,
+      rightIcon && styles.hasRightIcon,
+      error && styles.error,
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
-      <div className="w-full">
+      <div className={styles.inputContainer}>
         {label && (
-          <label className="block text-sm font-medium text-macos-text mb-1.5">
+          <label htmlFor={inputId} className={styles.label}>
             {label}
           </label>
         )}
         
-        <div className="relative">
+        <div className={styles.inputWrapper}>
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-macos-text-secondary">
+            <div className={styles.leftIcon}>
               {leftIcon}
             </div>
           )}
           
           <input
             ref={ref}
-            className={inputStyles}
+            id={inputId}
+            className={inputClasses}
             disabled={disabled}
+            aria-invalid={error ? 'true' : 'false'}
+            aria-describedby={
+              error ? `${inputId}-error` : 
+              helperText ? `${inputId}-helper` : 
+              undefined
+            }
             {...props}
           />
           
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-macos-text-secondary">
+            <div className={styles.rightIcon}>
               {rightIcon}
             </div>
           )}
         </div>
         
-        {(error || helperText) && (
-          <p className={clsx(
-            'mt-1.5 text-xs',
-            error ? 'text-macos-error' : 'text-macos-text-secondary'
-          )}>
-            {error || helperText}
-          </p>
+        {error && (
+          <div id={`${inputId}-error`} className={styles.errorMessage} role="alert">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+              <path d="M6 0C2.686 0 0 2.686 0 6s2.686 6 6 6 6-2.686 6-6S9.314 0 6 0zm1 9H5V8h2v1zm0-2H5V3h2v4z"/>
+            </svg>
+            {error}
+          </div>
+        )}
+        
+        {helperText && !error && (
+          <div id={`${inputId}-helper`} className={styles.helperText}>
+            {helperText}
+          </div>
         )}
       </div>
     );

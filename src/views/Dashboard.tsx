@@ -1,73 +1,95 @@
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/design-system';
 import { Package, Warehouse, ShoppingCart, Settings, ArrowRight } from 'lucide-react';
+import '../styles/designSystem.css';
 
 const Dashboard = () => {
   const quickActions = [
     {
       title: 'Packing',
       description: 'Gestiona pallets y cajas',
-      icon: <Package className="w-6 h-6" />,
+      icon: <Package style={{ width: '24px', height: '24px' }} />,
       link: '/packing/openPallets',
-      color: 'bg-blue-500',
+      color: 'var(--macos-blue)',
     },
     {
       title: 'Bodega',
       description: 'Control de inventario',
-      icon: <Warehouse className="w-6 h-6" />,
+      icon: <Warehouse style={{ width: '24px', height: '24px' }} />,
       link: '/bodega/pallets',
-      color: 'bg-green-500',
+      color: 'var(--macos-green)',
     },
     {
       title: 'Ventas',
       description: 'Nueva venta o pedido',
-      icon: <ShoppingCart className="w-6 h-6" />,
+      icon: <ShoppingCart style={{ width: '24px', height: '24px' }} />,
       link: '/sales/new',
-      color: 'bg-purple-500',
+      color: 'var(--macos-purple)',
     },
     {
       title: 'Administración',
       description: 'Configuración y problemas',
-      icon: <Settings className="w-6 h-6" />,
+      icon: <Settings style={{ width: '24px', height: '24px' }} />,
       link: '/admin/issues',
-      color: 'bg-orange-500',
+      color: 'var(--macos-orange)',
     },
   ];
 
   return (
-    <div className="animate-in">
+    <div className="macos-animate-fade-in">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-macos-text mb-2">
+      <div style={{ marginBottom: 'var(--macos-space-8)' }}>
+        <h1 className="macos-text-large-title" style={{ 
+          marginBottom: 'var(--macos-space-2)',
+          color: 'var(--macos-text-primary)'
+        }}>
           Bienvenidos a Lomas Altas
         </h1>
-        <p className="text-macos-text-secondary">
+        <p className="macos-text-body" style={{ color: 'var(--macos-text-secondary)' }}>
           Sistema de gestión de inventario y ventas
         </p>
       </div>
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="macos-grid" style={{ marginBottom: 'var(--macos-space-8)' }}>
         {quickActions.map((action) => (
-          <Link key={action.title} to={action.link}>
+          <Link 
+            key={action.title} 
+            to={action.link}
+            style={{ textDecoration: 'none' }}
+          >
             <Card
               isPressable
               isHoverable
-              className="h-full"
+              style={{ height: '100%' }}
             >
-              <div className="flex flex-col items-start space-y-4">
-                <div className={`p-3 rounded-macos ${action.color} text-white`}>
+              <div className="macos-stack">
+                <div style={{
+                  padding: 'var(--macos-space-4)',
+                  borderRadius: 'var(--macos-radius-large)',
+                  backgroundColor: action.color,
+                  color: 'var(--macos-text-on-color)',
+                  width: 'fit-content'
+                }}>
                   {action.icon}
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-macos-text mb-1">
+                <div style={{ flex: 1 }}>
+                  <h3 className="macos-text-headline" style={{ 
+                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--macos-text-primary)'
+                  }}>
                     {action.title}
                   </h3>
-                  <p className="text-sm text-macos-text-secondary">
+                  <p className="macos-text-subheadline" style={{ color: 'var(--macos-text-secondary)' }}>
                     {action.description}
                   </p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-macos-text-secondary" />
+                <ArrowRight style={{ 
+                  width: '16px', 
+                  height: '16px', 
+                  color: 'var(--macos-text-secondary)',
+                  alignSelf: 'flex-end'
+                }} />
               </div>
             </Card>
           </Link>
@@ -75,53 +97,146 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 'var(--macos-space-5)',
+        marginBottom: 'var(--macos-space-8)'
+      }}>
         <Card variant="flat">
-          <div className="text-center">
-            <p className="text-sm text-macos-text-secondary mb-1">Pallets Abiertos</p>
-            <p className="text-2xl font-bold text-macos-accent">12</p>
+          <div style={{ textAlign: 'center' }}>
+            <p className="macos-text-footnote" style={{ 
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-1)'
+            }}>
+              Pallets Abiertos
+            </p>
+            <p className="macos-text-title-1" style={{ 
+              color: 'var(--macos-blue)',
+              fontWeight: 700
+            }}>
+              12
+            </p>
           </div>
         </Card>
         <Card variant="flat">
-          <div className="text-center">
-            <p className="text-sm text-macos-text-secondary mb-1">Ventas del Día</p>
-            <p className="text-2xl font-bold text-macos-success">8</p>
+          <div style={{ textAlign: 'center' }}>
+            <p className="macos-text-footnote" style={{ 
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-1)'
+            }}>
+              Ventas del Día
+            </p>
+            <p className="macos-text-title-1" style={{ 
+              color: 'var(--macos-green)',
+              fontWeight: 700
+            }}>
+              8
+            </p>
           </div>
         </Card>
         <Card variant="flat">
-          <div className="text-center">
-            <p className="text-sm text-macos-text-secondary mb-1">Cajas sin Pallet</p>
-            <p className="text-2xl font-bold text-macos-warning">24</p>
+          <div style={{ textAlign: 'center' }}>
+            <p className="macos-text-footnote" style={{ 
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-1)'
+            }}>
+              Cajas sin Pallet
+            </p>
+            <p className="macos-text-title-1" style={{ 
+              color: 'var(--macos-orange)',
+              fontWeight: 700
+            }}>
+              24
+            </p>
           </div>
         </Card>
       </div>
 
       {/* Recent Activity */}
-      <Card className="mt-8">
-        <h2 className="text-xl font-semibold text-macos-text mb-4">
+      <Card>
+        <h2 className="macos-text-title-2" style={{ 
+          marginBottom: 'var(--macos-space-5)',
+          color: 'var(--macos-text-primary)'
+        }}>
           Actividad Reciente
         </h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-macos-border last:border-0">
+        <div className="macos-stack">
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            paddingBottom: 'var(--macos-space-3)',
+            borderBottom: '1px solid var(--macos-separator)'
+          }}>
             <div>
-              <p className="text-sm font-medium text-macos-text">Pallet #P001 cerrado</p>
-              <p className="text-xs text-macos-text-secondary">Hace 10 minutos</p>
+              <p className="macos-text-subheadline" style={{ 
+                fontWeight: 500,
+                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--macos-space-1)'
+              }}>
+                Pallet #P001 cerrado
+              </p>
+              <p className="macos-text-caption-1" style={{ color: 'var(--macos-text-secondary)' }}>
+                Hace 10 minutos
+              </p>
             </div>
-            <span className="text-xs text-macos-success">Completado</span>
+            <span className="macos-text-caption-1" style={{ 
+              color: 'var(--macos-green)',
+              fontWeight: 500
+            }}>
+              Completado
+            </span>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-macos-border last:border-0">
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            paddingBottom: 'var(--macos-space-3)',
+            borderBottom: '1px solid var(--macos-separator)'
+          }}>
             <div>
-              <p className="text-sm font-medium text-macos-text">Nueva venta registrada</p>
-              <p className="text-xs text-macos-text-secondary">Hace 25 minutos</p>
+              <p className="macos-text-subheadline" style={{ 
+                fontWeight: 500,
+                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--macos-space-1)'
+              }}>
+                Nueva venta registrada
+              </p>
+              <p className="macos-text-caption-1" style={{ color: 'var(--macos-text-secondary)' }}>
+                Hace 25 minutos
+              </p>
             </div>
-            <span className="text-xs text-macos-accent">Pendiente</span>
+            <span className="macos-text-caption-1" style={{ 
+              color: 'var(--macos-blue)',
+              fontWeight: 500
+            }}>
+              Pendiente
+            </span>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-macos-border last:border-0">
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between'
+          }}>
             <div>
-              <p className="text-sm font-medium text-macos-text">15 cajas agregadas a bodega</p>
-              <p className="text-xs text-macos-text-secondary">Hace 1 hora</p>
+              <p className="macos-text-subheadline" style={{ 
+                fontWeight: 500,
+                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--macos-space-1)'
+              }}>
+                15 cajas agregadas a bodega
+              </p>
+              <p className="macos-text-caption-1" style={{ color: 'var(--macos-text-secondary)' }}>
+                Hace 1 hora
+              </p>
             </div>
-            <span className="text-xs text-macos-success">Procesado</span>
+            <span className="macos-text-caption-1" style={{ 
+              color: 'var(--macos-green)',
+              fontWeight: 500
+            }}>
+              Procesado
+            </span>
           </div>
         </div>
       </Card>

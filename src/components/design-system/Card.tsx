@@ -1,12 +1,12 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import styles from './Card.module.css';
+import '../../styles/designSystem.css';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'flat';
   isHoverable?: boolean;
   isPressable?: boolean;
+  isSelected?: boolean;
   padding?: 'none' | 'small' | 'medium' | 'large';
 }
 
@@ -17,59 +17,53 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       variant = 'default',
       isHoverable = false,
       isPressable = false,
+      isSelected = false,
       padding = 'medium',
       children,
       onClick,
+      onKeyDown,
+      tabIndex,
+      role,
       ...props
     },
     ref
   ) => {
-    const baseStyles = 'rounded-macos transition-all duration-200';
-    
-    const variants = {
-      default: 'bg-white shadow-macos border border-macos-border',
-      elevated: 'bg-white shadow-macos-lg',
-      flat: 'bg-macos-bg-tertiary border border-macos-border',
+    const cardClasses = [
+      styles.card,
+      styles[variant],
+      styles[`padding${padding.charAt(0).toUpperCase() + padding.slice(1)}`],
+      isHoverable && styles.hoverable,
+      isPressable && styles.pressable,
+      isSelected && styles.selected,
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    // Handle keyboard interaction for pressable cards
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isPressable && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        onClick?.(event as any);
+      }
+      onKeyDown?.(event);
     };
 
-    const paddings = {
-      none: '',
-      small: 'p-3',
-      medium: 'p-5',
-      large: 'p-8',
+    // Set appropriate ARIA attributes
+    const cardProps = {
+      ref,
+      className: cardClasses,
+      onClick: isPressable ? onClick : undefined,
+      onKeyDown: isPressable ? handleKeyDown : onKeyDown,
+      tabIndex: isPressable ? (tabIndex ?? 0) : tabIndex,
+      role: isPressable ? (role ?? 'button') : role,
+      ...props,
     };
-
-    const interactiveStyles = clsx({
-      'hover:shadow-macos-lg hover:scale-[1.02] cursor-pointer': isHoverable && !isPressable,
-      'cursor-pointer': isPressable,
-    });
-
-    const Component = isPressable ? motion.div : 'div';
-    const componentProps = isPressable
-      ? {
-          whileTap: { scale: 0.98 },
-          transition: { duration: 0.1 },
-        }
-      : {};
 
     return (
-      <Component
-        ref={ref}
-        className={twMerge(
-          clsx(
-            baseStyles,
-            variants[variant],
-            paddings[padding],
-            interactiveStyles,
-            className
-          )
-        )}
-        onClick={onClick}
-        {...componentProps}
-        {...(props as any)}
-      >
+      <div {...cardProps}>
         {children}
-      </Component>
+      </div>
     );
   }
 );

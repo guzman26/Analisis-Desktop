@@ -20,6 +20,7 @@ import {
   CircleCheck,
   Search
 } from 'lucide-react';
+import '../styles/designSystem.css';
 
 interface SidebarItem {
   path?: string;
@@ -142,70 +143,100 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
 
     if (hasChildren) {
       return (
-        <li key={item.label}>
+        <li key={item.label} style={{ marginBottom: 'var(--macos-space-1)' }}>
           <button
-            className={`
-              w-full flex items-center gap-3 px-3 py-2.5 
-              text-macos-text hover:bg-macos-sidebar-hover
-              rounded-macos-sm transition-all duration-200
-              ${isCollapsed ? 'justify-center' : 'justify-between'}
-            `}
+            className="macos-interactive"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: isCollapsed ? 'center' : 'space-between',
+              gap: 'var(--macos-space-3)',
+              padding: 'var(--macos-space-3)',
+              color: 'var(--macos-text-primary)',
+              borderRadius: 'var(--macos-radius-medium)',
+              transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+            }}
             onClick={() => toggleSubfolder(item.label)}
             title={isCollapsed ? item.label : ''}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-macos-text-secondary">{item.icon}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+              <span style={{ color: 'var(--macos-text-secondary)' }}>{item.icon}</span>
               {!isCollapsed && (
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+                  {item.label}
+                </span>
               )}
             </div>
             {!isCollapsed && (
-              <motion.div
-                animate={{ rotate: isExpanded ? 0 : -90 }}
-                transition={{ duration: 0.2 }}
+              <div
+                style={{
+                  transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                  transition: 'transform var(--macos-duration-fast) var(--macos-ease-out)',
+                }}
               >
-                <ChevronDown className="w-4 h-4 text-macos-text-secondary" />
-              </motion.div>
+                <ChevronDown style={{ width: '16px', height: '16px', color: 'var(--macos-text-secondary)' }} />
+              </div>
             )}
           </button>
-          <AnimatePresence>
-            {isExpanded && !isCollapsed && (
-              <motion.ul
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="ml-3 mt-1 space-y-0.5 overflow-hidden"
-              >
-                {item.children?.map((child) => renderMenuItem(child, depth + 1))}
-              </motion.ul>
-            )}
-          </AnimatePresence>
+          {isExpanded && !isCollapsed && (
+            <ul
+              className="macos-animate-slide-in"
+              style={{
+                marginLeft: 'var(--macos-space-3)',
+                marginTop: 'var(--macos-space-1)',
+                listStyle: 'none',
+                padding: 0,
+              }}
+            >
+              {item.children?.map((child) => renderMenuItem(child, depth + 1))}
+            </ul>
+          )}
         </li>
       );
     }
 
     return (
-      <li key={item.path}>
+      <li key={item.path} style={{ marginBottom: 'var(--macos-space-1)' }}>
         <NavLink
           to={item.path!}
-          className={({ isActive }) => `
-            flex items-center gap-3 px-3 py-2 rounded-macos-sm
-            transition-all duration-200 group
-            ${isActive 
-              ? 'bg-macos-accent text-white' 
-              : 'text-macos-text hover:bg-macos-sidebar-hover'
-            }
-            ${isCollapsed ? 'justify-center' : ''}
-            ${depth > 0 ? 'pl-9' : ''}
-          `}
+          className={({ isActive }) => {
+            const baseStyles = {
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--macos-space-3)',
+              padding: 'var(--macos-space-3)',
+              borderRadius: 'var(--macos-radius-medium)',
+              textDecoration: 'none',
+              transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+              justifyContent: isCollapsed ? 'center' : 'flex-start',
+              paddingLeft: depth > 0 ? 'calc(var(--macos-space-8) + var(--macos-space-3))' : 'var(--macos-space-3)',
+            };
+
+            return `macos-interactive ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
+          }}
+          style={({ isActive }) => ({
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--macos-space-3)',
+            padding: 'var(--macos-space-3)',
+            borderRadius: 'var(--macos-radius-medium)',
+            textDecoration: 'none',
+            transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+            paddingLeft: depth > 0 ? 'calc(var(--macos-space-8) + var(--macos-space-3))' : 'var(--macos-space-3)',
+            backgroundColor: isActive ? 'var(--macos-blue)' : 'transparent',
+            color: isActive ? 'var(--macos-text-on-color)' : 'var(--macos-text-primary)',
+          })}
           title={isCollapsed ? item.label : ''}
         >
-          <span className="text-inherit">
+          <span style={{ flexShrink: 0 }}>
             {item.icon}
           </span>
           {!isCollapsed && (
-            <span className="text-sm font-medium">{item.label}</span>
+            <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+              {item.label}
+            </span>
           )}
         </NavLink>
       </li>
@@ -213,48 +244,71 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
   };
 
   return (
-    <motion.aside
-      className={`
-        fixed left-0 top-0 h-full bg-macos-sidebar
-        border-r border-macos-border z-40
-        transition-all duration-300 ease-out
-      `}
-      animate={{ width: isCollapsed ? 64 : 256 }}
+    <aside
+      style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        height: '100%',
+        width: isCollapsed ? 'var(--macos-width-sidebar-collapsed)' : 'var(--macos-width-sidebar)',
+        background: 'var(--macos-sidebar-bg)',
+        backdropFilter: 'var(--macos-backdrop-blur-light)',
+        WebkitBackdropFilter: 'var(--macos-backdrop-blur-light)',
+        borderRight: '1px solid var(--macos-border-primary)',
+        zIndex: 'var(--macos-z-fixed)',
+        transition: 'width var(--macos-duration-normal) var(--macos-ease-out)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-macos-border">
-          {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-macos-text">
-              Análisis Desktop
-            </h2>
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--macos-space-5)',
+          borderBottom: '1px solid var(--macos-border-primary)',
+          minHeight: 'var(--macos-height-titlebar)',
+        }}
+      >
+        {!isCollapsed && (
+          <h2 className="macos-text-headline" style={{ margin: 0, color: 'var(--macos-text-primary)' }}>
+            Análisis Desktop
+          </h2>
+        )}
+        <button
+          className="macos-focusable macos-interactive"
+          style={{
+            padding: 'var(--macos-space-2)',
+            borderRadius: 'var(--macos-radius-medium)',
+            color: 'var(--macos-text-secondary)',
+            margin: isCollapsed ? '0 auto' : '0',
+          }}
+          onClick={toggleSidebar}
+          aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight style={{ width: '20px', height: '20px' }} />
+          ) : (
+            <ChevronLeft style={{ width: '20px', height: '20px' }} />
           )}
-          <button
-            className={`
-              p-1.5 rounded-macos-sm text-macos-text-secondary
-              hover:bg-macos-sidebar-hover hover:text-macos-text
-              transition-colors duration-200
-              ${isCollapsed ? 'mx-auto' : ''}
-            `}
-            onClick={toggleSidebar}
-            aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-3">
-          <ul className="space-y-1">
-            {sidebarItems.map((item) => renderMenuItem(item))}
-          </ul>
-        </nav>
+        </button>
       </div>
-    </motion.aside>
+
+      {/* Navigation */}
+      <nav
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: 'var(--macos-space-3)',
+        }}
+      >
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {sidebarItems.map((item) => renderMenuItem(item))}
+        </ul>
+      </nav>
+    </aside>
   );
 };
 
