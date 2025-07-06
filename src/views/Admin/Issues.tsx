@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { IssuesContext } from '@/contexts/IssuesContext';
 import '@/styles/SalesOrdersList.css';
+import IssueCard from '@/components/IssueCard';
 
 const AdminIssues: React.FC = () => {
   const { adminIssuesPaginated } = useContext(IssuesContext);
@@ -45,39 +46,7 @@ const AdminIssues: React.FC = () => {
       ) : (
         <div className="sales-orders-grid">
           {adminIssuesPaginated.data.map((issue) => (
-            <div key={issue.id} className="sale-card">
-              <div className="sale-main-info">
-                <div className="sale-date-primary">
-                  {new Date(issue.createdAt).toLocaleString('es-ES', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </div>
-                <div className="sale-customer-primary">
-                  <span className="customer-name">{issue.title}</span>
-                </div>
-              </div>
-
-              <div className="sale-secondary-info">
-                <div className="sale-id-secondary">
-                  <span className="label">ID:</span>
-                  <span className="value">{issue.id}</span>
-                </div>
-
-                <div className="sale-boxes-info">
-                  <span className="label">Estado:</span>
-                  <span className="value">{issue.status}</span>
-                </div>
-              </div>
-
-              <div className="sale-items">
-                <span className="items-label">Descripción:</span>
-                <p>{issue.description}</p>
-              </div>
-            </div>
+            <IssueCard key={issue.id} issue={issue} />
           ))}
         </div>
       )}

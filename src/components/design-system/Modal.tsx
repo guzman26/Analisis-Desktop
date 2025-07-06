@@ -66,9 +66,9 @@ const Modal: React.FC<ModalProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ 
+                transition={{
                   duration: 0.2,
-                  ease: [0.25, 0.1, 0.25, 1]
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
               />
             </Dialog.Overlay>
@@ -78,7 +78,7 @@ const Modal: React.FC<ModalProps> = ({
               <motion.div
                 className={twMerge(
                   clsx(
-                    'fixed top-1/2 left-1/2 z-[51] max-h-[80vh] overflow-hidden',
+                    'fixed top-[10%] left-1/2 z-[51] max-h-[80vh] overflow-hidden',
                     'bg-white/95 rounded-lg border border-white/20',
                     'shadow-[0_0_0_0.5px_rgba(0,0,0,0.1),0_4px_20px_rgba(0,0,0,0.15),0_25px_50px_rgba(0,0,0,0.25)]',
                     sizes[size],
@@ -88,31 +88,36 @@ const Modal: React.FC<ModalProps> = ({
                 style={{
                   backdropFilter: 'blur(40px)',
                   WebkitBackdropFilter: 'blur(40px)',
-                  transform: 'translate(-50%, -50%)',
+                  transform: 'translate(-50%, 0)',
                 }}
-                initial={{ 
-                  opacity: 0, 
+                initial={{
+                  opacity: 0,
                   scale: 0.95,
-                  y: -20
+                  y: -20,
                 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   scale: 1,
-                  y: 0
+                  y: 0,
                 }}
-                exit={{ 
-                  opacity: 0, 
+                exit={{
+                  opacity: 0,
                   scale: 0.95,
-                  y: -20
+                  y: -20,
                 }}
-                transition={{ 
+                transition={{
                   duration: 0.2,
-                  ease: [0.25, 0.1, 0.25, 1]
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
               >
                 {/* macOS Title Bar */}
-                <div className="relative flex items-center h-11 px-4 bg-white/80 border-b border-black/10"
-                     style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <div
+                  className="relative flex items-center h-11 px-4 bg-white/80 border-b border-black/10"
+                  style={{
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }}
+                >
                   {showTrafficLights && (
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
                       {/* Close Button */}
@@ -122,7 +127,12 @@ const Modal: React.FC<ModalProps> = ({
                         aria-label="Close"
                       >
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <svg width="6" height="6" viewBox="0 0 6 6" className="text-black/60">
+                          <svg
+                            width="6"
+                            height="6"
+                            viewBox="0 0 6 6"
+                            className="text-black/60"
+                          >
                             <path
                               d="M1 1L5 5M5 1L1 5"
                               stroke="currentColor"
@@ -132,7 +142,7 @@ const Modal: React.FC<ModalProps> = ({
                           </svg>
                         </div>
                       </button>
-                      
+
                       {/* Minimize Button */}
                       <button
                         className="flex items-center justify-center w-3 h-3 rounded-full border-[0.5px] border-black/10 bg-gradient-to-br from-[#ffbd2e] to-[#ffab00] hover:from-[#ffb01c] hover:to-[#ff9f00] transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-300/30 group disabled:opacity-60 disabled:cursor-not-allowed"
@@ -141,7 +151,12 @@ const Modal: React.FC<ModalProps> = ({
                         disabled={!onMinimize}
                       >
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <svg width="8" height="1" viewBox="0 0 8 1" className="text-black/60">
+                          <svg
+                            width="8"
+                            height="1"
+                            viewBox="0 0 8 1"
+                            className="text-black/60"
+                          >
                             <path
                               d="M0 0H8"
                               stroke="currentColor"
@@ -151,7 +166,7 @@ const Modal: React.FC<ModalProps> = ({
                           </svg>
                         </div>
                       </button>
-                      
+
                       {/* Maximize Button (Disabled) */}
                       <button
                         className="flex items-center justify-center w-3 h-3 rounded-full border-[0.5px] border-black/10 bg-gradient-to-br from-[#00ca4e] to-[#28cd41] opacity-60 cursor-not-allowed"
@@ -159,7 +174,12 @@ const Modal: React.FC<ModalProps> = ({
                         aria-label="Maximize"
                       >
                         <div className="opacity-0">
-                          <svg width="6" height="6" viewBox="0 0 6 6" className="text-black/60">
+                          <svg
+                            width="6"
+                            height="6"
+                            viewBox="0 0 6 6"
+                            className="text-black/60"
+                          >
                             <path
                               d="M1 3L3 1L5 3"
                               stroke="currentColor"
@@ -173,15 +193,20 @@ const Modal: React.FC<ModalProps> = ({
                       </button>
                     </div>
                   )}
-                  
+
                   <Dialog.Title className="flex-1 text-center px-10 text-[13px] font-semibold text-black/85 font-sf leading-tight tracking-[-0.01em] select-none">
                     {title}
                   </Dialog.Title>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-5 bg-white/95 max-h-[calc(80vh-44px)] overflow-y-auto"
-                     style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+                <div
+                  className="p-5 bg-white/95 max-h-[calc(80vh-44px)] overflow-y-auto"
+                  style={{
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }}
+                >
                   {children}
                 </div>
               </motion.div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Customer } from '@/types';
 import { useCustomerContext } from '@/contexts/CustomerContext';
+import { Input, Button } from '@/components/design-system';
+import { Modal } from '@/components/design-system';
 
 interface CustomerSelectionStepProps {
   selectedCustomer: Customer | null;
@@ -12,7 +14,11 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   onSelect,
 }) => {
   const [state, customerAPI] = useCustomerContext();
-  const { customers, status: loading, error } = state;
+  const { customers, status, error } = state;
+
+  const isLoading = status === 'loading';
+  // Ensure we always work with an array
+  const customerList: any[] = Array.isArray(customers) ? customers : [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -27,12 +33,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
 
   useEffect(() => {
-    if (customers.length === 0) {
+    if (customerList.length === 0) {
       customerAPI.fetchCustomers();
     }
-  }, [customers.length, customerAPI]);
+  }, [customerList.length, customerAPI]);
 
-  const filteredCustomers = customers.filter(
+  const filteredCustomers = customerList.filter(
     (customer: any) =>
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,7 +46,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   );
 
   const handleCustomerSelect = (customerId: string) => {
-    const customer = customers.find((c: any) => c.customerId === customerId);
+    const customer = customerList.find((c: any) => c.customerId === customerId);
     if (customer) {
       onSelect(customer);
     }
@@ -76,7 +82,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
     }));
   };
 
-  if (loading && customers.length === 0) {
+  if (isLoading && customerList.length === 0) {
     return (
       <div className="customer-selection-step">
         <h2>Seleccionar Cliente</h2>
@@ -103,7 +109,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
       <div className="search-section">
         <label htmlFor="customer-search">Buscar Cliente:</label>
-        <input
+        <Input
           type="search"
           id="customer-search"
           value={searchTerm}
@@ -118,7 +124,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
         <select
           id="customer-select"
           value={selectedCustomer?.customerId || ''}
-          onChange={(e) => handleCustomerSelect(e.target.value)}
+          onChange={(e: any) => handleCustomerSelect(e.target.value)}
           className="customer-select"
         >
           <option value="">-- Seleccionar un cliente --</option>
@@ -164,33 +170,33 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       )}
 
       <div className="add-customer-section">
-        <button
+        <Button
           type="button"
           onClick={() => setShowAddCustomerModal(true)}
-          className="add-customer-btn"
+          variant="primary"
         >
           + Agregar Nuevo Cliente
-        </button>
+        </Button>
       </div>
 
       {showAddCustomerModal && (
-        <div className="modal-overlay">
+        <Modal isOpen={showAddCustomerModal} onClose={() => setShowAddCustomerModal(false)}>
           <div className="modal">
             <div className="modal-header">
               <h3>Agregar Nuevo Cliente</h3>
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowAddCustomerModal(false)}
-                className="close-btn"
+                variant="secondary"
               >
                 ×
-              </button>
+              </Button>
             </div>
 
             <form onSubmit={handleAddCustomer} className="customer-form">
               <div className="form-group">
                 <label htmlFor="name">Nombre *</label>
-                <input
+                <Input
                   type="text"
                   id="name"
                   value={newCustomerData.name}
@@ -201,7 +207,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
               <div className="form-group">
                 <label htmlFor="email">Email *</label>
-                <input
+                <Input
                   type="email"
                   id="email"
                   value={newCustomerData.email}
@@ -212,7 +218,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
               <div className="form-group">
                 <label htmlFor="phone">Teléfono *</label>
-                <input
+                <Input
                   type="tel"
                   id="phone"
                   value={newCustomerData.phone}
@@ -223,7 +229,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
               <div className="form-group">
                 <label htmlFor="address">Dirección</label>
-                <input
+                <Input
                   type="text"
                   id="address"
                   value={newCustomerData.address}
@@ -233,7 +239,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
               <div className="form-group">
                 <label htmlFor="taxId">RUT</label>
-                <input
+                <Input
                   type="text"
                   id="taxId"
                   value={newCustomerData.taxId}
@@ -243,7 +249,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
 
               <div className="form-group">
                 <label htmlFor="contactPerson">Persona de Contacto</label>
-                <input
+                <Input
                   type="text"
                   id="contactPerson"
                   value={newCustomerData.contactPerson}
@@ -254,24 +260,24 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-actions">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowAddCustomerModal(false)}
                   className="cancel-btn"
                 >
                   Cancelar
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isCreatingCustomer}
                   className="submit-btn"
                 >
                   {isCreatingCustomer ? 'Creando...' : 'Crear Cliente'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

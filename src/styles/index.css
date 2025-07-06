@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Import macOS Design System */
 @import './designSystem.css';
 
@@ -31,7 +35,8 @@ body {
 }
 
 /* Remove default list styles */
-ul, ol {
+ul,
+ol {
   list-style: none;
   padding: 0;
 }
@@ -46,12 +51,19 @@ button {
 }
 
 /* Remove default input styles */
-input, textarea, select {
+input,
+textarea,
+select {
   font: inherit;
 }
 
 /* Improve text rendering */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--macos-font-family-display);
   line-height: var(--macos-line-height-tight);
   font-weight: 600;

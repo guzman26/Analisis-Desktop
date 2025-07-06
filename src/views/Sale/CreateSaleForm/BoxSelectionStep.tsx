@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFilteredPallets } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 
+
 interface BoxSelectionStepProps {
   selectedBoxCodes: string[];
   onSelectionChange: (selectedBoxCodes: string[]) => void;

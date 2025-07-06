@@ -23,6 +23,7 @@ export const extractDataFromResponse = (response: any): any[] => {
       response.pallets,
       response.body,
       response.items,
+      response.customers,
     ];
 
     for (const data of paths) {

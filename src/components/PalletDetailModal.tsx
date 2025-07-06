@@ -6,6 +6,7 @@ import { getBoxByCode } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import { formatDate } from '@/utils/formatDate';
+import { Modal } from './design-system';
 
 interface PalletDetailModalProps {
   pallet: Pallet | null;
@@ -65,7 +66,7 @@ const PalletDetailModal = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} title="Detalle de la Paleta">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
@@ -192,7 +193,7 @@ const PalletDetailModal = ({
         isOpen={showBoxDetailModal}
         onClose={() => setShowBoxDetailModal(false)}
       />
-    </div>
+    </Modal>
   );
 };
 

@@ -212,7 +212,7 @@
    Dark Mode Variables
    ======================================== */
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
     /* Window Colors - Dark */
     --macos-window-bg: rgba(40, 40, 40, 0.95);
