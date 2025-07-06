@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -117,6 +116,12 @@ const sidebarItems: SidebarItem[] = [
 
 const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('macos-dark');
+    }
+    return false;
+  });
   const [expandedItems, setExpandedItems] = useState<string[]>(['']);
 
   const toggleSidebar = () => {
@@ -131,6 +136,17 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         ? prev.filter((item) => item !== label)
         : [...prev, label]
     );
+  };
+
+  const toggleDarkMode = () => {
+    const root = document.documentElement;
+    if (root.classList.contains('macos-dark')) {
+      root.classList.remove('macos-dark');
+      setIsDarkMode(false);
+    } else {
+      root.classList.add('macos-dark');
+      setIsDarkMode(true);
+    }
   };
 
   useEffect(() => {
@@ -201,18 +217,6 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         <NavLink
           to={item.path!}
           className={({ isActive }) => {
-            const baseStyles = {
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--macos-space-3)',
-              padding: 'var(--macos-space-3)',
-              borderRadius: 'var(--macos-radius-medium)',
-              textDecoration: 'none',
-              transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              paddingLeft: depth > 0 ? 'calc(var(--macos-space-8) + var(--macos-space-3))' : 'var(--macos-space-3)',
-            };
-
             return `macos-interactive ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
           }}
           style={({ isActive }) => ({
@@ -308,6 +312,27 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
           {sidebarItems.map((item) => renderMenuItem(item))}
         </ul>
       </nav>
+
+      {/* Dark mode toggle button */}
+      <div
+        style={{
+          padding: 'var(--macos-space-3)',
+          borderTop: '1px solid var(--macos-border-primary)',
+          textAlign: 'center',
+        }}
+      >
+        <button
+          className="macos-focusable macos-interactive"
+          style={{
+            padding: 'var(--macos-space-2)',
+            borderRadius: 'var(--macos-radius-medium)',
+            color: 'var(--macos-text-secondary)',
+          }}
+          onClick={toggleDarkMode}
+        >
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
+      </div>
     </aside>
   );
 };

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import '@/styles/OpenPallets.css';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 

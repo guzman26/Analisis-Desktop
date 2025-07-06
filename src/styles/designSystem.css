@@ -681,3 +681,29 @@ body {
     border: 1px solid var(--macos-text-primary);
   }
 }
+
+/* Manual dark mode toggle class */
+:root.macos-dark {
+  --macos-window-bg: rgba(40, 40, 40, 0.95);
+  --macos-window-bg-translucent: rgba(50, 50, 50, 0.8);
+  --macos-titlebar-bg: rgba(50, 50, 50, 0.85);
+  --macos-sidebar-bg: rgba(30, 30, 30, 0.95);
+  --macos-content-bg: rgba(40, 40, 40, 0.95);
+
+  --macos-text-primary: rgba(255, 255, 255, 0.85);
+  --macos-text-secondary: rgba(255, 255, 255, 0.6);
+  --macos-text-tertiary: rgba(255, 255, 255, 0.4);
+  --macos-text-quaternary: rgba(255, 255, 255, 0.18);
+  --macos-text-on-color: rgba(255, 255, 255, 0.95);
+
+  --macos-border-primary: rgba(255, 255, 255, 0.1);
+  --macos-border-secondary: rgba(255, 255, 255, 0.05);
+  --macos-separator: rgba(255, 255, 255, 0.08);
+
+  --macos-gray-1: #8E8E93;
+  --macos-gray-2: #636366;
+  --macos-gray-3: #48484A;
+  --macos-gray-4: #3A3A3C;
+  --macos-gray-5: #2C2C2E;
+  --macos-gray-6: #1C1C1E;
+}
