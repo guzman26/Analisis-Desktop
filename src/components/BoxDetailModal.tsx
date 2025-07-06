@@ -64,6 +64,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
       onClose={onClose}
       title={`Detalles de Caja ${box.codigo}`}
       size="large"
+      showTrafficLights={true}
     >
       <div className="space-y-6">
         {/* Status Badges */}
