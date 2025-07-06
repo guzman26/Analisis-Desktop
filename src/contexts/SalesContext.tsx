@@ -34,30 +34,12 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
         ...params,
         state: 'DRAFT',
       });
-      console.log('response', response);
-
-      const responseData = response as any;
-
-      let salesData;
-      if (responseData.body && typeof responseData.body === 'string') {
-        // If response has a body string, parse it
-        try {
-          const bodyData = JSON.parse(responseData.body);
-          salesData = bodyData.data || bodyData;
-        } catch (error) {
-          console.error('SalesContext: Error parsing body:', error);
-          salesData = responseData;
-        }
-      } else {
-        // If response is direct data structure
-        salesData = responseData;
-      }
 
       return {
         data: {
-          items: salesData.items || [],
-          nextKey: salesData.nextKey,
-          count: salesData.count || 0,
+          items: response.data.items || [],
+          nextKey: response.data.nextKey,
+          count: response.data.count || 0,
         },
       };
     },
@@ -69,29 +51,11 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
         ...params,
         state: 'CONFIRMED',
       });
-
-      const responseData = response as any;
-
-      let salesData;
-      if (responseData.body && typeof responseData.body === 'string') {
-        // If response has a body string, parse it
-        try {
-          const bodyData = JSON.parse(responseData.body);
-          salesData = bodyData.data || bodyData;
-        } catch (error) {
-          console.error('SalesContext: Error parsing body:', error);
-          salesData = responseData;
-        }
-      } else {
-        // If response is direct data structure
-        salesData = responseData;
-      }
-
       return {
         data: {
-          items: salesData.items || [],
-          nextKey: salesData.nextKey,
-          count: salesData.count || 0,
+          items: response.data.items || [],
+          nextKey: response.data.nextKey,
+          count: response.data.count || 0,
         },
       };
     },

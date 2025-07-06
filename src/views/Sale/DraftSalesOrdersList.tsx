@@ -5,6 +5,8 @@ import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { confirmSale } from '@/api/endpoints';
 import '@/styles/SalesOrdersList.css';
+import WindowContainer from '@/components/design-system/WindowContainer';
+import Card from '@/components/design-system/Card';
 
 const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +112,7 @@ const SalesOrdersList: React.FC = () => {
   }
 
   return (
-    <div className="sales-orders-list">
+    <WindowContainer title="Órdenes de Venta">
       <div className="sales-orders-header">
         <h1>Órdenes de Venta</h1>
         <button
@@ -137,7 +139,7 @@ const SalesOrdersList: React.FC = () => {
         <div className="sales-orders-grid">
           {salesOrdersDRAFTPaginated.data.map((sale: Sale) => {
             return (
-              <div key={sale.saleId} className="sale-card">
+              <Card key={sale.saleId}>
                 <div className="sale-main-info">
                   <div className="sale-date-primary">
                     {formatDate(sale.createdAt)}
@@ -221,7 +223,7 @@ const SalesOrdersList: React.FC = () => {
                     Ver Detalles
                   </button>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -261,7 +263,7 @@ const SalesOrdersList: React.FC = () => {
         isOpen={showDetailModal}
         onClose={handleCloseModal}
       />
-    </div>
+    </WindowContainer>
   );
 };
 
