@@ -1,0 +1,181 @@
+/* BoxCard.module.css */
+
+.boxCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--macos-radius-medium);
+  background-color: white;
+  box-shadow: var(--macos-shadow-sm);
+  padding: var(--macos-space-4);
+  transition: all 0.2s ease;
+  border: 1px solid var(--macos-gray-2);
+  overflow: hidden;
+  width: 100%;
+  max-width: 380px;
+}
+
+.boxCard:hover {
+  box-shadow: var(--macos-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Status indicator bar on the left side */
+.statusIndicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+}
+
+.selected {
+  border: 2px solid var(--macos-accent);
+  box-shadow: var(--macos-shadow-md);
+}
+
+.selectable {
+  cursor: pointer;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--macos-space-3);
+}
+
+.codeContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.code {
+  font-family: var(--macos-font-mono);
+  font-size: var(--macos-font-subheadline);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+}
+
+/* Location badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--macos-space-1) var(--macos-space-2);
+  border-radius: var(--macos-radius-full);
+  font-size: var(--macos-font-caption);
+  font-weight: 500;
+}
+
+.locationPacking {
+  background-color: var(--macos-blue-transparentize-6);
+  color: var(--macos-blue);
+}
+
+.locationBodega {
+  background-color: var(--macos-green-transparentize-6);
+  color: var(--macos-green);
+}
+
+.locationVenta {
+  background-color: var(--macos-purple-transparentize-6);
+  color: var(--macos-purple);
+}
+
+.locationTransito {
+  background-color: var(--macos-orange-transparentize-6);
+  color: var(--macos-orange);
+}
+
+.locationDefault {
+  background-color: var(--macos-gray-3);
+  color: var(--macos-text-secondary);
+}
+
+/* Info section */
+.infoSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--macos-space-3);
+  margin-bottom: var(--macos-space-3);
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 calc(50% - var(--macos-space-3));
+  min-width: 100px;
+  background-color: var(--macos-gray-1);
+  padding: var(--macos-space-2) var(--macos-space-3);
+  border-radius: var(--macos-radius-medium);
+}
+
+.infoLabel {
+  font-size: var(--macos-font-caption);
+  color: var(--macos-text-secondary);
+  margin-bottom: var(--macos-space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-1);
+}
+
+.infoValue {
+  font-size: var(--macos-font-callout);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--macos-space-2);
+  margin-top: auto;
+}
+
+/* Selection checkbox */
+.checkboxContainer {
+  position: absolute;
+  top: var(--macos-space-3);
+  right: var(--macos-space-3);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--macos-radius-xs);
+  border: 2px solid var(--macos-gray-4);
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.checkbox:hover {
+  border-color: var(--macos-accent);
+}
+
+.checkboxSelected {
+  background-color: var(--macos-accent);
+  border-color: var(--macos-accent);
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .infoItem {
+    flex: 1 1 100%;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
+}

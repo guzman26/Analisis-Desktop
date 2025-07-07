@@ -5,6 +5,8 @@ import { SalesContext } from '@/contexts/SalesContext';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { formatDate } from '@/utils/formatDate';
 import '@/styles/SaleReportPrintView.css';
+import { WindowContainer } from '@/components/design-system';
+import { Button } from '@/components/design-system';
 
 const SaleReportPrintView: React.FC = () => {
   const { saleId } = useParams<{ saleId: string }>();
@@ -138,15 +140,15 @@ const SaleReportPrintView: React.FC = () => {
   }
 
   return (
-    <div className="print-view-container">
+    <WindowContainer title="Ficha Interna" showTrafficLights={false}>
       {/* Print Actions - Hidden when printing */}
       <div className="print-actions no-print">
-        <button onClick={handleGoBack} className="btn btn-secondary">
+        <Button onClick={handleGoBack} variant="secondary">
           ← Volver a Órdenes
-        </button>
-        <button onClick={handlePrint} className="btn btn-primary">
+        </Button>
+        <Button onClick={handlePrint} variant="primary">
           🖨️ Imprimir Guía
-        </button>
+        </Button>
       </div>
 
       {/* Printable Content */}
@@ -421,7 +423,7 @@ const SaleReportPrintView: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </WindowContainer>
   );
 };
 

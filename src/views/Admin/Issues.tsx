@@ -18,7 +18,10 @@ const AdminIssues: React.FC = () => {
     }
   };
 
-  console.log(adminIssuesPaginated.data);
+  const filteredIssues = adminIssuesPaginated.data.filter(
+    (issue) => issue.status !== 'RESOLVED'
+  );
+
   return (
     <div className="sales-orders-list">
       <div className="sales-orders-header">
@@ -45,7 +48,7 @@ const AdminIssues: React.FC = () => {
         </div>
       ) : (
         <div className="sales-orders-grid">
-          {adminIssuesPaginated.data.map((issue) => (
+          {filteredIssues.map((issue) => (
             <IssueCard key={issue.id} issue={issue} />
           ))}
         </div>

@@ -103,6 +103,9 @@ export const generateSaleReport = (id: string) =>
 export const getIssues = (params?: GetIssuesParamsPaginated) =>
   get<PaginatedResponse<Issue>>('/admin/issues', params);
 
+export const updateIssueStatus = (id: string, status: string) =>
+  put<any>(`/admin/issues/${id}/status`, { status });
+
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
   get(`/powerbi/export/${dataType}`);

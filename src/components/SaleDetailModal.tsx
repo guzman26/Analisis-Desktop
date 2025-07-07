@@ -6,6 +6,7 @@ import { getBoxByCode, getCustomerById } from '@/api/endpoints';
 import BoxDetailModal from './BoxDetailModal';
 import Button from '@/components/design-system/Button';
 import { Modal } from './design-system';
+import '@/styles/SaleDetailModal.css';
 
 interface SaleDetailModalProps {
   sale: Sale | null;
@@ -130,6 +131,30 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
         {/* Content */}
         <div className="modal-body">
+          {/* Sale Summary */}
+          <div className="modal-section">
+            <h3 className="section-title">Resumen de la Venta</h3>
+            <div className="info-grid">
+              <div className="info-item total-amount-item">
+                <span className="info-label">Total de Cajas</span>
+                <span className="info-value large total-amount-text">
+                  {getTotalBoxes()}
+                </span>
+              </div>
+              <div className="info-item total-amount-item">
+                <span className="info-label">Total de Pallets</span>
+                <span className="info-value large total-amount-text">
+                  {sale.items?.length || 0}
+                </span>
+              </div>
+
+              <div className="info-item">
+                <span className="info-label">Fecha de Creación</span>
+                <span className="info-value">{formatDate(sale.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+
           {/* Customer Information */}
           <div className="modal-section">
             <h3 className="section-title">Información del Cliente</h3>
@@ -160,28 +185,6 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                   </span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Sale Summary */}
-          <div className="modal-section">
-            <h3 className="section-title">Resumen de la Venta</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Total de Cajas</span>
-                <span className="info-value large">{getTotalBoxes()}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Total de Pallets</span>
-                <span className="info-value large">
-                  {sale.items?.length || 0}
-                </span>
-              </div>
-
-              <div className="info-item">
-                <span className="info-label">Fecha de Creación</span>
-                <span className="info-value">{formatDate(sale.createdAt)}</span>
-              </div>
             </div>
           </div>
 
@@ -242,10 +245,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
           {/* Actions */}
           <div className="modal-actions">
-            <Button
-              variant="primary"
-              onClick={handleShowPrintView}
-            >
+            <Button variant="primary" onClick={handleShowPrintView}>
               📄 Ver Guía de Despacho
             </Button>
             {sale.reportUrl && (

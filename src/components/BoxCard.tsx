@@ -1,9 +1,10 @@
 import { Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
-import { Card, Button } from '@/components/design-system';
-import { Calendar, Package, MapPin, Check } from 'lucide-react';
+import { Button } from '@/components/design-system';
+import { Calendar, MapPin, Check, Tag, Clipboard } from 'lucide-react';
 import { clsx } from 'clsx';
+import styles from './BoxCard.module.css';
 
 interface BoxCardProps {
   box: Box;
@@ -42,6 +43,10 @@ const BoxCard = ({
 
     if (isSelectable && onSelectionToggle) {
       onSelectionToggle(box.codigo);
+    } else {
+      // If not selectable, show details
+      setSelectedBox(box);
+      setIsModalOpen(true);
     }
   };
 
@@ -52,75 +57,108 @@ const BoxCard = ({
     }
   };
 
-  const locationColors = {
-    packing: 'bg-blue-100 text-blue-700 border-blue-200',
-    bodega: 'bg-green-100 text-green-700 border-green-200',
-    default: 'bg-gray-100 text-gray-700 border-gray-200',
+  // Determine color for status indicator based on location
+  const getLocationColor = (location: string) => {
+    switch (location.toLowerCase()) {
+      case 'packing':
+        return 'var(--macos-blue)';
+      case 'bodega':
+        return 'var(--macos-green)';
+      case 'venta':
+        return 'var(--macos-purple)';
+      case 'transito':
+        return 'var(--macos-orange)';
+      default:
+        return 'var(--macos-gray-5)';
+    }
   };
 
-  const locationColor = locationColors[box.ubicacion.toLowerCase() as keyof typeof locationColors] || locationColors.default;
+  // Get the appropriate CSS class for the location badge
+  const getLocationClass = (location: string) => {
+    switch (location.toLowerCase()) {
+      case 'packing':
+        return styles.locationPacking;
+      case 'bodega':
+        return styles.locationBodega;
+      case 'venta':
+        return styles.locationVenta;
+      case 'transito':
+        return styles.locationTransito;
+      default:
+        return styles.locationDefault;
+    }
+  };
+  
+  const formattedDate = formatDate(box.fecha_registro);
+  const calibre = formatCalibreName(box.calibre.toString());
 
   return (
-    <Card
+    <div 
       className={clsx(
-        'relative transition-all duration-200',
-        isSelectable && 'cursor-pointer',
-        isSelected && 'ring-2 ring-macos-accent ring-offset-2'
+        styles.boxCard,
+        isSelectable && styles.selectable,
+        isSelected && styles.selected
       )}
       onClick={handleCardClick}
-      isPressable={isSelectable}
     >
+      {/* Status indicator */}
+      <div 
+        className={styles.statusIndicator} 
+        style={{ backgroundColor: getLocationColor(box.ubicacion) }}
+      />
+      
       {/* Selection Checkbox */}
       {isSelectable && (
-        <div
-          className={clsx(
-            'absolute top-3 left-3 w-5 h-5 rounded border-2 flex items-center justify-center transition-all',
-            isSelected
-              ? 'bg-macos-accent border-macos-accent'
-              : 'bg-white border-macos-border hover:border-macos-accent'
-          )}
-          onClick={handleCheckboxClick}
-        >
-          {isSelected && <Check className="w-3 h-3 text-white" />}
+        <div className={styles.checkboxContainer}>
+          <div
+            className={clsx(styles.checkbox, isSelected && styles.checkboxSelected)}
+            onClick={handleCheckboxClick}
+          >
+            {isSelected && <Check className="w-3 h-3 text-white" />}
+          </div>
         </div>
       )}
 
-      {/* Card Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-macos-text">{box.codigo}</h3>
-        <span className={clsx(
-          'px-2.5 py-1 text-xs font-medium rounded-macos-sm border',
-          locationColor
-        )}>
-          <MapPin className="w-3 h-3 inline mr-1" />
+      {/* Header with code and location */}
+      <div className={styles.header}>
+        <div className={styles.codeContainer}>
+          <span className={styles.code}>{box.codigo}</span>
+        </div>
+        <span className={`${styles.badge} ${getLocationClass(box.ubicacion)}`}>
+          <MapPin size={12} className="mr-1" />
           {box.ubicacion}
         </span>
       </div>
 
-      {/* Card Info */}
-      <div className="space-y-3 mb-4">
-        <div className="flex items-center text-sm">
-          <Calendar className="w-4 h-4 text-macos-text-secondary mr-2" />
-          <span className="text-macos-text-secondary">Fecha:</span>
-          <span className="text-macos-text ml-1 font-medium">
-            {formatDate(box.fecha_registro)}
-          </span>
+      {/* Info Cards Section */}
+      <div className={styles.infoSection}>
+        <div className={styles.infoItem}>
+          <div className={styles.infoLabel}>
+            <Calendar size={14} />
+            Fecha
+          </div>
+          <div className={styles.infoValue}>
+            {formattedDate}
+          </div>
         </div>
 
-        <div className="flex items-center text-sm">
-          <Package className="w-4 h-4 text-macos-text-secondary mr-2" />
-          <span className="text-macos-text-secondary">Calibre:</span>
-          <span className="text-macos-text ml-1 font-medium">
-            {formatCalibreName(box.calibre.toString())}
-          </span>
+        <div className={styles.infoItem}>
+          <div className={styles.infoLabel}>
+            <Tag size={14} />
+            Calibre
+          </div>
+          <div className={styles.infoValue}>
+            {calibre}
+          </div>
         </div>
       </div>
 
       {/* Card Actions */}
-      <div className="flex flex-wrap gap-2">
+      <div className={styles.actions}>
         <Button
           variant="secondary"
           size="small"
+          leftIcon={<Clipboard size={14} />}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedBox(box);
@@ -147,7 +185,7 @@ const BoxCard = ({
         
         {showAssignToCompatibleButton && onAssignToCompatiblePallet && (
           <Button
-            variant="primary"
+            variant="secondary"
             size="small"
             onClick={(e) => {
               e.stopPropagation();
@@ -155,19 +193,13 @@ const BoxCard = ({
             }}
             disabled={isCreatingPallet || isAssigningToCompatible}
             isLoading={isAssigningToCompatible}
-            className="!bg-macos-success hover:!bg-green-600"
+            className="!bg-macos-green-transparentize-6 !text-macos-green hover:!bg-macos-green-transparentize-5"
           >
             {!isAssigningToCompatible && 'Asignar a Compatible'}
           </Button>
         )}
-        
-        {box.estado === 'open' && (
-          <Button variant="primary" size="small">
-            Cerrar Pallet
-          </Button>
-        )}
       </div>
-    </Card>
+    </div>
   );
 };
 

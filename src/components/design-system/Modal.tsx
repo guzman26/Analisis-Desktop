@@ -78,7 +78,7 @@ const Modal: React.FC<ModalProps> = ({
               <motion.div
                 className={twMerge(
                   clsx(
-                    'fixed top-[10%] left-1/2 z-[51] max-h-[80vh] overflow-hidden',
+                    'fixed top-[5%] left-[25%] z-[51] max-h-[80vh] overflow-hidden',
                     'bg-white/95 rounded-lg border border-white/20',
                     'shadow-[0_0_0_0.5px_rgba(0,0,0,0.1),0_4px_20px_rgba(0,0,0,0.15),0_25px_50px_rgba(0,0,0,0.25)]',
                     sizes[size],

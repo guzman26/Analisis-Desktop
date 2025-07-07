@@ -1,5 +1,5 @@
 /**
- * Nuevo formato de código de caja (17 dígitos):
+ * Nuevo formato de código de caja (16 dígitos):
  * D (1 dígito): Día de la semana
  * SS (2 dígitos): Semana
  * AA (2 dígitos): Año
@@ -8,12 +8,11 @@
  * T (1 dígito): Turno
  * CC (2 dígitos): Calibre
  * F (1 dígito): Formato
- * C (1 dígito): Empresa
  * CCCC (4 dígitos): Contador
  */
 
 /**
- * FUNCIONES PARA CÓDIGOS DE CAJAS (17 dígitos)
+ * FUNCIONES PARA CÓDIGOS DE CAJAS (16 dígitos)
  */
 
 // Code parsing utilities with configuration-based approach
@@ -21,8 +20,8 @@
 // Code format configurations
 const FORMATS = {
   box: {
-    length: 17,
-    pattern: /^\d{17}$/,
+    length: 16,
+    pattern: /^\d{16}$/,
     fields: {
       dia: [0, 1],
       semana: [1, 3],
@@ -32,14 +31,13 @@ const FORMATS = {
       turno: [8, 9],
       calibre: [9, 11],
       formato: [11, 12],
-      empresa: [12, 13],
-      contador: [13, 17],
+      contador: [12, 16],
     },
-    baseCode: [0, 13],
+    baseCode: [0, 12],
   },
   pallet: {
-    length: 12,
-    pattern: /^\d{12}$/,
+    length: 13,
+    pattern: /^\d{13}$/,
     fields: {
       calibre: [6, 8],
     },
@@ -109,7 +107,7 @@ export const getBaseCodeFromCodigo = (codigo: string): string => {
 // Box-specific extractors
 export const getBoxInfo = (codigo: string) => {
   if (detectCodigoType(codigo) !== 'box') {
-    throw new Error('Código de caja debe tener exactamente 17 dígitos');
+    throw new Error('Código de caja debe tener exactamente 16 dígitos');
   }
 
   const format = FORMATS.box;
@@ -133,7 +131,7 @@ export const validateCodigoPallet = (codigo: string): boolean =>
 export const formatCodigoForDisplay = (codigo: string): string => {
   if (detectCodigoType(codigo) === 'box') {
     const info = getBoxInfo(codigo);
-    return `${info.dia}-${info.semana}-${info.ano}-${info.operario}-${info.empacadora}-${info.turno}-${info.calibre}-${info.formato}-${info.empresa}-${info.contador}`;
+    return `${info.dia}-${info.semana}-${info.ano}-${info.operario}-${info.empacadora}-${info.turno}-${info.calibre}-${info.formato}-${info.contador}`;
   }
   return codigo;
 };
@@ -150,7 +148,7 @@ export const getCodigoSummary = (codigo: string): string => {
 };
 
 /**
- * FUNCIONES ESPECÍFICAS PARA CAJAS (17 dígitos)
+ * FUNCIONES ESPECÍFICAS PARA CAJAS (16 dígitos)
  */
 
 export const getDiaFromCodigo = (codigo: string) => {
@@ -188,14 +186,9 @@ export const getFormatoFromCodigo = (codigo: string) => {
   return codigo.slice(11, 12);
 };
 
-export const getEmpresaFromCodigo = (codigo: string) => {
-  // Empresa: posición 12
-  return codigo.slice(12, 13);
-};
-
 export const getContadorFromCodigo = (codigo: string) => {
-  // Contador: posiciones 13-16 (4 dígitos)
-  return codigo.slice(13, 17);
+  // Contador: posiciones 12-15 (4 dígitos)
+  return codigo.slice(12, 16);
 };
 
 /**

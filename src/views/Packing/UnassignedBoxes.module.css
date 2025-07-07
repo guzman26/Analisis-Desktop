@@ -1,0 +1,90 @@
+/* UnassignedBoxes.module.css */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: var(--macos-space-4);
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--macos-space-5);
+  flex-wrap: wrap;
+  gap: var(--macos-space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--macos-font-title-2);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+}
+
+.count {
+  background-color: var(--macos-gray-3);
+  padding: var(--macos-space-1) var(--macos-space-3);
+  border-radius: var(--macos-radius-full);
+  font-size: var(--macos-font-caption);
+  color: var(--macos-text-secondary);
+  margin-left: var(--macos-space-2);
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  color: var(--macos-accent);
+  background: none;
+  border: none;
+  font-size: var(--macos-font-subheadline);
+  cursor: pointer;
+  padding: var(--macos-space-2);
+  border-radius: var(--macos-radius-sm);
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover {
+  background-color: var(--macos-accent-transparentize-9);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--macos-space-10);
+  color: var(--macos-text-tertiary);
+  text-align: center;
+  background-color: var(--macos-gray-1);
+  border-radius: var(--macos-radius-large);
+}
+
+.emptyIcon {
+  margin-bottom: var(--macos-space-3);
+  opacity: 0.6;
+}
+
+/* Grid layout */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--macos-space-4);
+  width: 100%;
+  margin-bottom: var(--macos-space-4);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

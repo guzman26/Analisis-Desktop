@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import '../styles/designSystem.css';
 
@@ -7,19 +7,27 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const sidebarWidth = sidebarCollapsed
+    ? 'var(--macos-width-sidebar-collapsed)'
+    : 'var(--macos-width-sidebar)';
+
   return (
     <div className="macos-window-fullscreen">
-      <Sidebar />
-      <main 
-        className="macos-content macos-animate-fade-in" 
-        style={{ 
-          marginLeft: 'var(--macos-width-sidebar)',
+      <Sidebar onToggle={setSidebarCollapsed} />
+      <main
+        className="macos-content macos-animate-fade-in"
+        style={{
+          marginLeft: sidebarWidth,
           paddingLeft: 'var(--macos-space-6)',
           paddingRight: 'var(--macos-space-6)',
           paddingTop: 'var(--macos-space-6)',
           paddingBottom: 'var(--macos-space-6)',
           minHeight: '100vh',
-          overflow: 'auto'
+          overflow: 'auto',
+          transition:
+            'margin-left var(--macos-duration-normal) var(--macos-ease-out)',
         }}
       >
         {children}

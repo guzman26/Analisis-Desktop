@@ -1,15 +1,27 @@
-import React from 'react';
-import { Card } from '@/components/design-system';
+import React, { useState } from 'react';
+import { Card, Button } from '@/components/design-system';
 import { Issue } from '@/types';
 import '../styles/designSystem.css';
+import './IssueCard.css';
+import { updateIssueStatus } from '@/api/endpoints';
 
 interface IssueCardProps {
   issue: Issue;
   /** Optional click handler to show more details */
   onClick?: () => void;
+  /** Optional callback when status changes */
+  onStatusChange?: (newStatus: string) => void;
 }
 
-const IssueCard: React.FC<IssueCardProps> = ({ issue, onClick }) => {
+const IssueCard: React.FC<IssueCardProps> = ({
+  issue,
+  onClick,
+  onStatusChange,
+}) => {
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState(issue.status);
+  console.log('issue', issue);
+
   // Format creation date in Spanish locale (e.g. 04/06/2025, 16:19)
   const formattedDate = new Date(issue.createdAt).toLocaleString('es-ES', {
     year: 'numeric',
@@ -19,97 +31,80 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, onClick }) => {
     minute: '2-digit',
   });
 
-  // Determine badge color based on status
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'OPEN':
-        return 'var(--macos-orange)';
-      case 'IN_PROGRESS':
-        return 'var(--macos-yellow)';
-      case 'CLOSED':
-        return 'var(--macos-green)';
-      default:
-        return 'var(--macos-gray-3)';
+  // Compute CSS class for status badge based on current status
+  const statusClass = `status-badge ${currentStatus
+    .toLowerCase()
+    .replace('_', '-')}`;
+
+  const statusOptions = [
+    { value: 'PENDING', label: 'Pendiente' },
+    { value: 'IN_PROGRESS', label: 'En progreso' },
+    { value: 'RESOLVED', label: 'Resuelto' },
+  ];
+
+  const handleStatusChange = async (newStatus: string) => {
+    setUpdating(newStatus);
+    try {
+      console.log('issue.id', issue.id);
+      await updateIssueStatus(issue.id, newStatus);
+      setCurrentStatus(newStatus);
+      if (onStatusChange) onStatusChange(newStatus);
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setUpdating(null);
     }
   };
 
   return (
     <Card
-      variant="flat"
+      variant="default"
       isHoverable
       isPressable={!!onClick}
       onClick={onClick}
-      padding="medium"
-      style={{ width: '100%' }}
+      className="issue-card"
     >
       {/* Header: Date & Status */}
-      <div
-        className="macos-hstack"
-        style={{
-          justifyContent: 'space-between',
-          marginBottom: 'var(--macos-space-2)',
-        }}
-      >
-        <span className="macos-text-headline" style={{ fontWeight: 700 }}>
-          {formattedDate}
-        </span>
-        <span
-          className="macos-text-footnote"
-          style={{
-            backgroundColor: getStatusColor(issue.status),
-            color: 'var(--macos-text-on-color)',
-            padding: 'var(--macos-space-1) var(--macos-space-2)',
-            borderRadius: 'var(--macos-radius-small)',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-          }}
-        >
-          {issue.status}
-        </span>
+      <div className="issue-card-header macos-hstack">
+        <span className="issue-date macos-text-headline">{formattedDate}</span>
+        <span className={statusClass}>{currentStatus}</span>
       </div>
 
       {/* Title */}
       {issue.title && (
-        <div style={{ marginBottom: 'var(--macos-space-3)' }}>
-          <span className="macos-text-callout" style={{ fontWeight: 600 }}>
+        <div className="issue-title">
+          <span className="macos-text-callout issue-title-text">
             {issue.title}
           </span>
         </div>
       )}
 
       {/* Secondary Info: ID */}
-      <div
-        className="macos-hstack"
-        style={{
-          gap: 'var(--macos-space-1)',
-          marginBottom: 'var(--macos-space-2)',
-        }}
-      >
-        <span
-          className="macos-text-footnote"
-          style={{ color: 'var(--macos-text-secondary)', fontWeight: 600 }}
-        >
-          ID:
-        </span>
-        <span
-          className="macos-text-footnote"
-          style={{ fontFamily: 'monospace', fontWeight: 600 }}
-        >
-          {issue.id}
-        </span>
+      <div className="issue-secondary macos-hstack">
+        <span className="label macos-text-footnote">ID:</span>
+        <span className="value macos-text-footnote">{issue.id}</span>
       </div>
 
       {/* Description */}
-      <div className="macos-stack" style={{ gap: 'var(--macos-space-1)' }}>
-        <span
-          className="macos-text-footnote"
-          style={{ color: 'var(--macos-text-secondary)', fontWeight: 600 }}
-        >
-          Descripción:
-        </span>
-        <p className="macos-text-body" style={{ margin: 0 }}>
-          {issue.description}
-        </p>
+      <div className="issue-description macos-stack">
+        <span className="label macos-text-footnote">Descripción:</span>
+        <p className="macos-text-body description-text">{issue.description}</p>
+      </div>
+
+      {/* Status Update Buttons */}
+      <div className="issue-actions macos-hstack">
+        {statusOptions.map((opt) => (
+          <Button
+            key={opt.value}
+            variant={currentStatus === opt.value ? 'primary' : 'secondary'}
+            size="small"
+            disabled={currentStatus === opt.value || !!updating}
+            isLoading={updating === opt.value}
+            onClick={() => handleStatusChange(opt.value)}
+          >
+            {opt.label}
+          </Button>
+        ))}
       </div>
     </Card>
   );

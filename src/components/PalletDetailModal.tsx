@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Box, Pallet } from '@/types';
-import { formatCalibreName } from '@/utils/getParamsFromCodigo';
-import '@/styles/PalletDetailModal.css';
+import { formatCalibreName, getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { getBoxByCode } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import { formatDate } from '@/utils/formatDate';
-import { Modal } from './design-system';
+import { Modal, Button, Card } from './design-system';
+import {
+  CheckCircle,
+  Calendar,
+  Package,
+  Layers,
+  MapPin,
+  Plus,
+  MoveRight,
+  PackageX,
+  Hash,
+} from 'lucide-react';
+import { clsx } from 'clsx';
 
 interface PalletDetailModalProps {
   pallet: Pallet | null;
@@ -28,6 +39,9 @@ const PalletDetailModal = ({
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+
+  const calibre = getCalibreFromCodigo(pallet?.codigo || '');
+
   // Close modal on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -53,7 +67,6 @@ const PalletDetailModal = ({
     try {
       const response = await getBoxByCode(codigo);
       const boxData = extractDataFromResponse(response);
-      // extractDataFromResponse returns an array, so we need the first element
       if (boxData && boxData.length > 0) {
         setSelectedBox(boxData[0]);
         setShowBoxDetailModal(true);
@@ -65,134 +78,223 @@ const PalletDetailModal = ({
     }
   };
 
+  // Format date for display
+  const formattedDate = pallet.fechaCreacion
+    ? formatDate(pallet.fechaCreacion)
+    : 'N/A';
+
+  // === Visual helpers ===
+  const locationColors = {
+    packing: 'bg-blue-100 text-blue-700 border-blue-200',
+    bodega: 'bg-green-100 text-green-700 border-green-200',
+    venta: 'bg-purple-100 text-purple-700 border-purple-200',
+    transito: 'bg-orange-100 text-orange-700 border-orange-200',
+    default: 'bg-gray-100 text-gray-700 border-gray-200',
+  } as const;
+
+  const statusColors = {
+    open: 'bg-green-100 text-green-700 border-green-200',
+    closed: 'bg-blue-100 text-blue-700 border-blue-200',
+    default: 'bg-gray-100 text-gray-700 border-gray-200',
+  } as const;
+
+  // Reusable row (mirrors BoxDetailModal)
+  const InfoRow = ({
+    icon,
+    label,
+    value,
+    className,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    value: React.ReactNode;
+    className?: string;
+  }) => (
+    <div
+      className={clsx(
+        'flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors',
+        className
+      )}
+    >
+      <div className="text-macos-text-secondary mt-0.5">{icon}</div>
+      <div className="flex-1">
+        <p className="text-sm text-macos-text-secondary">{label}</p>
+        <p className="text-base font-medium text-macos-text">{value}</p>
+      </div>
+    </div>
+  );
+
+  const locationColor =
+    locationColors[
+      pallet.ubicacion.toLowerCase() as keyof typeof locationColors
+    ] || locationColors.default;
+
+  const statusColor =
+    statusColors[pallet.estado as keyof typeof statusColors] ||
+    statusColors.default;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Detalle de la Paleta">
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="modal-header">
-          <div>
-            <h2 className="modal-title">Pallet {pallet.codigo}</h2>
-            <div className="modal-badges">
-              <span className={`status-badge ${pallet.estado.toLowerCase()}`}>
-                {pallet.estado.toUpperCase()}
-              </span>
-              <span
-                className={`location-badge ${pallet.ubicacion.toLowerCase()}`}
-              >
-                {pallet.ubicacion}
-              </span>
-            </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Detalles de Pallet ${pallet.codigo}`}
+      size="large"
+      showTrafficLights={true}
+    >
+      <div className="space-y-6">
+        {/* Status Badges */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex gap-2">
+            <span
+              className={clsx(
+                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+                locationColor
+              )}
+            >
+              <MapPin className="w-4 h-4" />
+              {pallet.ubicacion}
+            </span>
+            <span
+              className={clsx(
+                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+                statusColor
+              )}
+            >
+              {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+            </span>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
+          <span className="text-sm text-macos-text-secondary">
+            Cajas:{' '}
+            <span className="font-medium text-macos-accent">
+              {pallet.cantidadCajas}
+            </span>
+          </span>
         </div>
 
-        {/* Content */}
-        <div className="modal-body">
-          {/* Basic Info */}
-          <div className="modal-section">
-            <h3 className="section-title">Información General</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Calibre</span>
-                <span className="info-value calibre-text">
-                  {formatCalibreName(pallet.calibre)}
-                </span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Cantidad de Cajas</span>
-                <span className="info-value large">{pallet.cantidadCajas}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Fecha Creación</span>
-                <span className="info-value">
-                  {formatDate(pallet.fechaCreacion)}
-                </span>
-              </div>
+        {/* Main Information */}
+        <Card variant="flat" padding="none">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
+            <div className="space-y-1">
+              <InfoRow
+                icon={<Package className="w-5 h-5" />}
+                label="Calibre"
+                value={formatCalibreName(calibre)}
+              />
+              <InfoRow
+                icon={<Hash className="w-5 h-5" />}
+                label="Código Base"
+                value={pallet.baseCode || 'N/A'}
+              />
+              <InfoRow
+                icon={<Calendar className="w-5 h-5" />}
+                label="Fecha de Creación"
+                value={formattedDate}
+              />
+            </div>
+            <div className="space-y-1">
+              <InfoRow
+                icon={<Layers className="w-5 h-5" />}
+                label="Total de Cajas"
+                value={pallet.cantidadCajas}
+              />
+              <InfoRow
+                icon={<Hash className="w-5 h-5" />}
+                label="Estado"
+                value={pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+              />
             </div>
           </div>
+        </Card>
 
-          {/* Boxes */}
-          <div className="modal-section">
-            <h3 className="section-title">Cajas ({pallet.cajas.length})</h3>
-            {pallet.cajas.length === 0 ? (
-              <div className="boxes-empty">No hay cajas en este pallet</div>
-            ) : (
-              <div className="boxes-container">
-                <div className="boxes-grid">
-                  {pallet.cajas.map((caja, index) => (
-                    <div
-                      key={index}
-                      className="box-item"
-                      onClick={() => handleBoxClick(caja)}
-                      style={{ cursor: 'pointer' }}
+        {/* Boxes */}
+        <Card variant="flat">
+          <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+            <Layers className="w-4 h-4" />
+            Cajas
+            <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
+              {pallet.cajas.length}
+            </span>
+          </h3>
+          {pallet.cajas.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
+              <PackageX className="w-8 h-8 mb-3 opacity-60" />
+              No hay cajas registradas en este pallet
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-72 overflow-y-auto">
+              {pallet.cajas.map((caja, index) => (
+                <button
+                  key={index}
+                  className="px-3 py-2 bg-white border border-macos-border rounded-macos-sm text-xs font-mono hover:border-macos-accent hover:shadow-sm transition"
+                  onClick={() => handleBoxClick(caja)}
+                >
+                  {caja}
+                </button>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+          {pallet.estado === 'open' && (
+            <>
+              <Button
+                variant="secondary"
+                size="medium"
+                leftIcon={<Plus size={16} />}
+                onClick={() => onAddBox?.(pallet.codigo)}
+              >
+                Añadir Caja
+              </Button>
+              <Button
+                variant="primary"
+                size="medium"
+                leftIcon={<CheckCircle size={16} />}
+                onClick={() => onClosePallet?.(pallet.codigo)}
+              >
+                Cerrar Pallet
+              </Button>
+            </>
+          )}
+          {pallet.estado === 'closed' && (
+            <div className="relative">
+              <Button
+                variant="secondary"
+                size="medium"
+                leftIcon={<MoveRight size={16} />}
+                onClick={() => setShowMoveOptions(!showMoveOptions)}
+              >
+                Mover Pallet {showMoveOptions ? '▲' : '▼'}
+              </Button>
+              {showMoveOptions && (
+                <div className="absolute left-0 mt-1 w-full rounded-macos-sm bg-white shadow-lg z-10">
+                  {moveLocations.map((location) => (
+                    <button
+                      key={location}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
+                      onClick={() => {
+                        onMovePallet?.(pallet.codigo, location);
+                        setShowMoveOptions(false);
+                      }}
                     >
-                      {caja}
-                    </div>
+                      <MapPin size={14} />
+                      Mover a {location}
+                    </button>
                   ))}
                 </div>
-              </div>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="modal-actions">
-            {/* Actions for Open Pallets */}
-            {pallet.estado === 'open' && (
-              <>
-                <button
-                  className="action-button secondary"
-                  onClick={() => onAddBox?.(pallet.codigo)}
-                >
-                  + Añadir Caja
-                </button>
-
-                <button
-                  className="action-button primary"
-                  onClick={() => onClosePallet?.(pallet.codigo)}
-                >
-                  Cerrar Pallet
-                </button>
-              </>
-            )}
-
-            {/* Actions for Closed Pallets */}
-            {pallet.estado === 'closed' && (
-              <div className="move-dropdown">
-                <button
-                  className="action-button warning"
-                  onClick={() => setShowMoveOptions(!showMoveOptions)}
-                >
-                  Mover Pallet ▼
-                </button>
-
-                {showMoveOptions && (
-                  <div className="move-options">
-                    {moveLocations.map((location) => (
-                      <button
-                        key={location}
-                        className="move-option"
-                        onClick={() => {
-                          onMovePallet?.(pallet.codigo, location);
-                          setShowMoveOptions(false);
-                        }}
-                      >
-                        Mover a {location}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Box Detail Modal */}
+        <BoxDetailModal
+          box={selectedBox}
+          isOpen={showBoxDetailModal}
+          onClose={() => setShowBoxDetailModal(false)}
+        />
       </div>
-      <BoxDetailModal
-        box={selectedBox}
-        isOpen={showBoxDetailModal}
-        onClose={() => setShowBoxDetailModal(false)}
-      />
     </Modal>
   );
 };

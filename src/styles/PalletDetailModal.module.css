@@ -1,0 +1,258 @@
+/* PalletDetailModal.module.css */
+
+/* Header styles */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--macos-space-5);
+  position: relative;
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--macos-space-2);
+}
+
+.modalTitle {
+  margin: 0;
+  color: var(--macos-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+}
+
+.titleCode {
+  font-weight: 700;
+}
+
+.statusIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--macos-space-1);
+  padding: var(--macos-space-1) var(--macos-space-3);
+  border-radius: var(--macos-radius-full);
+  font-size: var(--macos-font-footnote);
+  font-weight: 600;
+}
+
+.statusOpen {
+  background-color: var(--macos-green-transparentize-6);
+  color: var(--macos-green);
+}
+
+.statusClosed {
+  background-color: var(--macos-blue-transparentize-6);
+  color: var(--macos-blue);
+}
+
+.metaInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-3);
+  margin-top: var(--macos-space-2);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-1);
+  color: var(--macos-text-secondary);
+  font-size: var(--macos-font-footnote);
+}
+
+/* Main content styles */
+.contentSection {
+  margin-bottom: var(--macos-space-6);
+}
+
+.sectionTitle {
+  font-size: var(--macos-font-callout);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+  margin-bottom: var(--macos-space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+}
+
+.infoCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--macos-space-4);
+  margin-bottom: var(--macos-space-5);
+}
+
+.infoCard {
+  background-color: var(--macos-gray-2);
+  border-radius: var(--macos-radius-medium);
+  padding: var(--macos-space-4);
+  display: flex;
+  flex-direction: column;
+}
+
+.infoLabel {
+  font-size: var(--macos-font-caption);
+  color: var(--macos-text-secondary);
+  margin-bottom: var(--macos-space-1);
+}
+
+.infoValue {
+  font-size: var(--macos-font-title-3);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+}
+
+.calibreValue {
+  color: var(--macos-purple);
+}
+
+.boxesValue {
+  color: var(--macos-blue);
+}
+
+.dateValue {
+  color: var(--macos-text-primary);
+  font-size: var(--macos-font-subheadline);
+}
+
+/* Box list styles */
+.boxesSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--macos-space-3);
+}
+
+.boxCount {
+  background-color: var(--macos-gray-3);
+  padding: 2px var(--macos-space-2);
+  border-radius: var(--macos-radius-full);
+  font-size: var(--macos-font-caption);
+  color: var(--macos-text-secondary);
+}
+
+.boxesContainer {
+  background-color: var(--macos-gray-1);
+  border-radius: var(--macos-radius-large);
+  padding: var(--macos-space-4);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.boxesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--macos-space-2);
+}
+
+.boxItem {
+  padding: var(--macos-space-2) var(--macos-space-3);
+  background-color: white;
+  border-radius: var(--macos-radius-medium);
+  font-size: var(--macos-font-footnote);
+  font-family: var(--macos-font-mono);
+  text-align: center;
+  border: 1px solid var(--macos-gray-4);
+  transition: all 0.2s ease;
+}
+
+.boxItem:hover {
+  border-color: var(--macos-blue);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.boxesEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--macos-space-6);
+  color: var(--macos-text-tertiary);
+  text-align: center;
+}
+
+.emptyBoxIcon {
+  margin-bottom: var(--macos-space-3);
+  opacity: 0.6;
+}
+
+/* Action buttons */
+.actionButtons {
+  display: flex;
+  gap: var(--macos-space-3);
+  margin-top: var(--macos-space-5);
+  border-top: 1px solid var(--macos-gray-3);
+  padding-top: var(--macos-space-5);
+}
+
+.moveDropdown {
+  position: relative;
+  flex: 1;
+}
+
+.moveOptions {
+  position: absolute;
+  top: calc(100% + var(--macos-space-1));
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: var(--macos-radius-medium);
+  box-shadow: var(--macos-shadow-medium);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.moveOption {
+  padding: var(--macos-space-2) var(--macos-space-3);
+  font-size: var(--macos-font-body);
+  color: var(--macos-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.moveOption:hover {
+  background-color: var(--macos-gray-2);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .infoCards {
+    grid-template-columns: 1fr;
+  }
+  
+  .boxesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+  }
+}
+
+/* Scrollbar styles */
+.boxesContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.boxesContainer::-webkit-scrollbar-track {
+  background: var(--macos-gray-2);
+  border-radius: 4px;
+}
+
+.boxesContainer::-webkit-scrollbar-thumb {
+  background: var(--macos-gray-5);
+  border-radius: 4px;
+}
+
+.boxesContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--macos-gray-6);
+}

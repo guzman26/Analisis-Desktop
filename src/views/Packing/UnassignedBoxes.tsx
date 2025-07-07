@@ -7,6 +7,8 @@ import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
 } from '@/api/endpoints';
+import { RefreshCcw, Package } from 'lucide-react';
+import styles from './UnassignedBoxes.module.css';
 
 const UnassignedBoxes = () => {
   const { unassignedBoxes: unassignedBoxesInPacking } =
@@ -70,25 +72,30 @@ const UnassignedBoxes = () => {
   };
 
   return (
-    <div className="open-pallets">
-      <div className="open-pallets-header">
-        <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={() => console.log('Refrescar - TODO: Implement')}>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <h1 className={styles.title}>Cajas sin asignar</h1>
+          <span className={styles.count}>{unassignedBoxesInPacking.length} cajas</span>
+        </div>
+        <button 
+          className={styles.refreshButton}
+          onClick={() => console.log('Refrescar - TODO: Implement')}
+        >
+          <RefreshCcw size={16} />
           Refrescar
         </button>
-        <div className="open-pallets-count">
-          {unassignedBoxesInPacking.length} cajas
-        </div>
       </div>
 
       {/* Empty State */}
       {unassignedBoxesInPacking.length === 0 ? (
-        <div className="open-pallets-empty">
+        <div className={styles.emptyState}>
+          <Package size={48} className={styles.emptyIcon} />
           <p>No hay cajas sin asignar</p>
         </div>
       ) : (
-        /* Pallets Grid */
-        <div className="open-pallets-grid">
+        /* Boxes Grid */
+        <div className={styles.grid}>
           {unassignedBoxesInPacking.map((box: any) => (
             <BoxCard
               key={box.codigo}
