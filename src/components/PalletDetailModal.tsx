@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Pallet } from '@/types';
-import { formatCalibreName, getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+import {
+  formatCalibreName,
+  getCalibreFromCodigo,
+} from '@/utils/getParamsFromCodigo';
 import { getBoxByCode } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
@@ -16,6 +20,7 @@ import {
   MoveRight,
   PackageX,
   Hash,
+  Printer,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -36,6 +41,7 @@ const PalletDetailModal = ({
   onAddBox,
   onMovePallet,
 }: PalletDetailModalProps) => {
+  const navigate = useNavigate();
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
@@ -237,6 +243,14 @@ const PalletDetailModal = ({
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+          <Button
+            variant="secondary"
+            size="medium"
+            leftIcon={<Printer size={16} />}
+            onClick={() => navigate(`/pallet/label/${pallet.codigo}`)}
+          >
+            Generar Etiqueta
+          </Button>
           {pallet.estado === 'open' && (
             <>
               <Button

@@ -20,6 +20,7 @@ const SalesOrders = lazy(() => import('../views/Sale/DraftSalesOrdersList'));
 const SaleReportPrintView = lazy(
   () => import('../views/Sale/SaleReportPrintView')
 );
+const PalletLabelView = lazy(() => import('../views/PalletLabelView'));
 const ConfirmedSalesOrdersList = lazy(
   () => import('../views/Sale/ConfirmedSalesOrdersList')
 );
@@ -81,5 +82,9 @@ export const standaloneRoutes = [
   {
     path: '/sales/print/:saleId',
     element: <SaleReportPrintView />,
+  },
+  {
+    path: '/pallet/label/:palletCode',
+    element: <PalletLabelView />,
   },
 ];
