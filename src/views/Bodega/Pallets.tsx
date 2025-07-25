@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
+import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import { closePallet, movePallet } from '@/api/endpoints';
@@ -8,12 +8,12 @@ import { Card, Button } from '@/components/design-system';
 import '../../styles/designSystem.css';
 
 const BodegaPallets = () => {
-  const [, palletAPI] = usePalletContext();
-  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
+  const { closedPalletsInBodega, fetchClosedPalletsInBodega } =
+    usePalletContext();
 
   // Create refresh function
   const refresh = () => {
-    palletAPI.fetchPallets(1, 'completed');
+    fetchClosedPalletsInBodega();
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,14 +53,14 @@ const BodegaPallets = () => {
               Total Pallets
             </p>
             <p className="macos-text-title-1" style={{ color: 'var(--macos-blue)', fontWeight: 700 }}>
-              {closedPalletsInBodegaPaginated.length}
+              {closedPalletsInBodega.length}
             </p>
           </div>
         </Card>
       </div>
 
       {/* Content */}
-      {closedPalletsInBodegaPaginated.length === 0 ? (
+      {closedPalletsInBodega.length === 0 ? (
         <Card>
           <p className="macos-text-body" style={{ textAlign: 'center', padding: 'var(--macos-space-8)', color: 'var(--macos-text-secondary)' }}>
             No hay pallets en bodega
@@ -68,7 +68,7 @@ const BodegaPallets = () => {
         </Card>
       ) : (
         <div className="macos-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
-          {closedPalletsInBodegaPaginated.map((pallet: any) => (
+          {closedPalletsInBodega.map((pallet: Pallet) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}

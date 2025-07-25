@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { usePalletContext, useFilteredPallets } from '@/contexts/PalletContext';
+import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import { closePallet, movePallet } from '@/api/endpoints';
@@ -8,12 +8,13 @@ import { Card, Button } from '@/components/design-system';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
-  const [, palletAPI] = usePalletContext();
-  const { pallets: closedPalletsInPackingPaginated } = useFilteredPallets();
-
+  const {
+    closedPalletsInPacking,
+    fetchClosedPalletsInPacking,
+  } = usePalletContext();
   // Create refresh function
   const refresh = () => {
-    palletAPI.fetchPallets(1, 'completed');
+    fetchClosedPalletsInPacking();
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,54 +27,86 @@ const ClosedPallets = () => {
     <div className="macos-animate-fade-in">
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
-        <div className="macos-hstack" style={{ justifyContent: 'space-between', marginBottom: 'var(--macos-space-3)' }}>
-          <h1 className="macos-text-large-title" style={{ color: 'var(--macos-text-primary)' }}>
+        <div
+          className="macos-hstack"
+          style={{
+            justifyContent: 'space-between',
+            marginBottom: 'var(--macos-space-3)',
+          }}
+        >
+          <h1
+            className="macos-text-large-title"
+            style={{ color: 'var(--macos-text-primary)' }}
+          >
             Pallets Cerrados
           </h1>
           <Button variant="secondary" size="medium" onClick={refresh}>
             Refrescar
           </Button>
         </div>
-        <p className="macos-text-body" style={{ color: 'var(--macos-text-secondary)' }}>
+        <p
+          className="macos-text-body"
+          style={{ color: 'var(--macos-text-secondary)' }}
+        >
           Lista de pallets que han sido cerrados en Packing
         </p>
       </div>
 
       {/* Stats */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 'var(--macos-space-5)',
-        marginBottom: 'var(--macos-space-7)'
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 'var(--macos-space-5)',
+          marginBottom: 'var(--macos-space-7)',
+        }}
+      >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
-            <p className="macos-text-footnote" style={{ 
-              color: 'var(--macos-text-secondary)',
-              marginBottom: 'var(--macos-space-1)'
-            }}>
+            <p
+              className="macos-text-footnote"
+              style={{
+                color: 'var(--macos-text-secondary)',
+                marginBottom: 'var(--macos-space-1)',
+              }}
+            >
               Total Pallets
             </p>
-            <p className="macos-text-title-1" style={{ 
-              color: 'var(--macos-blue)',
-              fontWeight: 700
-            }}>
-              {closedPalletsInPackingPaginated.length}
+            <p
+              className="macos-text-title-1"
+              style={{
+                color: 'var(--macos-blue)',
+                fontWeight: 700,
+              }}
+            >
+              {closedPalletsInPacking.length}
             </p>
           </div>
         </Card>
       </div>
 
       {/* Pallets Grid */}
-      {closedPalletsInPackingPaginated.length === 0 ? (
+      {closedPalletsInPacking.length === 0 ? (
         <Card>
-          <p className="macos-text-body" style={{ textAlign: 'center', padding: 'var(--macos-space-8)', color: 'var(--macos-text-secondary)' }}>
+          <p
+            className="macos-text-body"
+            style={{
+              textAlign: 'center',
+              padding: 'var(--macos-space-8)',
+              color: 'var(--macos-text-secondary)',
+            }}
+          >
             No hay pallets cerrados
           </p>
         </Card>
       ) : (
-        <div className="macos-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
-          {closedPalletsInPackingPaginated.map((pallet: any) => (
+        <div
+          className="macos-grid"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          }}
+        >
+          {closedPalletsInPacking.map((pallet: any) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}

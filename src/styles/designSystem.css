@@ -11,70 +11,90 @@
   /* ========================================
      Color System
      ======================================== */
-  
+
   /* Primary Colors */
-  --macos-blue: #007AFF;
-  --macos-blue-hover: #0051D5;
-  --macos-blue-pressed: #004AAD;
-  
+  --macos-blue: #007aff;
+  --macos-blue-hover: #0051d5;
+  --macos-blue-pressed: #004aad;
+
   /* System Colors */
-  --macos-red: #FF3B30;
-  --macos-orange: #FF9500;
-  --macos-yellow: #FFCC00;
-  --macos-green: #34C759;
-  --macos-mint: #00C7BE;
-  --macos-teal: #30B0C7;
-  --macos-cyan: #32D74B;
-  --macos-indigo: #5856D6;
-  --macos-purple: #AF52DE;
-  --macos-pink: #FF2D92;
-  --macos-brown: #A2845E;
-  
+  --macos-red: #ff3b30;
+  --macos-orange: #ff9500;
+  --macos-yellow: #ffcc00;
+  --macos-green: #34c759;
+  --macos-mint: #00c7be;
+  --macos-teal: #30b0c7;
+  --macos-cyan: #32d74b;
+  --macos-indigo: #5856d6;
+  --macos-purple: #af52de;
+  --macos-pink: #ff2d92;
+  --macos-brown: #a2845e;
+
   /* Gray Scale */
-  --macos-gray-1: #8E8E93;
-  --macos-gray-2: #AEAEB2;
-  --macos-gray-3: #C7C7CC;
-  --macos-gray-4: #D1D1D6;
-  --macos-gray-5: #E5E5EA;
-  --macos-gray-6: #F2F2F7;
-  
+  --macos-gray-1: #8e8e93;
+  --macos-gray-2: #aeaeb2;
+  --macos-gray-3: #c7c7cc;
+  --macos-gray-4: #d1d1d6;
+  --macos-gray-5: #e5e5ea;
+  --macos-gray-6: #f2f2f7;
+
   /* Window Colors */
   --macos-window-bg: rgba(246, 246, 246, 0.95);
   --macos-window-bg-translucent: rgba(255, 255, 255, 0.8);
   --macos-titlebar-bg: rgba(255, 255, 255, 0.85);
   --macos-sidebar-bg: rgba(242, 242, 247, 0.95);
   --macos-content-bg: rgba(255, 255, 255, 0.95);
-  
+
   /* Text Colors */
   --macos-text-primary: rgba(0, 0, 0, 0.85);
   --macos-text-secondary: rgba(0, 0, 0, 0.6);
   --macos-text-tertiary: rgba(0, 0, 0, 0.4);
   --macos-text-quaternary: rgba(0, 0, 0, 0.18);
   --macos-text-on-color: rgba(255, 255, 255, 0.95);
-  
+
   /* Border Colors */
   --macos-border-primary: rgba(0, 0, 0, 0.1);
   --macos-border-secondary: rgba(0, 0, 0, 0.05);
   --macos-separator: rgba(0, 0, 0, 0.08);
-  
+
   /* Traffic Light Controls */
-  --macos-control-close: linear-gradient(135deg, #FF6159 0%, #FF4D43 100%);
-  --macos-control-close-hover: linear-gradient(135deg, #FF5147 0%, #FF3B31 100%);
-  --macos-control-minimize: linear-gradient(135deg, #FFBD2E 0%, #FFAB00 100%);
-  --macos-control-minimize-hover: linear-gradient(135deg, #FFB01C 0%, #FF9F00 100%);
-  --macos-control-maximize: linear-gradient(135deg, #00CA4E 0%, #28CD41 100%);
-  --macos-control-maximize-hover: linear-gradient(135deg, #00B946 0%, #24C23E 100%);
-  
+  --macos-control-close: linear-gradient(135deg, #ff6159 0%, #ff4d43 100%);
+  --macos-control-close-hover: linear-gradient(
+    135deg,
+    #ff5147 0%,
+    #ff3b31 100%
+  );
+  --macos-control-minimize: linear-gradient(135deg, #ffbd2e 0%, #ffab00 100%);
+  --macos-control-minimize-hover: linear-gradient(
+    135deg,
+    #ffb01c 0%,
+    #ff9f00 100%
+  );
+  --macos-control-maximize: linear-gradient(135deg, #00ca4e 0%, #28cd41 100%);
+  --macos-control-maximize-hover: linear-gradient(
+    135deg,
+    #00b946 0%,
+    #24c23e 100%
+  );
+
   /* ========================================
      Typography System
      ======================================== */
-  
+
   /* Font Families */
-  --macos-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-  --macos-font-family-display: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-  --macos-font-family-text: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
-  --macos-font-family-mono: 'SF Mono', Menlo, Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  
+  --macos-font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', Arial, sans-serif;
+  --macos-font-family-display:
+    'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
+    Arial, sans-serif;
+  --macos-font-family-text:
+    'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial,
+    sans-serif;
+  --macos-font-family-mono:
+    'SF Mono', Menlo, Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+    'Courier New', monospace;
+
   /* Font Sizes */
   --macos-font-size-caption-2: 11px;
   --macos-font-size-caption-1: 12px;
@@ -87,22 +107,22 @@
   --macos-font-size-title-2: 22px;
   --macos-font-size-title-1: 28px;
   --macos-font-size-large-title: 34px;
-  
+
   /* Line Heights */
   --macos-line-height-tight: 1.2;
   --macos-line-height-normal: 1.3;
   --macos-line-height-relaxed: 1.4;
   --macos-line-height-loose: 1.6;
-  
+
   /* Letter Spacing */
   --macos-letter-spacing-tight: -0.01em;
   --macos-letter-spacing-normal: 0;
   --macos-letter-spacing-wide: 0.01em;
-  
+
   /* ========================================
      Spacing System
      ======================================== */
-  
+
   --macos-space-0: 0px;
   --macos-space-1: 2px;
   --macos-space-2: 4px;
@@ -116,7 +136,7 @@
   --macos-space-10: 48px;
   --macos-space-11: 56px;
   --macos-space-12: 64px;
-  
+
   /* Component Specific Spacing */
   --macos-button-padding-x: 16px;
   --macos-button-padding-y: 8px;
@@ -124,79 +144,77 @@
   --macos-input-padding-y: 8px;
   --macos-card-padding: 20px;
   --macos-modal-padding: 24px;
-  
+
   /* ========================================
      Border Radius
      ======================================== */
-  
+
   --macos-radius-small: 4px;
   --macos-radius-medium: 6px;
   --macos-radius-large: 8px;
   --macos-radius-xlarge: 12px;
   --macos-radius-round: 50%;
-  
+
   /* ========================================
      Shadows
      ======================================== */
-  
+
   --macos-shadow-small: 0 1px 3px rgba(0, 0, 0, 0.1);
   --macos-shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.1);
   --macos-shadow-large: 0 4px 16px rgba(0, 0, 0, 0.12);
   --macos-shadow-xlarge: 0 8px 32px rgba(0, 0, 0, 0.15);
-  
+
   /* Window Shadows */
-  --macos-window-shadow: 
-    0 0 0 0.5px rgba(0, 0, 0, 0.05),
-    0 2px 10px rgba(0, 0, 0, 0.1),
+  --macos-window-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 2px 10px rgba(0, 0, 0, 0.1),
     0 10px 40px rgba(0, 0, 0, 0.15);
-  
+
   --macos-modal-shadow:
-    0 0 0 0.5px rgba(0, 0, 0, 0.1),
-    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 4px 20px rgba(0, 0, 0, 0.15),
     0 25px 50px rgba(0, 0, 0, 0.25);
-  
+
   /* ========================================
      Backdrop Filters
      ======================================== */
-  
+
   --macos-backdrop-blur-light: blur(20px);
   --macos-backdrop-blur-medium: blur(40px);
   --macos-backdrop-blur-heavy: blur(80px);
-  
+
   /* ========================================
      Animation & Transitions
      ======================================== */
-  
+
   /* Easing Functions */
   --macos-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --macos-ease-in-out: cubic-bezier(0.25, 0.1, 0.25, 1);
   --macos-ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+
   /* Durations */
   --macos-duration-fast: 150ms;
   --macos-duration-normal: 200ms;
   --macos-duration-slow: 300ms;
   --macos-duration-slower: 500ms;
-  
+
   /* ========================================
      Component Dimensions
      ======================================== */
-  
+
   /* Heights */
   --macos-height-button: 32px;
   --macos-height-input: 28px;
   --macos-height-toolbar: 52px;
   --macos-height-titlebar: 44px;
   --macos-height-tabbar: 49px;
-  
+
   /* Widths */
   --macos-width-sidebar: 280px;
   --macos-width-sidebar-collapsed: 64px;
-  
+
   /* Control Sizes */
   --macos-control-size: 12px;
   --macos-control-gap: 8px;
-  
+
   /* Z-Index Scale */
   --macos-z-dropdown: 1000;
   --macos-z-sticky: 1020;
@@ -212,7 +230,7 @@
    Dark Mode Variables
    ======================================== */
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
     /* Window Colors - Dark */
     --macos-window-bg: rgba(40, 40, 40, 0.95);
@@ -220,26 +238,26 @@
     --macos-titlebar-bg: rgba(50, 50, 50, 0.85);
     --macos-sidebar-bg: rgba(30, 30, 30, 0.95);
     --macos-content-bg: rgba(40, 40, 40, 0.95);
-    
+
     /* Text Colors - Dark */
     --macos-text-primary: rgba(255, 255, 255, 0.85);
     --macos-text-secondary: rgba(255, 255, 255, 0.6);
     --macos-text-tertiary: rgba(255, 255, 255, 0.4);
     --macos-text-quaternary: rgba(255, 255, 255, 0.18);
     --macos-text-on-color: rgba(255, 255, 255, 0.95);
-    
+
     /* Border Colors - Dark */
     --macos-border-primary: rgba(255, 255, 255, 0.1);
     --macos-border-secondary: rgba(255, 255, 255, 0.05);
     --macos-separator: rgba(255, 255, 255, 0.08);
-    
+
     /* Gray Scale - Dark */
-    --macos-gray-1: #8E8E93;
+    --macos-gray-1: #8e8e93;
     --macos-gray-2: #636366;
-    --macos-gray-3: #48484A;
-    --macos-gray-4: #3A3A3C;
-    --macos-gray-5: #2C2C2E;
-    --macos-gray-6: #1C1C1E;
+    --macos-gray-3: #48484a;
+    --macos-gray-4: #3a3a3c;
+    --macos-gray-5: #2c2c2e;
+    --macos-gray-6: #1c1c1e;
   }
 }
 
@@ -361,11 +379,21 @@ body {
 }
 
 /* Text Color Variants */
-.macos-text-primary { color: var(--macos-text-primary); }
-.macos-text-secondary { color: var(--macos-text-secondary); }
-.macos-text-tertiary { color: var(--macos-text-tertiary); }
-.macos-text-quaternary { color: var(--macos-text-quaternary); }
-.macos-text-on-color { color: var(--macos-text-on-color); }
+.macos-text-primary {
+  color: var(--macos-text-primary);
+}
+.macos-text-secondary {
+  color: var(--macos-text-secondary);
+}
+.macos-text-tertiary {
+  color: var(--macos-text-tertiary);
+}
+.macos-text-quaternary {
+  color: var(--macos-text-quaternary);
+}
+.macos-text-on-color {
+  color: var(--macos-text-on-color);
+}
 
 /* ========================================
    Window Container
@@ -626,29 +654,29 @@ body {
     border-radius: 0;
     min-height: 100vh;
   }
-  
+
   .macos-titlebar {
     padding: 0 var(--macos-space-4);
   }
-  
+
   .macos-traffic-lights {
     left: var(--macos-space-4);
   }
-  
+
   .macos-window-title {
     padding: 0 var(--macos-space-7);
     font-size: var(--macos-font-size-caption-1);
   }
-  
+
   .macos-content {
     padding: var(--macos-space-4);
   }
-  
+
   .macos-control {
     width: 16px;
     height: 16px;
   }
-  
+
   .macos-control-icon {
     opacity: 1;
   }
@@ -672,11 +700,11 @@ body {
   .macos-window {
     border: 2px solid var(--macos-text-primary);
   }
-  
+
   .macos-titlebar {
     border-bottom: 2px solid var(--macos-text-primary);
   }
-  
+
   .macos-control {
     border: 1px solid var(--macos-text-primary);
   }
@@ -700,10 +728,10 @@ body {
   --macos-border-secondary: rgba(255, 255, 255, 0.05);
   --macos-separator: rgba(255, 255, 255, 0.08);
 
-  --macos-gray-1: #8E8E93;
+  --macos-gray-1: #8e8e93;
   --macos-gray-2: #636366;
-  --macos-gray-3: #48484A;
-  --macos-gray-4: #3A3A3C;
-  --macos-gray-5: #2C2C2E;
-  --macos-gray-6: #1C1C1E;
+  --macos-gray-3: #48484a;
+  --macos-gray-4: #3a3a3c;
+  --macos-gray-5: #2c2c2e;
+  --macos-gray-6: #1c1c1e;
 }

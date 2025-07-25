@@ -1,365 +1,556 @@
-import React, { ReactNode } from 'react';
-import { Pallet } from '@/types';
-
-// Define PalletFilter type since it's not in @/types
-type PalletFilter = 'all' | 'active' | 'completed';
-
-// Import actual API functions with correct names
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
+import { Pallet, Location, PaginatedResponse } from '@/types';
 import {
   getPallets,
-  getPalletByCode,
   createPallet,
   updatePalletStatus,
   deletePallet,
+  getClosedPallets,
+  getActivePallets,
+  movePallet,
 } from '@/api/endpoints';
-import {
-  createContextFactory,
-  BaseState,
-  BaseAction,
-} from './core/createContext';
-import { ActionType, createActions } from './core/apiUtils';
-import {
-  useDataFetch,
-  usePaginatedData,
-  useDataMutation,
-} from './core/dataHooks';
 
-// Define filter constants for reuse
-const FILTER_ALL = 'all';
-const FILTER_ACTIVE = 'active';
-const FILTER_COMPLETED = 'completed';
-
-// Define the state shape
-interface PalletState extends BaseState {
-  pallets: Pallet[];
-  filteredPallets: Pallet[];
+// Simple state interface
+interface PalletState {
+  openPallets: Pallet[];
+  closedPalletsInPacking: Pallet[];
+  closedPalletsInTransit: Pallet[];
+  closedPalletsInBodega: Pallet[];
   selectedPallet: Pallet | null;
-  currentFilter: PalletFilter;
-  lastUpdated: number | undefined;
-  data: Pallet[]; // Required by DataState constraint
-  page: number;
-  pageSize: number;
-  total: number;
+  loading: boolean;
+  error: string | null;
 }
 
-// Define action types for this context
-type PalletAction = BaseAction<ActionType | string>;
+// Simple context interface
+interface PalletContextType {
+  openPallets: Pallet[];
+  closedPalletsInPacking: Pallet[];
+  closedPalletsInTransit: Pallet[];
+  closedPalletsInBodega: Pallet[];
+  selectedPallet: Pallet | null;
+  loading: boolean;
+  error: string | null;
 
-// Add custom action types specific to pallet context
-enum PalletActionType {
-  SELECT_PALLET = 'SELECT_PALLET',
-  CLEAR_SELECTED_PALLET = 'CLEAR_SELECTED_PALLET',
-  SET_FILTER = 'SET_FILTER',
-  SET_PAGE = 'SET_PAGE',
-}
+  // Actions
+  fetchPallets: (status?: string, location?: Location) => Promise<void>;
+  fetchActivePallets: () => Promise<void>;
+  fetchClosedPalletsInPacking: () => Promise<void>;
+  fetchClosedPalletsInTransit: () => Promise<void>;
+  fetchClosedPalletsInBodega: () => Promise<void>;
 
-// Add a type guard to check if an action is a pallet action
-const isPalletAction = (action: any): action is PalletAction => {
-  return (
-    action.type === PalletActionType.SELECT_PALLET ||
-    action.type === PalletActionType.CLEAR_SELECTED_PALLET ||
-    action.type === PalletActionType.SET_FILTER ||
-    action.type === PalletActionType.SET_PAGE
-  );
-};
-
-// Create initial state
-const initialState: PalletState = {
-  pallets: [],
-  filteredPallets: [],
-  data: [], // Initialize the required data property
-  selectedPallet: null,
-  currentFilter: FILTER_ALL,
-  status: 'idle',
-  error: null,
-  lastUpdated: undefined,
-  page: 1,
-  pageSize: 10,
-  total: 0,
-};
-
-// Create action creators
-const palletActions = {
-  ...createActions<Pallet, string>(),
-  selectPallet: (pallet: Pallet): PalletAction => ({
-    type: PalletActionType.SELECT_PALLET,
-    payload: pallet,
-  }),
-  clearSelectedPallet: (): PalletAction => ({
-    type: PalletActionType.CLEAR_SELECTED_PALLET,
-  }),
-  setFilter: (filter: PalletFilter): PalletAction => ({
-    type: PalletActionType.SET_FILTER,
-    payload: filter,
-  }),
-  setPage: (page: number): PalletAction => ({
-    type: PalletActionType.SET_PAGE,
-    payload: page,
-  }),
-};
-
-// Helper function for filtering pallets
-const filterPallets = (pallets: Pallet[], filter: PalletFilter): Pallet[] => {
-  if (filter === FILTER_ALL) {
-    return pallets;
-  }
-  return pallets.filter((pallet) => {
-    if (filter === FILTER_ACTIVE) {
-      // Using estado property which exists on Pallet type
-      return pallet.estado === 'open';
-    } else if (filter === FILTER_COMPLETED) {
-      return pallet.estado === 'closed';
-    }
-    return true;
-  });
-};
-
-// Create a custom reducer
-const palletReducer = (
-  state: PalletState = initialState,
-  action: PalletAction
-): PalletState => {
-  // Handle pallet-specific actions
-  if (isPalletAction(action)) {
-    switch (action.type) {
-      case PalletActionType.SELECT_PALLET:
-        return {
-          ...state,
-          selectedPallet: action.payload as Pallet,
-        };
-      case PalletActionType.CLEAR_SELECTED_PALLET:
-        return {
-          ...state,
-          selectedPallet: null,
-        };
-      case PalletActionType.SET_FILTER:
-        const newFilter = action.payload as PalletFilter;
-        return {
-          ...state,
-          currentFilter: newFilter,
-          filteredPallets: filterPallets(state.pallets, newFilter),
-        };
-      case PalletActionType.SET_PAGE:
-        return {
-          ...state,
-          page: action.payload as number,
-        };
-    }
-  }
-
-  // Handle API actions
-  switch (action.type) {
-    case ActionType.FETCH_SUCCESS:
-      const pallets = action.payload as Pallet[];
-      return {
-        ...state,
-        status: 'success',
-        pallets,
-        filteredPallets: filterPallets(pallets, state.currentFilter),
-        data: pallets, // Update the data property too
-        error: null,
-        lastUpdated: Date.now(),
-      };
-    case ActionType.FETCH_START:
-      return { ...state, status: 'loading', error: null };
-    case ActionType.FETCH_ERROR:
-      return { ...state, status: 'error', error: action.payload as Error };
-    default:
-      return state;
-  }
-};
-
-// Define the API interface
-type PalletAPI = {
-  fetchPallets: (page?: number, filter?: PalletFilter) => Promise<void>;
-  getPalletById: (id: string) => Promise<Pallet | null>;
+  selectPallet: (pallet: Pallet) => void;
+  clearSelectedPallet: () => void;
   createPallet: (data: Partial<Pallet>) => Promise<Pallet>;
   updatePallet: (id: string, data: Partial<Pallet>) => Promise<Pallet>;
   deletePallet: (id: string) => Promise<void>;
-  selectPallet: (pallet: Pallet) => void;
-  clearSelectedPallet: () => void;
-  setFilter: (filter: PalletFilter) => void;
-  setPage: (page: number) => void;
+  closePallet: (codigo: string) => Promise<void>;
+  movePallet: (codigo: string, location: Location) => Promise<void>;
+}
+
+// Create context
+const PalletContext = createContext<PalletContextType | undefined>(undefined);
+
+// Initial state
+const initialState: PalletState = {
+  openPallets: [],
+  closedPalletsInPacking: [],
+  closedPalletsInTransit: [],
+  closedPalletsInBodega: [],
+  selectedPallet: null,
+  loading: false,
+  error: null,
 };
 
-// Create the context using our factory
-const { Provider, useContext } = createContextFactory<
-  PalletState,
-  PalletAction,
-  PalletAPI
->({
-  name: 'Pallet',
-  initialState,
-  reducer: palletReducer,
-  createAPI: (dispatch) => ({
-    // API implementation using hooks internally
-    fetchPallets: async (page = 1, filter = FILTER_ALL) => {
-      dispatch(palletActions.fetchStart());
-      try {
-        // Set the filter and page
-        dispatch(palletActions.setFilter(filter));
-        dispatch(palletActions.setPage(page));
+// Provider component
+export const PalletProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [state, setState] = useState<PalletState>(initialState);
 
-        // Then fetch the pallets with the specified filter
-        // Assuming getPallets now takes pagination params
-        const response = await getPallets({ limit: 10 });
-        const palletData = response.data?.items || [];
-        dispatch(palletActions.fetchSuccess(palletData as any));
+  // Fetch pallets with optional filtering
+  const fetchPallets = useCallback(
+    async (status?: string, location?: Location) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        let response: PaginatedResponse<Pallet>;
+
+        const defaultLocation: Location = 'PACKING';
+        const targetLocation: Location = location || defaultLocation;
+
+        if (status === 'active') {
+          response = await getActivePallets({
+            ubicacion: targetLocation,
+          });
+        } else if (status === 'completed') {
+          response = await getClosedPallets({
+            ubicacion: targetLocation,
+          });
+        } else {
+          response = await getPallets();
+        }
+
+        const pallets = response.data?.items || [];
+
+        setState((prev) => ({
+          ...prev,
+          openPallets: status === 'active' ? pallets : prev.openPallets,
+          loading: false,
+        }));
       } catch (error) {
-        dispatch(palletActions.fetchError(error as Error));
-        throw error;
+        setState((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : 'Error desconocido',
+          loading: false,
+        }));
       }
     },
+    []
+  );
 
-    getPalletById: async (id: string) => {
-      try {
-        // Use getPalletByCode instead since that's what's available
-        return await getPalletByCode(id);
-      } catch (error) {
-        console.error('Error fetching pallet by ID:', error);
-        return null;
-      }
-    },
+  // Fetch active pallets
+  const fetchActivePallets = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    createPallet: async (data: Partial<Pallet>) => {
-      dispatch(palletActions.createStart());
-      try {
-        // createPallet expects (baseCode: string, ubicacion: string)
-        const newPallet = await createPallet(
-          data.baseCode || '',
-          data.ubicacion || ''
-        );
-        dispatch(palletActions.createSuccess(newPallet));
-        return newPallet;
-      } catch (error) {
-        dispatch(palletActions.createError(error as Error));
-        throw error;
-      }
-    },
+    try {
+      const packingLocation: Location = 'PACKING';
+      const response = await getActivePallets({
+        ubicacion: packingLocation,
+        limit: 50,
+      });
 
-    updatePallet: async (id: string, data: Partial<Pallet>) => {
-      dispatch(palletActions.updateStart(id));
+      const pallets = response.data?.items || [];
+
+      setState((prev) => ({
+        ...prev,
+        openPallets: pallets,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Error al cargar pallets activos',
+        loading: false,
+      }));
+    }
+  }, []);
+
+  // Fetch closed pallets in packing
+  const fetchClosedPalletsInPacking = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const response = await getClosedPallets({
+        ubicacion: 'PACKING' as const,
+        limit: 50,
+      });
+
+      const pallets = response.data?.items || [];
+
+      setState((prev) => ({
+        ...prev,
+        closedPalletsInPacking: pallets,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Error al cargar pallets cerrados en packing',
+        loading: false,
+      }));
+    }
+  }, []);
+
+  // Fetch closed pallets in transit
+  const fetchClosedPalletsInTransit = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const response = await getClosedPallets({
+        ubicacion: 'TRANSITO' as Location,
+        limit: 50,
+      });
+
+      const pallets = response.data?.items || [];
+
+      setState((prev) => ({
+        ...prev,
+        closedPalletsInTransit: pallets,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Error al cargar pallets cerrados en tránsito',
+        loading: false,
+      }));
+    }
+  }, []);
+
+  // Fetch closed pallets in bodega
+  const fetchClosedPalletsInBodega = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const response = await getClosedPallets({
+        ubicacion: 'BODEGA' as Location,
+        limit: 50,
+      });
+
+      const pallets = response.data?.items || [];
+
+      setState((prev) => ({
+        ...prev,
+        closedPalletsInBodega: pallets,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Error al cargar pallets cerrados en bodega',
+        loading: false,
+      }));
+    }
+  }, []);
+
+  // Select a pallet
+  const selectPallet = useCallback((pallet: Pallet) => {
+    setState((prev) => ({ ...prev, selectedPallet: pallet }));
+  }, []);
+
+  // Clear selected pallet
+  const clearSelectedPallet = useCallback(() => {
+    setState((prev) => ({ ...prev, selectedPallet: null }));
+  }, []);
+
+  // Create pallet
+  const createPalletAction = useCallback(async (data: Partial<Pallet>) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const newPallet = await createPallet(
+        data.baseCode || '',
+        (data.ubicacion || 'PACKING') as Location
+      );
+      setState((prev) => ({
+        ...prev,
+        openPallets: [...prev.openPallets, newPallet],
+        loading: false,
+      }));
+      return newPallet;
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Error al crear pallet',
+        loading: false,
+      }));
+      throw error;
+    }
+  }, []);
+
+  // Update pallet
+  const updatePalletAction = useCallback(
+    async (id: string, data: Partial<Pallet>) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
       try {
-        // Use updatePalletStatus instead since that's what's available
-        // This is just a placeholder - adjust based on your actual API
         const updatedPallet = await updatePalletStatus(
           id,
           data.estado || 'open'
         );
-        dispatch(palletActions.updateSuccess(id, updatedPallet));
+        setState((prev) => ({
+          ...prev,
+          openPallets: prev.openPallets.map((p: Pallet) =>
+            p.codigo === id ? updatedPallet : p
+          ),
+          closedPalletsInPacking: prev.closedPalletsInPacking.map(
+            (p: Pallet) => (p.codigo === id ? updatedPallet : p)
+          ),
+          closedPalletsInTransit: prev.closedPalletsInTransit.map(
+            (p: Pallet) => (p.codigo === id ? updatedPallet : p)
+          ),
+          closedPalletsInBodega: prev.closedPalletsInBodega.map((p: Pallet) =>
+            p.codigo === id ? updatedPallet : p
+          ),
+          selectedPallet:
+            prev.selectedPallet?.codigo === id
+              ? updatedPallet
+              : prev.selectedPallet,
+          loading: false,
+        }));
         return updatedPallet;
       } catch (error) {
-        dispatch(palletActions.updateError(id, error as Error));
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Error al actualizar pallet',
+          loading: false,
+        }));
         throw error;
       }
     },
+    []
+  );
 
-    deletePallet: async (id: string) => {
-      dispatch(palletActions.deleteStart(id));
-      try {
-        await deletePallet(id);
-        dispatch(palletActions.deleteSuccess(id));
-      } catch (error) {
-        dispatch(palletActions.deleteError(id, error as Error));
-        throw error;
-      }
-    },
+  // Delete pallet
+  const deletePalletAction = useCallback(async (id: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    selectPallet: (pallet: Pallet) => {
-      dispatch(palletActions.selectPallet(pallet));
-    },
-
-    clearSelectedPallet: () => {
-      dispatch(palletActions.clearSelectedPallet());
-    },
-
-    setFilter: (filter: PalletFilter) => {
-      dispatch(palletActions.setFilter(filter));
-      // Reload pallets with new filter
-      getPallets({ limit: 10 })
-        .then((response) => {
-          const palletData = response.data?.items || [];
-          dispatch(palletActions.fetchSuccess(palletData as any));
-        })
-        .catch((error) => {
-          dispatch(palletActions.fetchError(error as Error));
-        });
-    },
-
-    setPage: (page: number) => {
-      dispatch(palletActions.setPage(page));
-      // Reload pallets with new page
-      getPallets({ limit: 10 })
-        .then((response) => {
-          const palletData = response.data?.items || [];
-          dispatch(palletActions.fetchSuccess(palletData as any));
-        })
-        .catch((error) => {
-          dispatch(palletActions.fetchError(error as Error));
-        });
-    },
-  }),
-});
-
-// Create custom hooks for consumer components
-export const usePalletContext = () => useContext();
-
-export const usePallet = (id: string) => {
-  const [, api] = usePalletContext();
-  return useDataFetch(() => api.getPalletById(id), { immediate: true });
-};
-
-export const usePaginatedPallets = (filter: PalletFilter = FILTER_ALL) => {
-  const [state, api] = usePalletContext();
-  return usePaginatedData(
-    async (page: number) => {
-      await api.fetchPallets(page, filter);
-      return {
-        data: state.filteredPallets,
-        totalCount: state.total,
-        hasMore: state.filteredPallets.length < state.total,
-      };
-    },
-    {
-      initialPage: state.page,
-      pageSize: state.pageSize,
-      immediate: true,
+    try {
+      await deletePallet(id);
+      setState((prev) => ({
+        ...prev,
+        openPallets: prev.openPallets.filter((p: Pallet) => p.codigo !== id),
+        closedPalletsInPacking: prev.closedPalletsInPacking.filter(
+          (p: Pallet) => p.codigo !== id
+        ),
+        closedPalletsInTransit: prev.closedPalletsInTransit.filter(
+          (p: Pallet) => p.codigo !== id
+        ),
+        closedPalletsInBodega: prev.closedPalletsInBodega.filter(
+          (p: Pallet) => p.codigo !== id
+        ),
+        selectedPallet:
+          prev.selectedPallet?.codigo === id ? null : prev.selectedPallet,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error ? error.message : 'Error al eliminar pallet',
+        loading: false,
+      }));
+      throw error;
     }
+  }, []);
+
+  // Close pallet
+  const closePalletAction = useCallback(async (codigo: string) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      await updatePalletStatus(codigo, 'CERRADO');
+      setState((prev) => ({
+        ...prev,
+        openPallets: prev.openPallets.filter(
+          (p: Pallet) => p.codigo !== codigo
+        ),
+        closedPalletsInPacking: prev.closedPalletsInPacking.filter(
+          (p: Pallet) => p.codigo !== codigo
+        ),
+        closedPalletsInTransit: prev.closedPalletsInTransit.filter(
+          (p: Pallet) => p.codigo !== codigo
+        ),
+        closedPalletsInBodega: prev.closedPalletsInBodega.filter(
+          (p: Pallet) => p.codigo !== codigo
+        ),
+        selectedPallet:
+          prev.selectedPallet?.codigo === codigo ? null : prev.selectedPallet,
+        loading: false,
+      }));
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error ? error.message : 'Error al cerrar pallet',
+        loading: false,
+      }));
+      throw error;
+    }
+  }, []);
+
+  // Move pallet
+  const movePalletAction = useCallback(
+    async (codigo: string, location: Location) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const updatedPallet = await movePallet(codigo, location);
+        setState((prev) => ({
+          ...prev,
+          openPallets: prev.openPallets.map((p: Pallet) =>
+            p.codigo === codigo ? updatedPallet : p
+          ),
+          closedPalletsInPacking: prev.closedPalletsInPacking.map(
+            (p: Pallet) => (p.codigo === codigo ? updatedPallet : p)
+          ),
+          closedPalletsInTransit: prev.closedPalletsInTransit.map(
+            (p: Pallet) => (p.codigo === codigo ? updatedPallet : p)
+          ),
+          selectedPallet:
+            prev.selectedPallet?.codigo === codigo
+              ? updatedPallet
+              : prev.selectedPallet,
+          loading: false,
+        }));
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error ? error.message : 'Error al mover pallet',
+          loading: false,
+        }));
+        throw error;
+      }
+    },
+    []
+  );
+
+  const value: PalletContextType = {
+    openPallets: state.openPallets,
+    closedPalletsInPacking: state.closedPalletsInPacking,
+    closedPalletsInTransit: state.closedPalletsInTransit,
+    closedPalletsInBodega: state.closedPalletsInBodega,
+    selectedPallet: state.selectedPallet,
+    loading: state.loading,
+    error: state.error,
+    fetchPallets,
+    fetchActivePallets,
+    fetchClosedPalletsInPacking,
+    fetchClosedPalletsInTransit,
+    fetchClosedPalletsInBodega,
+    selectPallet,
+    clearSelectedPallet,
+    createPallet: createPalletAction,
+    updatePallet: updatePalletAction,
+    deletePallet: deletePalletAction,
+    closePallet: closePalletAction,
+    movePallet: movePalletAction,
+  };
+
+  return (
+    <PalletContext.Provider value={value}>{children}</PalletContext.Provider>
   );
 };
 
-export const useCreatePallet = () => {
-  const [, api] = usePalletContext();
-  return useDataMutation(api.createPallet);
+// Hook to use the context
+export const usePalletContext = () => {
+  const context = useContext(PalletContext);
+  if (context === undefined) {
+    throw new Error('usePalletContext must be used within a PalletProvider');
+  }
+  return context;
 };
 
-export const useUpdatePallet = (id: string) => {
-  const [, api] = usePalletContext();
-  return useDataMutation((data: Partial<Pallet>) => api.updatePallet(id, data));
-};
-
-export const useDeletePallet = () => {
-  const [, api] = usePalletContext();
-  return useDataMutation(api.deletePallet);
-};
-
-export const useFilteredPallets = () => {
-  const [state, api] = usePalletContext();
-
+// Legacy hooks for backward compatibility
+export const useActivePallets = () => {
+  const { openPallets, loading, error, fetchActivePallets } =
+    usePalletContext();
   return {
-    pallets: state.filteredPallets,
-    filter: state.currentFilter,
-    setFilter: api.setFilter,
-    loading: state.status === 'loading',
-    error: state.error,
+    pallets: openPallets,
+    loading,
+    error,
+    fetchActivePallets,
   };
 };
 
-// Export the renamed provider component for clarity
-export const PalletProvider: React.FC<{ children: ReactNode }> = Provider;
+export const useClosedPalletsInPacking = () => {
+  const {
+    closedPalletsInPacking,
+    loading,
+    error,
+    fetchClosedPalletsInPacking,
+  } = usePalletContext();
+  return {
+    pallets: closedPalletsInPacking,
+    loading,
+    error,
+    fetchClosedPalletsInPacking,
+  };
+};
 
-// For backward compatibility during migration
-export const PalletContext = {
-  Provider: PalletProvider,
-  Consumer: React.createContext<any>(null).Consumer,
+export const useClosedPalletsInTransit = () => {
+  const {
+    closedPalletsInTransit,
+    loading,
+    error,
+    fetchClosedPalletsInTransit,
+  } = usePalletContext();
+  return {
+    pallets: closedPalletsInTransit,
+    loading,
+    error,
+    fetchClosedPalletsInTransit,
+  };
+};
+
+export const useClosedPalletsInBodega = () => {
+  const { closedPalletsInBodega, loading, error, fetchClosedPalletsInBodega } =
+    usePalletContext();
+  return {
+    pallets: closedPalletsInBodega,
+    loading,
+    error,
+    fetchClosedPalletsInBodega,
+  };
+};
+
+export const useClosedPalletsInVenta = () => {
+  const { closedPalletsInBodega, loading, error } = usePalletContext();
+  return {
+    pallets: closedPalletsInBodega, // Using bodega as fallback for venta
+    loading,
+    error,
+    fetchClosedPalletsInVenta: () => Promise.resolve(),
+  };
+};
+
+export const usePalletLocation = () => {
+  return {
+    currentLocation: 'PACKING' as Location,
+    setLocation: () => {},
+  };
+};
+
+export const useSelectedPallet = () => {
+  const { selectedPallet, selectPallet, clearSelectedPallet } =
+    usePalletContext();
+  return {
+    selectedPallet,
+    selectPallet,
+    clearSelectedPallet,
+  };
+};
+
+export const useFilteredPallets = () => {
+  const { openPallets } = usePalletContext();
+  return {
+    pallets: openPallets,
+    loading: false,
+    error: null,
+  };
+};
+
+export const usePalletActions = () => {
+  const { createPallet, updatePallet, deletePallet, closePallet, movePallet } =
+    usePalletContext();
+
+  return {
+    createPallet,
+    updatePallet,
+    deletePallet,
+    closePallet,
+    movePallet,
+  };
 };

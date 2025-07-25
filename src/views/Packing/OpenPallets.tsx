@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
+import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import { Card, Button, Input } from '@/components/design-system';
@@ -9,12 +9,14 @@ import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
-  const [, palletAPI] = usePalletContext();
-  const { pallets: activePalletsPaginated, loading } = useFilteredPallets();
+  const {
+    openPallets: activePalletsPaginated,
+    fetchActivePallets,
+  } = usePalletContext();
 
   // Create refresh function
   const refresh = () => {
-    palletAPI.fetchPallets(1, 'active');
+    fetchActivePallets();
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -224,15 +226,6 @@ const OpenPallets = () => {
           </div>
         )}
       </Card>
-
-      {/* Load More Button - Removed for now as filtered pallets doesn't support pagination */}
-
-      {/* Loading Indicator */}
-      {loading && (
-        <div className="open-pallets-loading">
-          <p>Cargando pallets...</p>
-        </div>
-      )}
 
       <PalletDetailModal
         pallet={selectedPallet}

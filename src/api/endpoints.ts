@@ -8,6 +8,7 @@ import {
   Sale,
   SaleRequest,
   Issue,
+  Location,
   GetPalletsParamsPaginated,
   GetCustomersParams,
   GetSalesOrdersParamsPaginated,
@@ -20,6 +21,19 @@ export const getPallets = (params?: GetPalletsParamsPaginated) =>
   get<PaginatedResponse<Pallet>>('/getPallets', params);
 
 export const getOpenPallets = () => get<Pallet[]>('/pallets/open');
+
+// New endpoints for closed and active pallets
+export const getClosedPallets = (params: {
+  ubicacion: Location;
+  limit?: number;
+  lastKey?: string;
+}) => get<PaginatedResponse<Pallet>>('/getClosedPallets', params);
+
+export const getActivePallets = (params: {
+  ubicacion: Location;
+  limit?: number;
+  lastKey?: string;
+}) => get<PaginatedResponse<Pallet>>('/getActivePallets', params);
 
 export const createPallet = (baseCode: string, ubicacion: string) =>
   post<Pallet>('/pallets', { baseCode, ubicacion });

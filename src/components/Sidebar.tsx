@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
   LayoutDashboard,
   Package,
@@ -17,7 +17,7 @@ import {
   UserPlus,
   Pin,
   CircleCheck,
-  Search
+  Search,
 } from 'lucide-react';
 import '../styles/designSystem.css';
 
@@ -118,7 +118,13 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('macos-dark');
+      // Check if manual dark mode is enabled or system prefers dark
+      const hasManualDark =
+        document.documentElement.classList.contains('macos-dark');
+      const systemPrefersDark =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return hasManualDark || systemPrefersDark;
     }
     return false;
   });
@@ -153,6 +159,28 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
     onToggle?.(isCollapsed);
   }, []);
 
+  // Listen for system theme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+      const handleThemeChange = (e: MediaQueryListEvent) => {
+        // Only update if there's no manual override (macos-dark class)
+        if (!document.documentElement.classList.contains('macos-dark')) {
+          setIsDarkMode(e.matches);
+        }
+      };
+
+      // Add listener for system theme changes
+      mediaQuery.addEventListener('change', handleThemeChange);
+
+      // Cleanup
+      return () => {
+        mediaQuery.removeEventListener('change', handleThemeChange);
+      };
+    }
+  }, []);
+
   const renderMenuItem = (item: SidebarItem, depth = 0) => {
     const isExpanded = expandedItems.includes(item.label);
     const hasChildren = item.children && item.children.length > 0;
@@ -171,15 +199,27 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
               padding: 'var(--macos-space-3)',
               color: 'var(--macos-text-primary)',
               borderRadius: 'var(--macos-radius-medium)',
-              transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+              transition:
+                'all var(--macos-duration-fast) var(--macos-ease-out)',
             }}
             onClick={() => toggleSubfolder(item.label)}
             title={isCollapsed ? item.label : ''}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
-              <span style={{ color: 'var(--macos-text-secondary)' }}>{item.icon}</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--macos-space-3)',
+              }}
+            >
+              <span style={{ color: 'var(--macos-text-secondary)' }}>
+                {item.icon}
+              </span>
               {!isCollapsed && (
-                <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+                <span
+                  className="macos-text-subheadline"
+                  style={{ fontWeight: 500 }}
+                >
                   {item.label}
                 </span>
               )}
@@ -188,10 +228,17 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
               <div
                 style={{
                   transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                  transition: 'transform var(--macos-duration-fast) var(--macos-ease-out)',
+                  transition:
+                    'transform var(--macos-duration-fast) var(--macos-ease-out)',
                 }}
               >
-                <ChevronDown style={{ width: '16px', height: '16px', color: 'var(--macos-text-secondary)' }} />
+                <ChevronDown
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    color: 'var(--macos-text-secondary)',
+                  }}
+                />
               </div>
             )}
           </button>
@@ -228,17 +275,23 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
             textDecoration: 'none',
             transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
             justifyContent: isCollapsed ? 'center' : 'flex-start',
-            paddingLeft: depth > 0 ? 'calc(var(--macos-space-8) + var(--macos-space-3))' : 'var(--macos-space-3)',
+            paddingLeft:
+              depth > 0
+                ? 'calc(var(--macos-space-8) + var(--macos-space-3))'
+                : 'var(--macos-space-3)',
             backgroundColor: isActive ? 'var(--macos-blue)' : 'transparent',
-            color: isActive ? 'var(--macos-text-on-color)' : 'var(--macos-text-primary)',
+            color: isActive
+              ? 'var(--macos-text-on-color)'
+              : 'var(--macos-text-primary)',
           })}
           title={isCollapsed ? item.label : ''}
         >
-          <span style={{ flexShrink: 0 }}>
-            {item.icon}
-          </span>
+          <span style={{ flexShrink: 0 }}>{item.icon}</span>
           {!isCollapsed && (
-            <span className="macos-text-subheadline" style={{ fontWeight: 500 }}>
+            <span
+              className="macos-text-subheadline"
+              style={{ fontWeight: 500 }}
+            >
               {item.label}
             </span>
           )}
@@ -254,7 +307,9 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         left: 0,
         top: 0,
         height: '100%',
-        width: isCollapsed ? 'var(--macos-width-sidebar-collapsed)' : 'var(--macos-width-sidebar)',
+        width: isCollapsed
+          ? 'var(--macos-width-sidebar-collapsed)'
+          : 'var(--macos-width-sidebar)',
         background: 'var(--macos-sidebar-bg)',
         backdropFilter: 'var(--macos-backdrop-blur-light)',
         WebkitBackdropFilter: 'var(--macos-backdrop-blur-light)',
@@ -277,7 +332,10 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         }}
       >
         {!isCollapsed && (
-          <h2 className="macos-text-headline" style={{ margin: 0, color: 'var(--macos-text-primary)' }}>
+          <h2
+            className="macos-text-headline"
+            style={{ margin: 0, color: 'var(--macos-text-primary)' }}
+          >
             Análisis Desktop
           </h2>
         )}

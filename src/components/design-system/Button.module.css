@@ -115,13 +115,13 @@
 }
 
 .danger:hover:not(:disabled) {
-  background: #FF2D20;
+  background: #ff2d20;
   box-shadow: var(--macos-shadow-medium);
   transform: translateY(-1px);
 }
 
 .danger:active:not(:disabled) {
-  background: #E6291C;
+  background: #e6291c;
   transform: scale(0.98) translateY(0);
 }
 
