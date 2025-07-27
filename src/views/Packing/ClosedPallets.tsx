@@ -20,8 +20,9 @@ const ClosedPallets = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    refresh();
+    fetchClosedPalletsInPacking();
   }, []);
+
 
   return (
     <div className="macos-animate-fade-in">

@@ -118,13 +118,19 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      // Check if manual dark mode is enabled or system prefers dark
-      const hasManualDark =
-        document.documentElement.classList.contains('macos-dark');
+      const root = document.documentElement;
+      // Check for manual overrides first
+      const hasManualDark = root.classList.contains('macos-dark');
+      const hasManualLight = root.classList.contains('macos-light');
+
+      if (hasManualDark) return true;
+      if (hasManualLight) return false;
+
+      // If no manual override, check system preference
       const systemPrefersDark =
         window.matchMedia &&
         window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return hasManualDark || systemPrefersDark;
+      return systemPrefersDark;
     }
     return false;
   });
@@ -147,9 +153,13 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
   const toggleDarkMode = () => {
     const root = document.documentElement;
     if (root.classList.contains('macos-dark')) {
+      // Switching from manual dark to manual light
       root.classList.remove('macos-dark');
+      root.classList.add('macos-light');
       setIsDarkMode(false);
     } else {
+      // Switching from light (manual or system) to manual dark
+      root.classList.remove('macos-light');
       root.classList.add('macos-dark');
       setIsDarkMode(true);
     }
@@ -165,8 +175,12 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       const handleThemeChange = (e: MediaQueryListEvent) => {
-        // Only update if there's no manual override (macos-dark class)
-        if (!document.documentElement.classList.contains('macos-dark')) {
+        const root = document.documentElement;
+        // Only update if there's no manual override (macos-dark or macos-light class)
+        if (
+          !root.classList.contains('macos-dark') &&
+          !root.classList.contains('macos-light')
+        ) {
           setIsDarkMode(e.matches);
         }
       };

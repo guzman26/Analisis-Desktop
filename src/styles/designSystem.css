@@ -227,11 +227,12 @@
 }
 
 /* ========================================
-   Dark Mode Variables
+   Dark Mode Variables (System Automatic)
+   Only applies when no manual override exists
    ======================================== */
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.macos-dark):not(.macos-light) {
     /* Window Colors - Dark */
     --macos-window-bg: rgba(40, 40, 40, 0.95);
     --macos-window-bg-translucent: rgba(50, 50, 50, 0.8);
@@ -710,7 +711,11 @@ body {
   }
 }
 
-/* Manual dark mode toggle class */
+/* ========================================
+   Manual Theme Toggle Classes
+   ======================================== */
+
+/* Manual dark mode override */
 :root.macos-dark {
   --macos-window-bg: rgba(40, 40, 40, 0.95);
   --macos-window-bg-translucent: rgba(50, 50, 50, 0.8);
@@ -734,4 +739,9 @@ body {
   --macos-gray-4: #3a3a3c;
   --macos-gray-5: #2c2c2e;
   --macos-gray-6: #1c1c1e;
+}
+
+/* Manual light mode override */
+:root.macos-light {
+  /* Uses the default light mode variables already defined in :root */
 }
