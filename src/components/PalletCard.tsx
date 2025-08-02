@@ -45,24 +45,64 @@ const PalletCard = ({
   };
   const calibre = getCalibreFromCodigo(pallet.codigo);
 
-  // Función para iniciar auditoría antes de cerrar pallet
+    // Función para iniciar auditoría antes de cerrar pallet
   const handleCloseWithAudit = async () => {
     setIsAuditing(true);
     setShowAuditModal(true);
-
+    
     try {
       const response = await auditPallet(pallet.codigo);
       const auditData = extractDataFromResponse(response);
-
+      
       if (auditData && auditData.length > 0) {
         setAuditResult(auditData[0]);
       } else {
         // Manejar caso donde no hay datos de auditoría
-        setAuditResult(null);
+        setAuditResult({
+          passed: false,
+          grade: 'CRITICAL' as const,
+          score: 0,
+          summary: {
+            capacityPassed: false,
+            uniquenessPassed: false,
+            sequencePassed: false,
+            totalIssues: 1,
+            criticalIssues: 1,
+            warningIssues: 0
+          },
+          issues: [{
+            type: 'AUDIT_ERROR' as const,
+            severity: 'CRITICAL' as const,
+            message: 'No se pudieron obtener los datos de auditoría',
+            details: {}
+          }]
+        });
       }
     } catch (error) {
       console.error('Error durante la auditoría:', error);
-      setAuditResult(null);
+      // Crear un resultado de error para mostrar en el modal
+      setAuditResult({
+        passed: false,
+        grade: 'CRITICAL' as const,
+        score: 0,
+        summary: {
+          capacityPassed: false,
+          uniquenessPassed: false,
+          sequencePassed: false,
+          totalIssues: 1,
+          criticalIssues: 1,
+          warningIssues: 0
+        },
+        issues: [{
+          type: 'AUDIT_ERROR' as const,
+          severity: 'CRITICAL' as const,
+          message: error instanceof Error ? error.message : 'Error del servidor durante la auditoría',
+          details: { 
+            errorType: 'API_ERROR',
+            palletCode: pallet.codigo 
+          }
+        }]
+      });
     } finally {
       setIsAuditing(false);
     }
