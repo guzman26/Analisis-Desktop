@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Modal, Button, Card } from './design-system';
 import { PalletAuditResult, AuditIssue } from '@/types';
 import {
@@ -8,7 +7,6 @@ import {
   Info,
   TrendingUp,
   Package,
-  Users,
   BarChart3,
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -316,7 +314,7 @@ const PalletAuditModal = ({
             Cancelar
           </Button>
           <Button
-            variant={auditResult.passed ? 'primary' : 'destructive'}
+            variant={auditResult.passed ? 'primary' : 'danger'}
             onClick={onConfirmClose}
             leftIcon={<Package size={16} />}
           >
