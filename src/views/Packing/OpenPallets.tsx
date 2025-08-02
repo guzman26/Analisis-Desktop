@@ -9,10 +9,8 @@ import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
-  const {
-    openPallets: activePalletsPaginated,
-    fetchActivePallets,
-  } = usePalletContext();
+  const { openPallets: activePalletsPaginated, fetchActivePallets } =
+    usePalletContext();
 
   // Create refresh function
   const refresh = () => {
@@ -33,11 +31,6 @@ const OpenPallets = () => {
   useEffect(() => {
     setFilteredPallets(activePalletsPaginated);
   }, [activePalletsPaginated]);
-
-  const handleCloseAction = async (codigo: string) => {
-    await closePallet(codigo);
-    refresh(); // Refresh paginated data instead of fetchActivePallets
-  };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -219,7 +212,14 @@ const OpenPallets = () => {
                 pallet={pallet}
                 setSelectedPallet={setSelectedPallet}
                 setIsModalOpen={setIsModalOpen}
-                closePallet={handleCloseAction}
+                closePallet={async (codigo) => {
+                  try {
+                    await closePallet(codigo);
+                    refresh();
+                  } catch (error) {
+                    console.error('Error al cerrar pallet:', error);
+                  }
+                }}
                 fetchActivePallets={refresh}
               />
             ))}
@@ -234,7 +234,16 @@ const OpenPallets = () => {
           setIsModalOpen(false);
           setSelectedPallet(null);
         }}
-        onClosePallet={handleCloseAction}
+        onClosePallet={async (codigo) => {
+          try {
+            await closePallet(codigo);
+            setIsModalOpen(false);
+            setSelectedPallet(null);
+            refresh();
+          } catch (error) {
+            console.error('Error al cerrar pallet:', error);
+          }
+        }}
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);
         }}

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Pallet } from '@/types';
+import { Box, Pallet, PalletAuditResult } from '@/types';
 import {
   formatCalibreName,
   getCalibreFromCodigo,
 } from '@/utils/getParamsFromCodigo';
-import { getBoxByCode } from '@/api/endpoints';
+import { getBoxByCode, auditPallet } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
+import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
 import { Modal, Button, Card } from './design-system';
 import {
@@ -46,6 +47,13 @@ const PalletDetailModal = ({
   const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
 
+  // Estados para auditoría
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditResult, setAuditResult] = useState<PalletAuditResult | null>(
+    null
+  );
+  const [isAuditing, setIsAuditing] = useState(false);
+
   const calibre = getCalibreFromCodigo(pallet?.codigo || '');
 
   // Close modal on Escape key
@@ -82,6 +90,47 @@ const PalletDetailModal = ({
     } catch (error) {
       console.error('Error fetching box details:', error);
     }
+  };
+
+  // Función para iniciar auditoría antes de cerrar pallet
+  const handleClosePalletWithAudit = async () => {
+    if (!pallet) return;
+
+    setIsAuditing(true);
+    setShowAuditModal(true);
+
+    try {
+      const response = await auditPallet(pallet.codigo);
+      const auditData = extractDataFromResponse(response);
+
+      if (auditData && auditData.length > 0) {
+        setAuditResult(auditData[0]);
+      } else {
+        // Manejar caso donde no hay datos de auditoría
+        setAuditResult(null);
+      }
+    } catch (error) {
+      console.error('Error durante la auditoría:', error);
+      setAuditResult(null);
+    } finally {
+      setIsAuditing(false);
+    }
+  };
+
+  // Función para confirmar el cierre después de la auditoría
+  const handleConfirmClose = () => {
+    if (!pallet) return;
+
+    setShowAuditModal(false);
+    setAuditResult(null);
+    onClosePallet?.(pallet.codigo);
+  };
+
+  // Función para cancelar el cierre
+  const handleCancelAudit = () => {
+    setShowAuditModal(false);
+    setAuditResult(null);
+    setIsAuditing(false);
   };
 
   // Format date for display
@@ -265,7 +314,7 @@ const PalletDetailModal = ({
                 variant="primary"
                 size="medium"
                 leftIcon={<CheckCircle size={16} />}
-                onClick={() => onClosePallet?.(pallet.codigo)}
+                onClick={handleClosePalletWithAudit}
               >
                 Cerrar Pallet
               </Button>
@@ -307,6 +356,16 @@ const PalletDetailModal = ({
           box={selectedBox}
           isOpen={showBoxDetailModal}
           onClose={() => setShowBoxDetailModal(false)}
+        />
+
+        {/* Audit Modal */}
+        <PalletAuditModal
+          isOpen={showAuditModal}
+          onClose={handleCancelAudit}
+          auditResult={auditResult}
+          onConfirmClose={handleConfirmClose}
+          isLoading={isAuditing}
+          palletCode={pallet.codigo}
         />
       </div>
     </Modal>

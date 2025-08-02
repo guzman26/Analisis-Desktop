@@ -102,6 +102,51 @@ export interface Sale {
   };
 }
 
+// Audit types
+export type AuditGrade = 'EXCELLENT' | 'GOOD' | 'WARNING' | 'CRITICAL';
+export type IssueSeverity = 'WARNING' | 'CRITICAL';
+export type IssueType =
+  | 'COUNT_MISMATCH'
+  | 'OVERFILLED'
+  | 'UNDERUTILIZED'
+  | 'DUPLICATE_BOXES'
+  | 'SEQUENCE_GAPS'
+  | 'DUPLICATE_SEQUENCES'
+  | 'INVALID_BOX_CODES'
+  | 'SEQUENCE_CHECK_ERROR'
+  | 'INVALID_PALLET_CODE'
+  | 'PALLET_NOT_FOUND'
+  | 'AUDIT_ERROR';
+
+export interface AuditIssue {
+  type: IssueType;
+  severity: IssueSeverity;
+  message: string;
+  details: {
+    [key: string]: any;
+  };
+}
+
+export interface AuditSummary {
+  capacityPassed: boolean;
+  uniquenessPassed: boolean;
+  sequencePassed: boolean;
+  totalIssues: number;
+  criticalIssues: number;
+  warningIssues: number;
+}
+
+export interface PalletAuditResult {
+  passed: boolean;
+  grade: AuditGrade;
+  score: number;
+  summary: AuditSummary;
+  issues: AuditIssue[];
+  details?: {
+    [key: string]: any;
+  };
+}
+
 export interface Issue {
   id: string;
   title: string;

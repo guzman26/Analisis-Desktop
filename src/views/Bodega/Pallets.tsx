@@ -27,32 +27,55 @@ const BodegaPallets = () => {
     <div className="macos-animate-fade-in">
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
-        <div className="macos-hstack" style={{ justifyContent: 'space-between', marginBottom: 'var(--macos-space-3)' }}>
-          <h1 className="macos-text-large-title" style={{ color: 'var(--macos-text-primary)' }}>
+        <div
+          className="macos-hstack"
+          style={{
+            justifyContent: 'space-between',
+            marginBottom: 'var(--macos-space-3)',
+          }}
+        >
+          <h1
+            className="macos-text-large-title"
+            style={{ color: 'var(--macos-text-primary)' }}
+          >
             Pallets en Bodega
           </h1>
           <Button variant="secondary" size="medium" onClick={refresh}>
             Refrescar
           </Button>
         </div>
-        <p className="macos-text-body" style={{ color: 'var(--macos-text-secondary)' }}>
+        <p
+          className="macos-text-body"
+          style={{ color: 'var(--macos-text-secondary)' }}
+        >
           Pallets cerrados actualmente almacenados en Bodega
         </p>
       </div>
 
       {/* Stats */}
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 'var(--macos-space-5)',
-        marginBottom: 'var(--macos-space-7)'
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 'var(--macos-space-5)',
+          marginBottom: 'var(--macos-space-7)',
+        }}
+      >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
-            <p className="macos-text-footnote" style={{ color: 'var(--macos-text-secondary)', marginBottom: 'var(--macos-space-1)' }}>
+            <p
+              className="macos-text-footnote"
+              style={{
+                color: 'var(--macos-text-secondary)',
+                marginBottom: 'var(--macos-space-1)',
+              }}
+            >
               Total Pallets
             </p>
-            <p className="macos-text-title-1" style={{ color: 'var(--macos-blue)', fontWeight: 700 }}>
+            <p
+              className="macos-text-title-1"
+              style={{ color: 'var(--macos-blue)', fontWeight: 700 }}
+            >
               {closedPalletsInBodega.length}
             </p>
           </div>
@@ -62,12 +85,24 @@ const BodegaPallets = () => {
       {/* Content */}
       {closedPalletsInBodega.length === 0 ? (
         <Card>
-          <p className="macos-text-body" style={{ textAlign: 'center', padding: 'var(--macos-space-8)', color: 'var(--macos-text-secondary)' }}>
+          <p
+            className="macos-text-body"
+            style={{
+              textAlign: 'center',
+              padding: 'var(--macos-space-8)',
+              color: 'var(--macos-text-secondary)',
+            }}
+          >
             No hay pallets en bodega
           </p>
         </Card>
       ) : (
-        <div className="macos-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+        <div
+          className="macos-grid"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          }}
+        >
           {closedPalletsInBodega.map((pallet: Pallet) => (
             <PalletCard
               key={pallet.codigo}
@@ -88,10 +123,14 @@ const BodegaPallets = () => {
           setIsModalOpen(false);
           setSelectedPallet(null);
         }}
-        onClosePallet={(codigo) => {
-          closePallet(codigo);
-          setIsModalOpen(false);
-          refresh();
+        onClosePallet={async (codigo) => {
+          try {
+            await closePallet(codigo);
+            setIsModalOpen(false);
+            refresh();
+          } catch (error) {
+            console.error('Error al cerrar pallet:', error);
+          }
         }}
         onAddBox={(codigo) => {
           console.log('Añadir caja a:', codigo);

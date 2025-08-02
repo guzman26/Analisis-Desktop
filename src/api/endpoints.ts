@@ -14,6 +14,7 @@ import {
   GetSalesOrdersParamsPaginated,
   GetIssuesParamsPaginated,
   PaginatedResponse,
+  PalletAuditResult,
 } from '@/types';
 
 // Pallet operations
@@ -46,6 +47,9 @@ export const closePallet = (codigo: string) =>
 
 export const movePallet = (codigo: string, ubicacion: string) =>
   post<any>('/movePallet', { codigo, ubicacion });
+
+export const auditPallet = (palletCode: string) =>
+  post<PalletAuditResult>('/auditPallet', { palletCode });
 
 export const movePalletWithBoxes = (codigo: string, destino: string) =>
   put<{ boxesUpdated: number }>(`/pallets/${codigo}/move`, { destino });

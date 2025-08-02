@@ -1,9 +1,9 @@
+/* Import macOS Design System */
+@import './designSystem.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import macOS Design System */
-@import './designSystem.css';
 
 /* Reset and Base Styles */
 *,
