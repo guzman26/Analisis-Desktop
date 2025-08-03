@@ -48,8 +48,45 @@ export const closePallet = (codigo: string) =>
 export const movePallet = (codigo: string, ubicacion: string) =>
   post<any>('/movePallet', { codigo, ubicacion });
 
-export const auditPallet = (palletCode: string) =>
-  post<PalletAuditResult>('/auditPallet', { palletCode });
+export const auditPallet = async (
+  palletCode: string
+): Promise<PalletAuditResult> => {
+  try {
+    console.log('🔍 Frontend calling auditPallet with:', palletCode);
+    const response = await post<any>('/auditPallet', { palletCode });
+    console.log('🔍 Frontend received response:', response);
+
+    // Handle different response formats from Lambda
+    if (response && typeof response === 'object') {
+      // If response has audit result properties directly
+      if (response.grade && response.score !== undefined) {
+        return response as PalletAuditResult;
+      }
+
+      // If response is wrapped in a data property
+      if (response.data && response.data.grade) {
+        return response.data as PalletAuditResult;
+      }
+
+      // If response has body property (Lambda proxy integration)
+      if (response.body) {
+        const parsed =
+          typeof response.body === 'string'
+            ? JSON.parse(response.body)
+            : response.body;
+        if (parsed.grade) {
+          return parsed as PalletAuditResult;
+        }
+      }
+    }
+
+    console.error('🚨 Frontend unexpected audit response format:', response);
+    throw new Error('Formato de respuesta de auditoría no reconocido');
+  } catch (error) {
+    console.error('🚨 Frontend auditPallet error:', error);
+    throw error;
+  }
+};
 
 export const movePalletWithBoxes = (codigo: string, destino: string) =>
   put<{ boxesUpdated: number }>(`/pallets/${codigo}/move`, { destino });

@@ -11,7 +11,6 @@ import {
   MapPin,
 } from 'lucide-react';
 import { auditPallet } from '@/api/endpoints';
-import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import PalletAuditModal from './PalletAuditModal';
 import '../styles/designSystem.css';
 import styles from './PalletCard.module.css';
@@ -45,39 +44,14 @@ const PalletCard = ({
   };
   const calibre = getCalibreFromCodigo(pallet.codigo);
 
-    // Función para iniciar auditoría antes de cerrar pallet
+  // Función para iniciar auditoría antes de cerrar pallet
   const handleCloseWithAudit = async () => {
     setIsAuditing(true);
     setShowAuditModal(true);
-    
+
     try {
-      const response = await auditPallet(pallet.codigo);
-      const auditData = extractDataFromResponse(response);
-      
-      if (auditData && auditData.length > 0) {
-        setAuditResult(auditData[0]);
-      } else {
-        // Manejar caso donde no hay datos de auditoría
-        setAuditResult({
-          passed: false,
-          grade: 'CRITICAL' as const,
-          score: 0,
-          summary: {
-            capacityPassed: false,
-            uniquenessPassed: false,
-            sequencePassed: false,
-            totalIssues: 1,
-            criticalIssues: 1,
-            warningIssues: 0
-          },
-          issues: [{
-            type: 'AUDIT_ERROR' as const,
-            severity: 'CRITICAL' as const,
-            message: 'No se pudieron obtener los datos de auditoría',
-            details: {}
-          }]
-        });
-      }
+      const auditData = await auditPallet(pallet.codigo);
+      setAuditResult(auditData);
     } catch (error) {
       console.error('Error durante la auditoría:', error);
       // Crear un resultado de error para mostrar en el modal
@@ -91,17 +65,22 @@ const PalletCard = ({
           sequencePassed: false,
           totalIssues: 1,
           criticalIssues: 1,
-          warningIssues: 0
+          warningIssues: 0,
         },
-        issues: [{
-          type: 'AUDIT_ERROR' as const,
-          severity: 'CRITICAL' as const,
-          message: error instanceof Error ? error.message : 'Error del servidor durante la auditoría',
-          details: { 
-            errorType: 'API_ERROR',
-            palletCode: pallet.codigo 
-          }
-        }]
+        issues: [
+          {
+            type: 'AUDIT_ERROR' as const,
+            severity: 'CRITICAL' as const,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Error del servidor durante la auditoría',
+            details: {
+              errorType: 'API_ERROR',
+              palletCode: pallet.codigo,
+            },
+          },
+        ],
       });
     } finally {
       setIsAuditing(false);
