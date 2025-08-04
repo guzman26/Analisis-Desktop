@@ -107,13 +107,17 @@ const SalesOrdersList: React.FC = () => {
             variant="secondary"
             disabled={salesOrdersDRAFTPaginated.loading}
           >
-            {salesOrdersDRAFTPaginated.loading ? 'Actualizando...' : 'Actualizar'}
+            {salesOrdersDRAFTPaginated.loading
+              ? 'Actualizando...'
+              : 'Actualizar'}
           </Button>
         </div>
 
         {salesOrdersDRAFTPaginated.error && (
           <div className="error-message">
-            <p>Error al cargar las órdenes: {salesOrdersDRAFTPaginated.error}</p>
+            <p>
+              Error al cargar las órdenes: {salesOrdersDRAFTPaginated.error}
+            </p>
           </div>
         )}
 
@@ -165,7 +169,7 @@ const SalesOrdersList: React.FC = () => {
           </div>
         )}
       </WindowContainer>
-      
+
       <SaleDetailModal
         sale={selectedSale}
         isOpen={showDetailModal}

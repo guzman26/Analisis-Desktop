@@ -56,9 +56,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
   return (
     <div className={`sales-card ${className || ''}`}>
       <div className="sale-main-info">
-        <div className="sale-date-primary">
-          {formatDate(sale.createdAt)}
-        </div>
+        <div className="sale-date-primary">{formatDate(sale.createdAt)}</div>
         <div className="sale-customer-primary">
           <span className="customer-name">
             {sale.customerInfo?.name || 'Cliente sin nombre'}
@@ -69,7 +67,9 @@ const SalesCard: React.FC<SalesCardProps> = ({
       <div className="sale-secondary-info">
         <div className="sale-id-secondary">
           <span className="label">ID:</span>
-          <span className="value" title={sale.saleId}>{formatSaleId(sale.saleId)}</span>
+          <span className="value" title={sale.saleId}>
+            {formatSaleId(sale.saleId)}
+          </span>
         </div>
 
         <div className="sale-boxes-info">
@@ -90,11 +90,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
                 ({item.boxIds?.length || 0} cajas)
               </span>
             </div>
-          )) || (
-            <span className="no-items">
-              No hay pallets disponibles
-            </span>
-          )}
+          )) || <span className="no-items">No hay pallets disponibles</span>}
         </div>
       </div>
 

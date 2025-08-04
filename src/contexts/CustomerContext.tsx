@@ -171,7 +171,7 @@ const { Provider, useContext } = createContextFactory<
         // Ensure we always pass an array of customers, regardless of response shape
         const responseData = Array.isArray(response)
           ? response
-          : extractDataFromResponse(response);
+          : await extractDataFromResponse(response);
 
         dispatch(customerActions.fetchSuccess(responseData as Customer[]));
       } catch (error) {

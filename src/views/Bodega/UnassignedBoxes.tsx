@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Box } from '@/types';
 import { useUnassignedBoxes } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
+import BoxFilters from '@/components/BoxFilters';
 import { createSingleBoxPallet } from '@/api/endpoints';
 
 const UnassignedBoxes = () => {
@@ -10,11 +11,16 @@ const UnassignedBoxes = () => {
     useUnassignedBoxes('BODEGA');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
 
   // Data is automatically fetched by useUnassignedBoxes hook
+  // Inicializar filteredBoxes con todas las cajas
+  React.useEffect(() => {
+    setFilteredBoxes(unassignedBoxesInBodega);
+  }, [unassignedBoxesInBodega]);
 
   const handleCreateSinglePallet = async (boxCode: string) => {
     try {
@@ -49,19 +55,29 @@ const UnassignedBoxes = () => {
           Refrescar
         </button>
         <div className="open-pallets-count">
-          {unassignedBoxesInBodega.length} cajas
+          {filteredBoxes.length} de {unassignedBoxesInBodega.length} cajas
         </div>
       </div>
 
+      {/* Componente de filtros */}
+      <BoxFilters
+        boxes={unassignedBoxesInBodega}
+        onFiltersChange={setFilteredBoxes}
+      />
+
       {/* Empty State */}
-      {unassignedBoxesInBodega.length === 0 ? (
+      {filteredBoxes.length === 0 ? (
         <div className="open-pallets-empty">
-          <p>No hay cajas sin asignar</p>
+          <p>
+            {unassignedBoxesInBodega.length === 0
+              ? 'No hay cajas sin asignar'
+              : 'No se encontraron cajas con los filtros aplicados'}
+          </p>
         </div>
       ) : (
         /* Pallets Grid */
         <div className="open-pallets-grid">
-          {unassignedBoxesInBodega.map((box: any) => (
+          {filteredBoxes.map((box: any) => (
             <BoxCard
               key={box.codigo}
               box={box}

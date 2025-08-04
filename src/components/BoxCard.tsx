@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
@@ -88,12 +89,12 @@ const BoxCard = ({
         return styles.locationDefault;
     }
   };
-  
+
   const formattedDate = formatDate(box.fecha_registro);
   const calibre = formatCalibreName(box.calibre.toString());
 
   return (
-    <div 
+    <div
       className={clsx(
         styles.boxCard,
         isSelectable && styles.selectable,
@@ -102,16 +103,19 @@ const BoxCard = ({
       onClick={handleCardClick}
     >
       {/* Status indicator */}
-      <div 
-        className={styles.statusIndicator} 
+      <div
+        className={styles.statusIndicator}
         style={{ backgroundColor: getLocationColor(box.ubicacion) }}
       />
-      
+
       {/* Selection Checkbox */}
       {isSelectable && (
         <div className={styles.checkboxContainer}>
           <div
-            className={clsx(styles.checkbox, isSelected && styles.checkboxSelected)}
+            className={clsx(
+              styles.checkbox,
+              isSelected && styles.checkboxSelected
+            )}
             onClick={handleCheckboxClick}
           >
             {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -137,9 +141,7 @@ const BoxCard = ({
             <Calendar size={14} />
             Fecha
           </div>
-          <div className={styles.infoValue}>
-            {formattedDate}
-          </div>
+          <div className={styles.infoValue}>{formattedDate}</div>
         </div>
 
         <div className={styles.infoItem}>
@@ -147,9 +149,7 @@ const BoxCard = ({
             <Tag size={14} />
             Calibre
           </div>
-          <div className={styles.infoValue}>
-            {calibre}
-          </div>
+          <div className={styles.infoValue}>{calibre}</div>
         </div>
       </div>
 
@@ -167,7 +167,7 @@ const BoxCard = ({
         >
           Ver Detalles
         </Button>
-        
+
         {showCreatePalletButton && onCreateSinglePallet && (
           <Button
             variant="primary"
@@ -182,7 +182,7 @@ const BoxCard = ({
             {!isCreatingPallet && 'Crear Pallet Individual'}
           </Button>
         )}
-        
+
         {showAssignToCompatibleButton && onAssignToCompatiblePallet && (
           <Button
             variant="secondary"

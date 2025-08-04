@@ -19,7 +19,7 @@ export const buildQuery = (params: Record<string, any>): string => {
 // Unified HTTP client
 export const api = async <T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit & { headers?: Record<string, string> } = {}
 ): Promise<T> => {
   const url = `${API_URL}${endpoint}`;
 

@@ -29,7 +29,7 @@ export const IssuesProvider: React.FC<Props> = ({ children }) => {
   const issuesPaginatedHook = usePagination<Issue>({
     fetchFunction: async (params: GetIssuesParamsPaginated) => {
       const response = await getIssues(params);
-      const rawIssues = extractDataFromResponse(response);
+      const rawIssues = await extractDataFromResponse(response);
       // Map backend fields to Issue type
       const issues: Issue[] = rawIssues.map((raw: any) => ({
         id: raw.IssueNumber || raw.id,

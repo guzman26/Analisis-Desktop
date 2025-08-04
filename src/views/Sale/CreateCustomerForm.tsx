@@ -120,10 +120,16 @@ const CreateCustomerForm = ({
     <Card className="customer-form-container p-6" variant="elevated">
       <div className="customer-form-header mb-6">
         <h2 className="text-xl font-medium mb-2">Crear Nuevo Cliente</h2>
-        <p className="text-sm text-gray-500">Complete los datos del cliente para crear un nuevo registro</p>
+        <p className="text-sm text-gray-500">
+          Complete los datos del cliente para crear un nuevo registro
+        </p>
       </div>
 
-      {error && <div className="p-3 mb-4 bg-red-50 border border-red-100 text-red-700 rounded">{error.message}</div>}
+      {error && (
+        <div className="p-3 mb-4 bg-red-50 border border-red-100 text-red-700 rounded">
+          {error.message}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="customer-form space-y-6">
         <Card className="form-section p-4" variant="flat">
@@ -131,7 +137,9 @@ const CreateCustomerForm = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="form-group">
-              <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre *</label>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Nombre *
+              </label>
               <Input
                 type="text"
                 id="name"
@@ -143,12 +151,16 @@ const CreateCustomerForm = ({
                 required
               />
               {formErrors.name && (
-                <span className="text-sm text-red-600 mt-1">{formErrors.name}</span>
+                <span className="text-sm text-red-600 mt-1">
+                  {formErrors.name}
+                </span>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="block text-sm font-medium mb-1">Email *</label>
+              <label htmlFor="email" className="block text-sm font-medium mb-1">
+                Email *
+              </label>
               <Input
                 type="email"
                 id="email"
@@ -160,14 +172,18 @@ const CreateCustomerForm = ({
                 required
               />
               {formErrors.email && (
-                <span className="text-sm text-red-600 mt-1">{formErrors.email}</span>
+                <span className="text-sm text-red-600 mt-1">
+                  {formErrors.email}
+                </span>
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group">
-              <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono *</label>
+              <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                Teléfono *
+              </label>
               <Input
                 type="tel"
                 id="phone"
@@ -179,12 +195,19 @@ const CreateCustomerForm = ({
                 required
               />
               {formErrors.phone && (
-                <span className="text-sm text-red-600 mt-1">{formErrors.phone}</span>
+                <span className="text-sm text-red-600 mt-1">
+                  {formErrors.phone}
+                </span>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="contactPerson" className="block text-sm font-medium mb-1">Persona de Contacto</label>
+              <label
+                htmlFor="contactPerson"
+                className="block text-sm font-medium mb-1"
+              >
+                Persona de Contacto
+              </label>
               <Input
                 type="text"
                 id="contactPerson"
@@ -202,7 +225,12 @@ const CreateCustomerForm = ({
 
           <div className="mb-4">
             <div className="form-group w-full">
-              <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium mb-1"
+              >
+                Dirección
+              </label>
               <textarea
                 id="address"
                 name="address"
@@ -217,7 +245,9 @@ const CreateCustomerForm = ({
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="taxId" className="block text-sm font-medium mb-1">ID Fiscal</label>
+              <label htmlFor="taxId" className="block text-sm font-medium mb-1">
+                ID Fiscal
+              </label>
               <Input
                 type="text"
                 id="taxId"
@@ -245,7 +275,9 @@ const CreateCustomerForm = ({
             variant="primary"
             disabled={isSubmitting || loading === 'loading'}
           >
-            {isSubmitting || loading === 'loading' ? 'Creando...' : 'Crear Cliente'}
+            {isSubmitting || loading === 'loading'
+              ? 'Creando...'
+              : 'Crear Cliente'}
           </Button>
         </div>
       </form>

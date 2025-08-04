@@ -14,16 +14,14 @@ const ModalDemo: React.FC = () => {
   return (
     <div className="p-8 space-y-4">
       <h2 className="text-2xl font-semibold mb-6">macOS Modal Examples</h2>
-      
+
       <div className="space-x-4">
-        <Button onClick={() => setIsModalOpen(true)}>
-          Basic Modal
-        </Button>
-        
+        <Button onClick={() => setIsModalOpen(true)}>Basic Modal</Button>
+
         <Button onClick={() => setIsConfirmOpen(true)} variant="secondary">
           Confirmation Modal
         </Button>
-        
+
         <Button onClick={() => setIsFormOpen(true)} variant="ghost">
           Form Modal
         </Button>
@@ -51,9 +49,7 @@ const ModalDemo: React.FC = () => {
             <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => setIsModalOpen(false)}>
-              Aceptar
-            </Button>
+            <Button onClick={() => setIsModalOpen(false)}>Aceptar</Button>
           </div>
         </div>
       </Modal>
@@ -104,7 +100,7 @@ const ModalDemo: React.FC = () => {
               placeholder="Ingresa tu nombre"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -115,7 +111,7 @@ const ModalDemo: React.FC = () => {
               placeholder="tu@email.com"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Rol
@@ -127,14 +123,12 @@ const ModalDemo: React.FC = () => {
               <option>Invitado</option>
             </select>
           </div>
-          
+
           <div className="flex justify-end gap-3 mt-8">
             <Button variant="secondary" onClick={() => setIsFormOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={() => setIsFormOpen(false)}>
-              Crear Usuario
-            </Button>
+            <Button onClick={() => setIsFormOpen(false)}>Crear Usuario</Button>
           </div>
         </form>
       </Modal>

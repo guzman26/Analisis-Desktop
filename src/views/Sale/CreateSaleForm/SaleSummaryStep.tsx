@@ -96,7 +96,9 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
               </div>
               <div className="text-center">
                 <span className="block text-2xl font-bold">{totalBoxes}</span>
-                <span className="block text-sm text-gray-500">Caja{totalBoxes !== 1 ? 's' : ''}</span>
+                <span className="block text-sm text-gray-500">
+                  Caja{totalBoxes !== 1 ? 's' : ''}
+                </span>
               </div>
             </div>
           </div>
@@ -132,7 +134,9 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
         {/* Pallets & Boxes Summary - Improved */}
         <Card className="p-4" variant="flat">
           <div className="mb-4">
-            <h3 className="text-lg font-medium">Pallets y Cajas Seleccionadas</h3>
+            <h3 className="text-lg font-medium">
+              Pallets y Cajas Seleccionadas
+            </h3>
           </div>
 
           <div className="space-y-3">
@@ -142,7 +146,11 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
               const hasMoreBoxes = palletData.boxes.length > 6;
 
               return (
-                <Card key={palletCode} className="mb-2 border border-gray-200" variant="flat">
+                <Card
+                  key={palletCode}
+                  className="mb-2 border border-gray-200"
+                  variant="flat"
+                >
                   <div className="p-3 flex justify-between items-center">
                     <div>
                       <h4 className="font-medium">Pallet {palletCode}</h4>
@@ -179,7 +187,10 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
                     <div className="flex flex-wrap gap-2">
                       {(isExpanded ? palletData.boxes : previewBoxes).map(
                         (boxId) => (
-                          <span key={boxId} className="py-1 px-2 text-xs bg-gray-100 rounded-md">
+                          <span
+                            key={boxId}
+                            className="py-1 px-2 text-xs bg-gray-100 rounded-md"
+                          >
                             {boxId}
                           </span>
                         )
@@ -208,7 +219,9 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
             rows={3}
             maxLength={500}
           />
-          <div className="mt-1 text-xs text-right text-gray-500">{notes.length}/500 caracteres</div>
+          <div className="mt-1 text-xs text-right text-gray-500">
+            {notes.length}/500 caracteres
+          </div>
         </Card>
 
         {/* Confirmation */}

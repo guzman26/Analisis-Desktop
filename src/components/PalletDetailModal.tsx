@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Pallet, PalletAuditResult } from '@/types';
 import {
@@ -80,7 +80,7 @@ const PalletDetailModal = ({
   const handleBoxClick = async (codigo: string) => {
     try {
       const response = await getBoxByCode(codigo);
-      const boxData = extractDataFromResponse(response);
+      const boxData = await extractDataFromResponse(response);
       if (boxData && boxData.length > 0) {
         setSelectedBox(boxData[0]);
         setShowBoxDetailModal(true);
@@ -296,15 +296,70 @@ const PalletDetailModal = ({
               No hay cajas registradas en este pallet
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-72 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
               {pallet.cajas.map((caja, index) => (
-                <button
+                <div
                   key={index}
-                  className="px-3 py-2 bg-white border border-macos-border rounded-macos-sm text-xs font-mono hover:border-macos-accent hover:shadow-sm transition"
+                  className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                   onClick={() => handleBoxClick(caja)}
                 >
-                  {caja}
-                </button>
+                  {/* Status indicator */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-macos-accent to-macos-accent/70" />
+
+                  {/* Content */}
+                  <div className="p-3">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-macos-accent" />
+                        <span className="text-xs text-macos-text-secondary font-medium">
+                          Caja #{index + 1}
+                        </span>
+                      </div>
+                      <div className="w-2 h-2 rounded-full bg-macos-success" />
+                    </div>
+
+                    {/* Code */}
+                    <div className="mb-3">
+                      <p className="text-xs text-macos-text-secondary mb-1">
+                        Código
+                      </p>
+                      <p className="text-sm font-mono font-medium text-macos-text break-all">
+                        {caja}
+                      </p>
+                    </div>
+
+                    {/* Calibre info (extracted from code) */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-macos-text-secondary mb-1">
+                          Calibre
+                        </p>
+                        <p className="text-sm font-medium text-macos-text">
+                          {formatCalibreName(getCalibreFromCodigo(caja))}
+                        </p>
+                      </div>
+                      <div className="text-macos-text-secondary group-hover:text-macos-accent transition-colors">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-macos-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
               ))}
             </div>
           )}
@@ -373,9 +428,9 @@ const PalletDetailModal = ({
 
         {/* Box Detail Modal */}
         <BoxDetailModal
-          box={selectedBox}
           isOpen={showBoxDetailModal}
           onClose={() => setShowBoxDetailModal(false)}
+          box={selectedBox}
         />
 
         {/* Audit Modal */}

@@ -41,7 +41,9 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-2xl font-medium">¡Venta Completada Exitosamente!</h2>
+        <h2 className="text-2xl font-medium">
+          ¡Venta Completada Exitosamente!
+        </h2>
         <p className="text-gray-600">
           La venta ha sido procesada correctamente y las cajas han sido marcadas
           como vendidas.
@@ -50,12 +52,18 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
         <Card className="p-4 mb-6" variant="flat">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center p-2">
-              <span className="block text-sm text-gray-500 mb-1">ID de Venta</span>
+              <span className="block text-sm text-gray-500 mb-1">
+                ID de Venta
+              </span>
               <span className="block font-medium">{saleResult.saleId}</span>
             </div>
             <div className="text-center p-2">
-              <span className="block text-sm text-gray-500 mb-1">Total de Cajas</span>
-              <span className="block font-medium">{getTotalBoxes(saleResult)}</span>
+              <span className="block text-sm text-gray-500 mb-1">
+                Total de Cajas
+              </span>
+              <span className="block font-medium">
+                {getTotalBoxes(saleResult)}
+              </span>
             </div>
             <div className="text-center p-2">
               <span className="block text-sm text-gray-500 mb-1">Fecha</span>
@@ -85,16 +93,10 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
           )}
 
           <div className="flex justify-center gap-4 mt-6">
-            <Button
-              variant="secondary"
-              onClick={handleNewSale}
-            >
+            <Button variant="secondary" onClick={handleNewSale}>
               Nueva Venta
             </Button>
-            <Button
-              variant="secondary"
-              onClick={handleGoToDashboard}
-            >
+            <Button variant="secondary" onClick={handleGoToDashboard}>
               Ir al Dashboard
             </Button>
           </div>

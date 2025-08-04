@@ -77,31 +77,31 @@ const PalletAuditModal = ({
   };
 
   if (isLoading) {
-      return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      size="large"
-      title="Auditoría de Pallet"
-    >
-      <div className="p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h3 className="text-lg font-semibold mb-2">Auditando Pallet</h3>
-          <p className="text-gray-600">
-            Verificando integridad del pallet {palletCode}...
-          </p>
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        size="large"
+        title="Auditoría de Pallet"
+      >
+        <div className="p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold mb-2">Auditando Pallet</h3>
+            <p className="text-gray-600">
+              Verificando integridad del pallet {palletCode}...
+            </p>
+          </div>
         </div>
-      </div>
-    </Modal>
-  );
+      </Modal>
+    );
   }
 
   if (!auditResult) {
     return (
-      <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
         size="large"
         title="Error en Auditoría"
       >
@@ -122,9 +122,9 @@ const PalletAuditModal = ({
   }
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       size="large"
       title="Auditoría de Pallet"
     >

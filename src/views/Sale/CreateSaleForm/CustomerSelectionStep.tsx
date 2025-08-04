@@ -109,7 +109,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       <h2 className="text-xl font-medium mb-4">Seleccionar Cliente</h2>
 
       <div className="search-section mb-4">
-        <label htmlFor="customer-search" className="block text-sm font-medium mb-2">Buscar Cliente:</label>
+        <label
+          htmlFor="customer-search"
+          className="block text-sm font-medium mb-2"
+        >
+          Buscar Cliente:
+        </label>
         <div className="relative">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={16} className="text-gray-400" />
@@ -126,21 +131,28 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       </div>
 
       <div className="customer-list-section mb-6">
-        <label htmlFor="customer-select" className="block text-sm font-medium mb-2">Seleccionar Cliente:</label>
+        <label
+          htmlFor="customer-select"
+          className="block text-sm font-medium mb-2"
+        >
+          Seleccionar Cliente:
+        </label>
         <Card className="max-h-60 overflow-y-auto">
           <div className="py-2">
             {filteredCustomers.length === 0 ? (
-              <p className="text-center py-4 text-gray-500">No se encontraron clientes</p>
+              <p className="text-center py-4 text-gray-500">
+                No se encontraron clientes
+              </p>
             ) : (
               filteredCustomers.map((customer: any) => (
-                <div 
+                <div
                   key={customer.customerId}
                   onClick={() => handleCustomerSelect(customer.customerId)}
                   className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${selectedCustomer?.customerId === customer.customerId ? 'bg-blue-50' : ''}`}
                 >
                   <div className="font-medium">{customer.name}</div>
                   <div className="text-sm text-gray-500 flex items-center gap-2">
-                    <span>{customer.email}</span> 
+                    <span>{customer.email}</span>
                     {customer.phone && <span>• {customer.phone}</span>}
                   </div>
                 </div>
@@ -165,7 +177,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
                   <p className="font-medium">{selectedCustomer.email}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 {selectedCustomer.phone && (
                   <div>
@@ -180,7 +192,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
                   </div>
                 )}
               </div>
-              
+
               {selectedCustomer.address && (
                 <div>
                   <p className="text-sm text-gray-500">Dirección</p>
@@ -190,7 +202,9 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               {selectedCustomer.contactPerson && (
                 <div>
                   <p className="text-sm text-gray-500">Persona de Contacto</p>
-                  <p className="font-medium">{selectedCustomer.contactPerson}</p>
+                  <p className="font-medium">
+                    {selectedCustomer.contactPerson}
+                  </p>
                 </div>
               )}
             </div>
@@ -209,7 +223,10 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       </div>
 
       {showAddCustomerModal && (
-        <Modal isOpen={showAddCustomerModal} onClose={() => setShowAddCustomerModal(false)}>
+        <Modal
+          isOpen={showAddCustomerModal}
+          onClose={() => setShowAddCustomerModal(false)}
+        >
           <Card variant="elevated" className="p-0">
             <div className="modal-header flex items-center justify-between p-4 border-b border-gray-100">
               <h3 className="text-lg font-medium">Agregar Nuevo Cliente</h3>
@@ -223,9 +240,17 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </Button>
             </div>
 
-            <form onSubmit={handleAddCustomer} className="customer-form p-4 space-y-4">
+            <form
+              onSubmit={handleAddCustomer}
+              className="customer-form p-4 space-y-4"
+            >
               <div className="form-group">
-                <label htmlFor="name" className="block text-sm font-medium mb-1">Nombre *</label>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Nombre *
+                </label>
                 <Input
                   type="text"
                   id="name"
@@ -237,7 +262,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="email" className="block text-sm font-medium mb-1">Email *</label>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Email *
+                </label>
                 <Input
                   type="email"
                   id="email"
@@ -249,7 +279,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone" className="block text-sm font-medium mb-1">Teléfono *</label>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Teléfono *
+                </label>
                 <Input
                   type="tel"
                   id="phone"
@@ -261,7 +296,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="address" className="block text-sm font-medium mb-1">Dirección</label>
+                <label
+                  htmlFor="address"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Dirección
+                </label>
                 <Input
                   type="text"
                   id="address"
@@ -272,7 +312,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="taxId" className="block text-sm font-medium mb-1">RUT</label>
+                <label
+                  htmlFor="taxId"
+                  className="block text-sm font-medium mb-1"
+                >
+                  RUT
+                </label>
                 <Input
                   type="text"
                   id="taxId"
@@ -283,7 +328,12 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </div>
 
               <div className="form-group">
-                <label htmlFor="contactPerson" className="block text-sm font-medium mb-1">Persona de Contacto</label>
+                <label
+                  htmlFor="contactPerson"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Persona de Contacto
+                </label>
                 <Input
                   type="text"
                   id="contactPerson"

@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Box } from '@/types';
 import { useUnassignedBoxes } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
+import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
 } from '@/api/endpoints';
-import { RefreshCcw, Package } from 'lucide-react';
+import { RefreshCcw, Package, Filter } from 'lucide-react';
 import styles from './UnassignedBoxes.module.css';
 
 const UnassignedBoxes = () => {
@@ -15,6 +16,7 @@ const UnassignedBoxes = () => {
     useUnassignedBoxes('PACKING');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
@@ -24,6 +26,10 @@ const UnassignedBoxes = () => {
     }>({});
 
   // Data is automatically fetched by useUnassignedBoxes hook
+  // Inicializar filteredBoxes con todas las cajas
+  React.useEffect(() => {
+    setFilteredBoxes(unassignedBoxesInPacking);
+  }, [unassignedBoxesInPacking]);
 
   const handleCreateSinglePallet = async (boxCode: string) => {
     try {
@@ -76,9 +82,11 @@ const UnassignedBoxes = () => {
       <div className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h1 className={styles.title}>Cajas sin asignar</h1>
-          <span className={styles.count}>{unassignedBoxesInPacking.length} cajas</span>
+          <span className={styles.count}>
+            {filteredBoxes.length} de {unassignedBoxesInPacking.length} cajas
+          </span>
         </div>
-        <button 
+        <button
           className={styles.refreshButton}
           onClick={() => console.log('Refrescar - TODO: Implement')}
         >
@@ -87,16 +95,26 @@ const UnassignedBoxes = () => {
         </button>
       </div>
 
+      {/* Componente de filtros */}
+      <BoxFilters
+        boxes={unassignedBoxesInPacking}
+        onFiltersChange={setFilteredBoxes}
+      />
+
       {/* Empty State */}
-      {unassignedBoxesInPacking.length === 0 ? (
+      {filteredBoxes.length === 0 ? (
         <div className={styles.emptyState}>
           <Package size={48} className={styles.emptyIcon} />
-          <p>No hay cajas sin asignar</p>
+          <p>
+            {unassignedBoxesInPacking.length === 0
+              ? 'No hay cajas sin asignar'
+              : 'No se encontraron cajas con los filtros aplicados'}
+          </p>
         </div>
       ) : (
         /* Boxes Grid */
         <div className={styles.grid}>
-          {unassignedBoxesInPacking.map((box: any) => (
+          {filteredBoxes.map((box: any) => (
             <BoxCard
               key={box.codigo}
               box={box}

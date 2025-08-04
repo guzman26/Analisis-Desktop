@@ -8,10 +8,8 @@ import { Card, Button } from '@/components/design-system';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
-  const {
-    closedPalletsInPacking,
-    fetchClosedPalletsInPacking,
-  } = usePalletContext();
+  const { closedPalletsInPacking, fetchClosedPalletsInPacking } =
+    usePalletContext();
   // Create refresh function
   const refresh = () => {
     fetchClosedPalletsInPacking();
@@ -22,7 +20,6 @@ const ClosedPallets = () => {
   useEffect(() => {
     fetchClosedPalletsInPacking();
   }, []);
-
 
   return (
     <div className="macos-animate-fade-in">

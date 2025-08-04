@@ -1,18 +1,24 @@
+import React from 'react';
 import { Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
+import {
+  processBoxCustomInfo,
+  calculateTotalEggs,
+  getMostFrequentCode,
+} from '@/utils';
 import { Modal, Button, Card } from '@/components/design-system';
-import { 
-  Calendar, 
-  Package, 
-  MapPin, 
-  Barcode, 
+import {
+  Calendar,
+  Package,
+  MapPin,
+  Barcode,
   User,
   Layers,
   Hash,
   Clock,
   CalendarDays,
-  FileText
+  FileText,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -23,7 +29,16 @@ interface BoxDetailModalProps {
 }
 
 const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
-  if (!box) return null;
+  if (!isOpen || !box) {
+    return null;
+  }
+
+  // Procesar customInfo si está disponible
+  const processedCustomInfo = box.customInfo
+    ? processBoxCustomInfo(box.customInfo)
+    : [];
+  const totalEggs = calculateTotalEggs(processedCustomInfo);
+  const mostFrequentCode = getMostFrequentCode(processedCustomInfo);
 
   const locationColors = {
     packing: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -33,7 +48,10 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
     default: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
-  const locationColor = locationColors[box.ubicacion.toLowerCase() as keyof typeof locationColors] || locationColors.default;
+  const locationColor =
+    locationColors[
+      box.ubicacion.toLowerCase() as keyof typeof locationColors
+    ] || locationColors.default;
 
   const statusColors = {
     activo: 'bg-green-100 text-green-700 border-green-200',
@@ -41,15 +59,27 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
     default: 'bg-gray-100 text-gray-700 border-gray-200',
   };
 
-  const statusColor = statusColors[box.estado.toLowerCase() as keyof typeof statusColors] || statusColors.default;
+  const statusColor =
+    statusColors[box.estado.toLowerCase() as keyof typeof statusColors] ||
+    statusColors.default;
 
-  const InfoRow = ({ icon, label, value, className }: { 
-    icon: React.ReactNode; 
-    label: string; 
+  const InfoRow = ({
+    icon,
+    label,
+    value,
+    className,
+  }: {
+    icon: React.ReactNode;
+    label: string;
     value: React.ReactNode;
     className?: string;
   }) => (
-    <div className={clsx("flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors", className)}>
+    <div
+      className={clsx(
+        'flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors',
+        className
+      )}
+    >
       <div className="text-macos-text-secondary mt-0.5">{icon}</div>
       <div className="flex-1">
         <p className="text-sm text-macos-text-secondary">{label}</p>
@@ -70,23 +100,30 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
         {/* Status Badges */}
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex gap-2">
-            <span className={clsx(
-              'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
-              locationColor
-            )}>
+            <span
+              className={clsx(
+                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+                locationColor
+              )}
+            >
               <MapPin className="w-4 h-4" />
               {box.ubicacion}
             </span>
-            <span className={clsx(
-              'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
-              statusColor
-            )}>
+            <span
+              className={clsx(
+                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+                statusColor
+              )}
+            >
               {box.estado}
             </span>
           </div>
           {box.palletId && (
             <span className="text-sm text-macos-text-secondary">
-              Pallet: <span className="font-medium text-macos-accent">{box.palletId}</span>
+              Pallet:{' '}
+              <span className="font-medium text-macos-accent">
+                {box.palletId}
+              </span>
             </span>
           )}
         </div>
@@ -170,6 +207,66 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
           </div>
         </Card>
 
+        {/* Custom Info - Eggs Information */}
+        {processedCustomInfo.length > 0 && (
+          <Card variant="flat">
+            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Información de Huevos
+              <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-blue-100 text-xs text-blue-700">
+                {totalEggs} huevos
+              </span>
+            </h3>
+
+            <div className="space-y-3">
+              {/* Summary */}
+              <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-macos-sm">
+                <div>
+                  <p className="text-xs text-macos-text-secondary">
+                    Total de Huevos
+                  </p>
+                  <p className="text-lg font-semibold text-macos-text">
+                    {totalEggs}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-macos-text-secondary">
+                    Código Principal
+                  </p>
+                  <p className="text-sm font-mono font-medium text-macos-text">
+                    {mostFrequentCode || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Detailed List */}
+              <div>
+                <p className="text-xs text-macos-text-secondary mb-2">
+                  Desglose por Código:
+                </p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {processedCustomInfo.map((eggInfo, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-macos-sm"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-macos-accent"></div>
+                        <span className="text-sm font-mono text-macos-text">
+                          {eggInfo.code}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-macos-text">
+                        {eggInfo.quantity} huevos
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Description */}
         {box.descripcion && (
           <Card variant="flat">
@@ -177,7 +274,9 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
               <FileText className="w-4 h-4" />
               Descripción
             </h3>
-            <p className="text-sm text-macos-text whitespace-pre-wrap">{box.descripcion}</p>
+            <p className="text-sm text-macos-text whitespace-pre-wrap">
+              {box.descripcion}
+            </p>
           </Card>
         )}
 
@@ -186,9 +285,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
           <Button variant="secondary" onClick={onClose}>
             Cerrar
           </Button>
-          <Button variant="primary">
-            Editar Información
-          </Button>
+          <Button variant="primary">Editar Información</Button>
         </div>
       </div>
     </Modal>

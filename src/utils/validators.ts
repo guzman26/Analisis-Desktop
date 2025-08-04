@@ -31,7 +31,7 @@ export const isValidRUT = (rut: string): boolean =>
 export const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 export const isValidPhone = (phone: string): boolean =>
-  /^\+?[\d\s\-\(\)]{8,15}$/.test(phone);
+  /^\+?[\d\s\-()]{8,15}$/.test(phone);
 
 export const isValidStringArray = (arr: any): arr is string[] =>
   Array.isArray(arr) &&

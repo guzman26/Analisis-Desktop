@@ -49,7 +49,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
       await updateIssueStatus(issue.id, newStatus);
       setCurrentStatus(newStatus);
       if (onStatusChange) onStatusChange(newStatus);
-    } catch (e) {
+    } catch {
       // Optionally show error
     } finally {
       setUpdating(null);

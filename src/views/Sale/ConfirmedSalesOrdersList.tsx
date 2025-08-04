@@ -77,61 +77,59 @@ const ConfirmedSalesOrdersList: React.FC = () => {
           </Button>
         </div>
 
-      {salesOrdersCONFIRMEDPaginated.error && (
-        <div className="error-message">
-          <p>
-            Error al cargar las órdenes: {salesOrdersCONFIRMEDPaginated.error}
-          </p>
-        </div>
-      )}
-
-      {salesOrdersCONFIRMEDPaginated.data.length === 0 &&
-      !salesOrdersCONFIRMEDPaginated.loading ? (
-        <div className="no-sales-message">
-          <p>No hay órdenes de venta disponibles.</p>
-        </div>
-      ) : (
-        <div className="sales-orders-grid">
-          {salesOrdersCONFIRMEDPaginated.data.map((sale: Sale) => {
-            return (
-              <SalesCard
-                key={sale.saleId}
-                sale={sale}
-                onViewDetails={handleViewDetails}
-                onPrint={handlePrintSale}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {salesOrdersCONFIRMEDPaginated.loading && (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Cargando órdenes de venta...</p>
-        </div>
-      )}
-
-      {salesOrdersCONFIRMEDPaginated.hasMore &&
-        !salesOrdersCONFIRMEDPaginated.loading && (
-          <div className="load-more-section">
-            <Button
-              onClick={handleLoadMore}
-              variant="secondary"
-            >
-              Cargar Más
-            </Button>
+        {salesOrdersCONFIRMEDPaginated.error && (
+          <div className="error-message">
+            <p>
+              Error al cargar las órdenes: {salesOrdersCONFIRMEDPaginated.error}
+            </p>
           </div>
         )}
 
-      {salesOrdersCONFIRMEDPaginated.data.length > 0 && (
-        <div className="sales-summary">
-          <p>
-            Mostrando {salesOrdersCONFIRMEDPaginated.data.length} órdenes
-            {salesOrdersCONFIRMEDPaginated.hasMore && ' (hay más disponibles)'}
-          </p>
-        </div>
-      )}
+        {salesOrdersCONFIRMEDPaginated.data.length === 0 &&
+        !salesOrdersCONFIRMEDPaginated.loading ? (
+          <div className="no-sales-message">
+            <p>No hay órdenes de venta disponibles.</p>
+          </div>
+        ) : (
+          <div className="sales-orders-grid">
+            {salesOrdersCONFIRMEDPaginated.data.map((sale: Sale) => {
+              return (
+                <SalesCard
+                  key={sale.saleId}
+                  sale={sale}
+                  onViewDetails={handleViewDetails}
+                  onPrint={handlePrintSale}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {salesOrdersCONFIRMEDPaginated.loading && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Cargando órdenes de venta...</p>
+          </div>
+        )}
+
+        {salesOrdersCONFIRMEDPaginated.hasMore &&
+          !salesOrdersCONFIRMEDPaginated.loading && (
+            <div className="load-more-section">
+              <Button onClick={handleLoadMore} variant="secondary">
+                Cargar Más
+              </Button>
+            </div>
+          )}
+
+        {salesOrdersCONFIRMEDPaginated.data.length > 0 && (
+          <div className="sales-summary">
+            <p>
+              Mostrando {salesOrdersCONFIRMEDPaginated.data.length} órdenes
+              {salesOrdersCONFIRMEDPaginated.hasMore &&
+                ' (hay más disponibles)'}
+            </p>
+          </div>
+        )}
       </WindowContainer>
 
       {/* Sale Detail Modal */}

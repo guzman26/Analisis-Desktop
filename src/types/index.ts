@@ -44,6 +44,12 @@ export interface Pallet {
   calibre: string;
 }
 
+// Custom info structure for eggs in a box
+export interface EggInfo {
+  code: string;
+  quantity: number;
+}
+
 export interface Box {
   id: string;
   codigo: string;
@@ -62,6 +68,7 @@ export interface Box {
   año: number;
   descripcion: string;
   palletId: string;
+  customInfo?: EggInfo[];
 }
 
 export interface Customer {

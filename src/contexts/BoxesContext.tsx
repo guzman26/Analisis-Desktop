@@ -80,7 +80,7 @@ const boxesReducer = (
 
   // Handle API actions
   switch (action.type) {
-    case ActionType.FETCH_SUCCESS:
+    case ActionType.FETCH_SUCCESS: {
       // Ensure we're handling the payload correctly as an array
       const boxes = Array.isArray(action.payload) ? action.payload : [];
       return {
@@ -91,6 +91,7 @@ const boxesReducer = (
         error: null,
         lastUpdated: Date.now(),
       };
+    }
     case ActionType.FETCH_START:
       return { ...state, status: 'loading', error: null };
     case ActionType.FETCH_ERROR:
@@ -127,7 +128,7 @@ const { Provider, useContext } = createContextFactory<
         // Get the boxes and ensure proper typing
         const boxes = await getUnassignedBoxesByLocation(location);
         // Make sure we're passing an array to fetchSuccess
-        const parsedBoxes = extractDataFromResponse(boxes);
+        const parsedBoxes = await extractDataFromResponse(boxes);
         const boxesArray = Array.isArray(parsedBoxes)
           ? parsedBoxes
           : [parsedBoxes].filter(Boolean);

@@ -1,4 +1,4 @@
-import { createContext, ReactNode } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { GetSalesOrdersParamsPaginated, Sale } from '@/types';
 import { getSalesOrders } from '@/api/endpoints';
 import usePagination from '@/hooks/usePagination';

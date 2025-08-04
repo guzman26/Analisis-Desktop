@@ -4,7 +4,6 @@ import { Pallet } from '@/types';
 import { Card, Button } from '@/components/design-system';
 import { ArrowLeft, Check, Circle } from 'lucide-react';
 
-
 interface BoxSelectionStepProps {
   selectedBoxCodes: string[];
   onSelectionChange: (selectedBoxCodes: string[]) => void;
@@ -131,7 +130,9 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
         <div className="pallets-section">
           {palletGroups.length === 0 ? (
             <Card className="p-8 text-center" variant="flat">
-              <p className="text-gray-500">No hay pallets disponibles en bodega.</p>
+              <p className="text-gray-500">
+                No hay pallets disponibles en bodega.
+              </p>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -143,11 +144,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                 // We'll use the selectedBoxIds count directly instead of a separate variable
 
                 return (
-                  <Card
-                    key={pallet.codigo}
-                    className="h-full"
-                    variant="flat"
-                  >
+                  <Card key={pallet.codigo} className="h-full" variant="flat">
                     <div className="pallet-header">
                       <h3>Pallet {pallet.codigo}</h3>
                       <span className={`pallet-location ${pallet.ubicacion}`}>
@@ -165,19 +162,27 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                         <span className="block text-2xl font-bold text-blue-600">
                           {group.selectedBoxIds.length}
                         </span>
-                        <span className="block text-sm text-gray-500">Cajas Total</span>
+                        <span className="block text-sm text-gray-500">
+                          Cajas Total
+                        </span>
                       </div>
                     </div>
 
                     <div className="p-4 border-b border-gray-100">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <span className="text-sm text-gray-500 block">Calibre:</span>
+                          <span className="text-sm text-gray-500 block">
+                            Calibre:
+                          </span>
                           <span className="font-medium">{pallet.calibre}</span>
                         </div>
                         <div>
-                          <span className="text-sm text-gray-500 block">Estado:</span>
-                          <span className={`inline-block px-2 py-1 rounded-md text-sm ${pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className="text-sm text-gray-500 block">
+                            Estado:
+                          </span>
+                          <span
+                            className={`inline-block px-2 py-1 rounded-md text-sm ${pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}
+                          >
                             {pallet.estado}
                           </span>
                         </div>
@@ -193,7 +198,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                         Ver Cajas ({pallet.cajas.length})
                       </Button>
                       <Button
-                        variant={isFullySelected ? "danger" : "primary"}
+                        variant={isFullySelected ? 'danger' : 'primary'}
                         onClick={() => handlePalletToggle(pallet.codigo)}
                         className="w-full"
                       >
@@ -215,29 +220,41 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
             <>
               <Card className="mb-4" variant="flat">
                 <div className="p-4">
-                  <h3 className="text-lg font-medium mb-2">Pallet {selectedPalletGroup.pallet.codigo}</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    Pallet {selectedPalletGroup.pallet.codigo}
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
                     <div className="flex flex-col">
                       <span className="text-gray-500">Ubicación:</span>
-                      <span className="font-medium">{selectedPalletGroup.pallet.ubicacion}</span>
+                      <span className="font-medium">
+                        {selectedPalletGroup.pallet.ubicacion}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500">Calibre:</span>
-                      <span className="font-medium">{selectedPalletGroup.pallet.calibre}</span>
+                      <span className="font-medium">
+                        {selectedPalletGroup.pallet.calibre}
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500">Estado:</span>
-                      <span className={`inline-block px-2 py-1 rounded-md text-xs ${selectedPalletGroup.pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                      <span
+                        className={`inline-block px-2 py-1 rounded-md text-xs ${selectedPalletGroup.pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}
+                      >
                         {selectedPalletGroup.pallet.estado}
                       </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500">Total:</span>
-                      <span className="font-medium">{selectedPalletGroup.pallet.cajas.length} cajas</span>
+                      <span className="font-medium">
+                        {selectedPalletGroup.pallet.cajas.length} cajas
+                      </span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-gray-500">Seleccionadas:</span>
-                      <span className="font-medium text-blue-600">{selectedPalletGroup.selectedBoxIds.length} cajas</span>
+                      <span className="font-medium text-blue-600">
+                        {selectedPalletGroup.selectedBoxIds.length} cajas
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -248,15 +265,19 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                   <Card
                     key={boxId}
                     className={`cursor-pointer transition-all ${selectedBoxCodes.includes(boxId) ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
-                    variant={selectedBoxCodes.includes(boxId) ? 'elevated' : 'flat'}
+                    variant={
+                      selectedBoxCodes.includes(boxId) ? 'elevated' : 'flat'
+                    }
                     onClick={() => handleBoxToggle(boxId)}
                   >
                     <div className="p-3 flex justify-between items-center">
                       <span className="font-medium">{boxId}</span>
                       <div className="w-5 h-5 flex items-center justify-center">
-                        {selectedBoxCodes.includes(boxId) ? 
-                          <Check size={16} className="text-blue-500" /> : 
-                          <Circle size={16} className="text-gray-300" />}
+                        {selectedBoxCodes.includes(boxId) ? (
+                          <Check size={16} className="text-blue-500" />
+                        ) : (
+                          <Circle size={16} className="text-gray-300" />
+                        )}
                       </div>
                     </div>
                     <div className="px-3 pb-3 pt-0 text-xs text-gray-500">

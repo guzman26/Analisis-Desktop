@@ -2,7 +2,8 @@ import React from 'react';
 import styles from './Input.module.css';
 import '../../styles/designSystem.css';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -45,14 +46,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        
+
         <div className={styles.inputWrapper}>
-          {leftIcon && (
-            <div className={styles.leftIcon}>
-              {leftIcon}
-            </div>
-          )}
-          
+          {leftIcon && <div className={styles.leftIcon}>{leftIcon}</div>}
+
           <input
             ref={ref}
             id={inputId}
@@ -60,29 +57,31 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             disabled={disabled}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={
-              error ? `${inputId}-error` : 
-              helperText ? `${inputId}-helper` : 
-              undefined
+              error
+                ? `${inputId}-error`
+                : helperText
+                  ? `${inputId}-helper`
+                  : undefined
             }
             {...props}
           />
-          
-          {rightIcon && (
-            <div className={styles.rightIcon}>
-              {rightIcon}
-            </div>
-          )}
+
+          {rightIcon && <div className={styles.rightIcon}>{rightIcon}</div>}
         </div>
-        
+
         {error && (
-          <div id={`${inputId}-error`} className={styles.errorMessage} role="alert">
+          <div
+            id={`${inputId}-error`}
+            className={styles.errorMessage}
+            role="alert"
+          >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-              <path d="M6 0C2.686 0 0 2.686 0 6s2.686 6 6 6 6-2.686 6-6S9.314 0 6 0zm1 9H5V8h2v1zm0-2H5V3h2v4z"/>
+              <path d="M6 0C2.686 0 0 2.686 0 6s2.686 6 6 6 6-2.686 6-6S9.314 0 6 0zm1 9H5V8h2v1zm0-2H5V3h2v4z" />
             </svg>
             {error}
           </div>
         )}
-        
+
         {helperText && !error && (
           <div id={`${inputId}-helper`} className={styles.helperText}>
             {helperText}
