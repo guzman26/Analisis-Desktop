@@ -124,6 +124,9 @@ export const getIssues = (params?: GetIssuesParamsPaginated) =>
 export const updateIssueStatus = (id: string, status: string) =>
   put<any>(`/admin/issues/${id}/status`, { status });
 
+// Danger Zone operations
+export const deleteAllBoxes = () => post<any>('/admin/deleteAllBoxes');
+
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
   get(`/powerbi/export/${dataType}`);

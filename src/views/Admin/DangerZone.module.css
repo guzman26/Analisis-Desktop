@@ -1,0 +1,299 @@
+/* DangerZone.module.css */
+
+.container {
+  padding: var(--macos-space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: var(--macos-space-8);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-3);
+  margin-bottom: var(--macos-space-4);
+}
+
+.headerIcon {
+  padding: var(--macos-space-3);
+  background: var(--macos-red);
+  border-radius: var(--macos-radius-round);
+  color: white;
+}
+
+.headerText h1 {
+  font-size: var(--macos-font-size-title-1);
+  font-weight: 700;
+  color: var(--macos-text-primary);
+  margin: 0;
+}
+
+.headerText p {
+  font-size: var(--macos-font-size-subheadline);
+  color: var(--macos-text-secondary);
+  margin: var(--macos-space-1) 0 0 0;
+}
+
+.warningBanner {
+  padding: var(--macos-space-4);
+  background: var(--macos-red);
+  border: 1px solid var(--macos-red);
+  border-radius: var(--macos-radius-medium);
+  color: white;
+}
+
+.warningBannerContent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--macos-space-3);
+}
+
+.warningBanner h3 {
+  font-size: var(--macos-font-size-subheadline);
+  font-weight: 600;
+  margin: 0 0 var(--macos-space-1) 0;
+}
+
+.warningBanner p {
+  font-size: var(--macos-font-size-footnote);
+  margin: 0;
+  opacity: 0.9;
+}
+
+.actionsGrid {
+  display: grid;
+  gap: var(--macos-space-6);
+}
+
+.actionCard {
+  border: 1px solid var(--macos-border-primary);
+  border-radius: var(--macos-radius-medium);
+  background: var(--macos-bg-secondary);
+  overflow: hidden;
+}
+
+.actionCardContent {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--macos-space-6);
+}
+
+.actionInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--macos-space-4);
+  flex: 1;
+}
+
+.actionIcon {
+  padding: var(--macos-space-3);
+  border-radius: var(--macos-radius-round);
+  flex-shrink: 0;
+}
+
+.actionIcon.critical {
+  background: var(--macos-red);
+  color: white;
+}
+
+.actionIcon.high {
+  background: var(--macos-orange);
+  color: white;
+}
+
+.actionDetails {
+  flex: 1;
+}
+
+.actionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  margin-bottom: var(--macos-space-2);
+}
+
+.actionTitle {
+  font-size: var(--macos-font-size-title-3);
+  font-weight: 600;
+  color: var(--macos-text-primary);
+  margin: 0;
+}
+
+.dangerBadge {
+  padding: var(--macos-space-1) var(--macos-space-2);
+  background: var(--macos-red);
+  color: white;
+  border-radius: var(--macos-radius-round);
+  font-size: var(--macos-font-size-caption-1);
+  font-weight: 500;
+}
+
+.actionDescription {
+  font-size: var(--macos-font-size-subheadline);
+  color: var(--macos-text-secondary);
+  margin-bottom: var(--macos-space-4);
+  line-height: var(--macos-line-height-relaxed);
+}
+
+.actionWarning {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  font-size: var(--macos-font-size-footnote);
+  color: var(--macos-red);
+}
+
+.actionButton {
+  flex-shrink: 0;
+}
+
+/* Modal Styles */
+.modalContent {
+  padding: var(--macos-space-6);
+}
+
+.confirmationSection {
+  padding: var(--macos-space-4);
+  background: var(--macos-red);
+  border: 1px solid var(--macos-red);
+  border-radius: var(--macos-radius-medium);
+  color: white;
+  margin-bottom: var(--macos-space-4);
+}
+
+.confirmationContent {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--macos-space-4);
+}
+
+.confirmationIcon {
+  padding: var(--macos-space-2);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--macos-radius-round);
+  flex-shrink: 0;
+}
+
+.confirmationText h3 {
+  font-size: var(--macos-font-size-subheadline);
+  font-weight: 600;
+  margin: 0 0 var(--macos-space-2) 0;
+}
+
+.confirmationText p {
+  font-size: var(--macos-font-size-footnote);
+  margin: 0;
+  opacity: 0.9;
+  line-height: var(--macos-line-height-relaxed);
+}
+
+.resultSection {
+  padding: var(--macos-space-4);
+  border-radius: var(--macos-radius-medium);
+  margin-bottom: var(--macos-space-4);
+}
+
+.resultSection.success {
+  background: var(--macos-green);
+  border: 1px solid var(--macos-green);
+  color: white;
+}
+
+.resultSection.error {
+  background: var(--macos-red);
+  border: 1px solid var(--macos-red);
+  color: white;
+}
+
+.resultContent {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  margin-bottom: var(--macos-space-2);
+}
+
+.resultContent h4 {
+  font-size: var(--macos-font-size-subheadline);
+  font-weight: 600;
+  margin: 0;
+}
+
+.resultContent p {
+  font-size: var(--macos-font-size-footnote);
+  margin: 0;
+  opacity: 0.9;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--macos-space-3);
+  padding-top: var(--macos-space-4);
+  border-top: 1px solid var(--macos-border-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--macos-space-4);
+  }
+
+  .actionCardContent {
+    flex-direction: column;
+    gap: var(--macos-space-4);
+  }
+
+  .actionInfo {
+    width: 100%;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+
+  .modalActions {
+    flex-direction: column;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .actionCard {
+    background: var(--macos-gray-5);
+    border-color: var(--macos-border-primary);
+  }
+
+  .warningBanner {
+    background: var(--macos-red);
+    border-color: var(--macos-red);
+  }
+}
+
+/* Animation */
+.actionCard {
+  transition: all var(--macos-duration-fast) var(--macos-ease-out);
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--macos-shadow-medium);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .actionCard {
+    transition: none;
+  }
+
+  .actionCard:hover {
+    transform: none;
+  }
+} 

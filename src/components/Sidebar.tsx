@@ -18,6 +18,7 @@ import {
   Pin,
   CircleCheck,
   Search,
+  AlertTriangle,
 } from 'lucide-react';
 import '../styles/designSystem.css';
 
@@ -109,6 +110,11 @@ const sidebarItems: SidebarItem[] = [
         path: '/admin/issues',
         label: 'Problemas',
         icon: <Search className="w-4 h-4" />,
+      },
+      {
+        path: '/admin/danger-zone',
+        label: 'Zona de Peligro',
+        icon: <AlertTriangle className="w-4 h-4" />,
       },
     ],
   },

@@ -8,7 +8,7 @@ import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
 } from '@/api/endpoints';
-import { RefreshCcw, Package, Filter } from 'lucide-react';
+import { RefreshCcw, Package } from 'lucide-react';
 import styles from './UnassignedBoxes.module.css';
 
 const UnassignedBoxes = () => {

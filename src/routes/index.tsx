@@ -25,6 +25,7 @@ const ConfirmedSalesOrdersList = lazy(
   () => import('../views/Sale/ConfirmedSalesOrdersList')
 );
 const AdminIssues = lazy(() => import('../views/Admin/Issues'));
+const AdminDangerZone = lazy(() => import('../views/Admin/DangerZone'));
 
 export const routes = [
   {
@@ -74,6 +75,10 @@ export const routes = [
   {
     path: '/admin/issues',
     element: <AdminIssues />,
+  },
+  {
+    path: '/admin/danger-zone',
+    element: <AdminDangerZone />,
   },
 ];
 

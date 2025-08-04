@@ -3,7 +3,6 @@ import { Box } from '@/types';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import { Button, Input, Card } from './design-system';
 import { Filter, X, Calendar, Package, Hash } from 'lucide-react';
-import { clsx } from 'clsx';
 import styles from './BoxFilters.module.css';
 
 interface BoxFiltersProps {
