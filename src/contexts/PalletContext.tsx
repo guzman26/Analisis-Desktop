@@ -296,7 +296,9 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
         setState((prev) => ({
           ...prev,
           error:
-            error instanceof Error ? error.message : 'Error al crear pallet de huevo suelto',
+            error instanceof Error
+              ? error.message
+              : 'Error al crear pallet de huevo suelto',
           loading: false,
         }));
         throw error;

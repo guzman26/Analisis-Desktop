@@ -116,13 +116,9 @@ const PalletCard = ({
     }
   };
 
-  // Format date if available
+  // Format date if available (DD/MM/YYYY)
   const formattedDate = pallet.fechaCreacion
-    ? new Date(pallet.fechaCreacion).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      })
+    ? require('@/utils/formatDate').formatDate(pallet.fechaCreacion)
     : 'N/A';
 
   return (

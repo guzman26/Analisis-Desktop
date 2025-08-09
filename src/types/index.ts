@@ -81,6 +81,7 @@ export interface CreateLooseEggPalletRequest {
   carts?: number;
   trays?: number;
   eggs?: number;
+  empresa?: string | number;
 }
 
 export interface Box {

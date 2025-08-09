@@ -179,15 +179,11 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               <select
                 className={styles.filterSelect}
                 value={filters.calibre}
-                onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, calibre: e.target.value }))
-                }
-                onBlur={() =>
-                  setServerFilters((prev) => ({
-                    ...prev,
-                    calibre: filters.calibre,
-                  }))
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFilters((prev) => ({ ...prev, calibre: value }));
+                  setServerFilters((prev) => ({ ...prev, calibre: value }));
+                }}
               >
                 <option value="">Todos los calibres</option>
                 {uniqueCalibres.map((calibre) => (
@@ -232,17 +228,22 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
             {/* Filtro server-side: horario */}
             <div className={styles.filterGroup}>
               <label className={styles.filterLabel}>Horario</label>
-              <Input
-                placeholder="Mañana/Tarde"
+              <select
+                className={styles.filterSelect}
                 value={serverFilters.horario || ''}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const value = e.target.value;
                   setServerFilters((prev) => ({
                     ...prev,
-                    horario: e.target.value,
-                    horario_proceso: e.target.value,
-                  }))
-                }
-              />
+                    horario: value || undefined,
+                    horario_proceso: value || undefined,
+                  }));
+                }}
+              >
+                <option value="">Mañana/Tarde</option>
+                <option value="Mañana">Mañana</option>
+                <option value="Tarde">Tarde</option>
+              </select>
             </div>
 
             {/* Filtro server-side: código prefix */}

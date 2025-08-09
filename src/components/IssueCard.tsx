@@ -22,14 +22,12 @@ const IssueCard: React.FC<IssueCardProps> = ({
   const [currentStatus, setCurrentStatus] = useState(issue.status);
   console.log('issue', issue);
 
-  // Format creation date in Spanish locale (e.g. 04/06/2025, 16:19)
-  const formattedDate = new Date(issue.createdAt).toLocaleString('es-ES', {
-    year: 'numeric',
-    month: '2-digit',
+  // Fecha normalizada DD/MM/YYYY
+  const formattedDate = `${new Date(issue.createdAt).toLocaleDateString('es-ES', {
     day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+    month: '2-digit',
+    year: 'numeric',
+  })}`;
 
   // Compute CSS class for status badge based on current status
   const statusClass = `status-badge ${currentStatus

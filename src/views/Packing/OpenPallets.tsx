@@ -71,7 +71,7 @@ const OpenPallets = () => {
               leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
               variant="primary"
               size="medium"
-            onClick={() => setIsLooseEggsModalOpen(true)}
+              onClick={() => setIsLooseEggsModalOpen(true)}
             >
               Nuevo Pallet (Huevo suelto)
             </Button>

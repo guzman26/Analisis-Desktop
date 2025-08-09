@@ -68,13 +68,10 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
             <div className="text-center p-2">
               <span className="block text-sm text-gray-500 mb-1">Fecha</span>
               <span className="block font-medium">
-                {new Date(saleResult.createdAt).toLocaleDateString('es-CL', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {(() => {
+                  const { formatDate } = require('@/utils/formatDate');
+                  return formatDate(saleResult.createdAt);
+                })()}
               </span>
             </div>
           </div>

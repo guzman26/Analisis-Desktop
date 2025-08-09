@@ -84,13 +84,7 @@ const PalletLabelView: React.FC = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
+  const getCurrentDate = () => formatDate(new Date());
 
   const getCurrentTime = () => {
     return new Date().toLocaleTimeString('es-CL', {

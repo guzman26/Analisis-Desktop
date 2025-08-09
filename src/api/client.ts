@@ -1,4 +1,6 @@
 // Unified API client with simplified logic
+import { ApiError } from '@/utils/apiErrors';
+import { unwrapApiResponse } from '@/utils/apiResponse';
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 if (!API_URL) {
@@ -29,58 +31,48 @@ export const api = async <T = any>(
       ...options,
     });
 
-    // Attempt to parse body (even for non-2xx) to extract standardized error info
-    let data: any = null;
     const contentType = response.headers.get('content-type') || '';
+    let rawData: any = null;
     try {
       if (contentType.includes('application/json')) {
-        data = await response.json();
+        rawData = await response.json();
       } else {
         const text = await response.text();
         try {
-          data = JSON.parse(text);
+          rawData = JSON.parse(text);
         } catch {
-          data = text;
+          rawData = text;
         }
       }
     } catch {
-      // ignore body parse errors
+      rawData = null;
     }
 
-    // Handle non-OK with standardized shape
     if (!response.ok) {
       const message =
-        (data && typeof data === 'object' && (data.message || data.error)) ||
+        (rawData &&
+          typeof rawData === 'object' &&
+          (rawData.message || rawData.error)) ||
         `HTTP ${response.status}`;
-      const error: any = new Error(message);
-      if (data && typeof data === 'object') {
-        error.status = data.status || 'error';
-        error.meta = data.meta;
-      }
-      error.httpStatus = response.status;
-      throw error;
+      throw new ApiError({
+        message,
+        httpStatus: response.status,
+        status: (rawData && (rawData.status as any)) || 'error',
+        meta: (rawData && (rawData.meta as any)) || undefined,
+      });
     }
 
-    // Standardized wrapper { status, message, data, meta }
-    if (data && typeof data === 'object') {
-      // If backend used wrapper with non-success status even with 2xx, treat as error
-      if (data.status && data.status !== 'success') {
-        const error: any = new Error(data.message || 'Error de API');
-        error.status = data.status;
-        error.meta = data.meta;
-        throw error;
-      }
-
-      // If the response follows the standardized wrapper, always return the wrapper as-is
-      if (data.status && data.data !== undefined) {
-        return data as T;
-      }
-    }
-
-    return data as T;
+    const unwrapped = unwrapApiResponse<T>(rawData);
+    return (unwrapped as any)?.items !== undefined || Array.isArray(unwrapped)
+      ? (unwrapped as T)
+      : ((rawData as T) ?? (unwrapped as T));
   } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
+    const normalized =
+      error instanceof ApiError
+        ? error
+        : new ApiError({ message: (error as any)?.message || 'Error de API' });
+    console.error('API request failed:', normalized);
+    throw normalized;
   }
 };
 

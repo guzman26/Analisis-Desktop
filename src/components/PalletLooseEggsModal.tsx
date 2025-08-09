@@ -21,6 +21,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
   const [carts, setCarts] = useState<string>('');
   const [trays, setTrays] = useState<string>('');
   const [eggs, setEggs] = useState<string>('');
+  const [empresa, setEmpresa] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +36,10 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
       setError('Ingrese cantidad en carritos, bandejas o huevos');
       return;
     }
+    if (!empresa) {
+      setError('Seleccione la empresa');
+      return;
+    }
     setSubmitting(true);
     try {
       await createLooseEggPallet({
@@ -43,6 +48,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
         carts: carts ? Number(carts) : undefined,
         trays: trays ? Number(trays) : undefined,
         eggs: eggs ? Number(eggs) : undefined,
+        empresa,
       });
       onClose();
       // reset
@@ -50,6 +56,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
       setCarts('');
       setTrays('');
       setEggs('');
+      setEmpresa('');
     } catch (err) {
       console.error(err);
       setError('Error al crear pallet de huevo suelto');
@@ -59,7 +66,12 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Nuevo Pallet de Huevo Suelto" size="large">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Nuevo Pallet de Huevo Suelto"
+      size="large"
+    >
       <form onSubmit={handleSubmit} className="macos-stack" style={{ gap: 12 }}>
         <div className="macos-hstack" style={{ gap: 12 }}>
           <Input
@@ -73,6 +85,12 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
             placeholder="PACKING"
             value={ubicacion}
             onChange={(e) => setUbicacion(e.target.value as Location)}
+          />
+          <Input
+            label="Empresa"
+            placeholder="Ej: 1"
+            value={empresa}
+            onChange={(e) => setEmpresa(e.target.value)}
           />
         </div>
         <div className="macos-hstack" style={{ gap: 12 }}>
@@ -99,12 +117,23 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
           />
         </div>
         {error && (
-          <div className="macos-text-footnote" style={{ color: 'var(--macos-red)' }}>
+          <div
+            className="macos-text-footnote"
+            style={{ color: 'var(--macos-red)' }}
+          >
             {error}
           </div>
         )}
-        <div className="macos-hstack" style={{ justifyContent: 'flex-end', gap: 8 }}>
-          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting}>
+        <div
+          className="macos-hstack"
+          style={{ justifyContent: 'flex-end', gap: 8 }}
+        >
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={submitting}
+          >
             Cancelar
           </Button>
           <Button type="submit" variant="primary" disabled={submitting}>
@@ -117,5 +146,3 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
 };
 
 export default PalletLooseEggsModal;
-
-
