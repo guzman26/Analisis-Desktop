@@ -5,7 +5,7 @@ import {
   formatCalibreName,
   getCalibreFromCodigo,
 } from '@/utils/getParamsFromCodigo';
-import { getBoxByCode, auditPallet } from '@/api/endpoints';
+import { getBoxByCode, auditPallet, assignBox } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
@@ -46,6 +46,16 @@ const PalletDetailModal = ({
   const [showMoveOptions, setShowMoveOptions] = useState(false);
   const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedBoxCodes, setSelectedBoxCodes] = useState<Set<string>>(
+    new Set()
+  );
+  const [targetPalletCode, setTargetPalletCode] = useState('');
+  const [isMovingBoxes, setIsMovingBoxes] = useState(false);
+  const [moveFeedback, setMoveFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // Estados para auditoría
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -78,6 +88,15 @@ const PalletDetailModal = ({
   );
 
   const handleBoxClick = async (codigo: string) => {
+    if (selectionMode) {
+      setSelectedBoxCodes((prev) => {
+        const next = new Set(prev);
+        if (next.has(codigo)) next.delete(codigo);
+        else next.add(codigo);
+        return next;
+      });
+      return;
+    }
     try {
       const response = await getBoxByCode(codigo);
       const boxData = await extractDataFromResponse(response);
@@ -89,6 +108,62 @@ const PalletDetailModal = ({
       }
     } catch (error) {
       console.error('Error fetching box details:', error);
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (!pallet) return;
+    if (selectedBoxCodes.size === pallet.cajas.length) {
+      setSelectedBoxCodes(new Set());
+    } else {
+      setSelectedBoxCodes(new Set(pallet.cajas));
+    }
+  };
+
+  const handleMoveSelectedBoxes = async () => {
+    if (!pallet) return;
+    if (!targetPalletCode || selectedBoxCodes.size === 0) return;
+    setIsMovingBoxes(true);
+    setMoveFeedback(null);
+    try {
+      const codes = Array.from(selectedBoxCodes);
+      const results = await Promise.allSettled(
+        codes.map((code) => assignBox(code, targetPalletCode))
+      );
+      const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
+      const rejected = results.length - fulfilled;
+      // Optimistic local update: remover cajas movidas de la lista visible
+      if (fulfilled > 0) {
+        (pallet as any).cajas = pallet.cajas.filter(
+          (c: string) => !selectedBoxCodes.has(c)
+        );
+        setSelectedBoxCodes(new Set());
+      }
+      if (rejected === 0) {
+        setMoveFeedback({
+          type: 'success',
+          message: `Se movieron ${fulfilled} caja(s) correctamente.`,
+        });
+      } else if (fulfilled > 0) {
+        setMoveFeedback({
+          type: 'error',
+          message: `Se movieron ${fulfilled} caja(s), ${rejected} fallaron.`,
+        });
+      } else {
+        setMoveFeedback({
+          type: 'error',
+          message:
+            'No se pudo mover ninguna caja. Verifique el código del pallet destino o intente nuevamente.',
+        });
+      }
+    } catch (error) {
+      setMoveFeedback({
+        type: 'error',
+        message:
+          error instanceof Error ? error.message : 'Error al mover cajas',
+      });
+    } finally {
+      setIsMovingBoxes(false);
     }
   };
 
@@ -303,6 +378,17 @@ const PalletDetailModal = ({
                   className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                   onClick={() => handleBoxClick(caja)}
                 >
+                  {selectionMode && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedBoxCodes.has(caja)}
+                        onChange={() => handleBoxClick(caja)}
+                        className="w-4 h-4 accent-macos-accent"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  )}
                   {/* Status indicator */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-macos-accent to-macos-accent/70" />
 
@@ -386,6 +472,18 @@ const PalletDetailModal = ({
                 Añadir Caja
               </Button>
               <Button
+                variant={selectionMode ? 'primary' : 'secondary'}
+                size="medium"
+                leftIcon={<MoveRight size={16} />}
+                onClick={() => {
+                  setSelectionMode((prev) => !prev);
+                  setMoveFeedback(null);
+                  setSelectedBoxCodes(new Set());
+                }}
+              >
+                {selectionMode ? 'Cancelar mover' : 'Mover Cajas'}
+              </Button>
+              <Button
                 variant="primary"
                 size="medium"
                 leftIcon={<CheckCircle size={16} />}
@@ -425,6 +523,58 @@ const PalletDetailModal = ({
             </div>
           )}
         </div>
+
+        {/* Move Boxes Toolbar */}
+        {selectionMode && (
+          <Card variant="flat">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent"
+                  onClick={toggleSelectAll}
+                >
+                  {selectedBoxCodes.size === pallet.cajas.length
+                    ? 'Deseleccionar todo'
+                    : 'Seleccionar todo'}
+                </button>
+                <span className="text-sm text-macos-text-secondary">
+                  {selectedBoxCodes.size} seleccionada(s)
+                </span>
+              </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <input
+                  className="flex-1 border border-macos-border rounded-macos-sm px-3 py-2 outline-none focus:border-macos-accent"
+                  placeholder="Código de pallet destino"
+                  value={targetPalletCode}
+                  onChange={(e) => setTargetPalletCode(e.target.value)}
+                />
+                <Button
+                  variant="primary"
+                  size="medium"
+                  disabled={
+                    isMovingBoxes ||
+                    selectedBoxCodes.size === 0 ||
+                    !targetPalletCode
+                  }
+                  onClick={handleMoveSelectedBoxes}
+                >
+                  {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
+                </Button>
+              </div>
+              {moveFeedback && (
+                <div
+                  className={
+                    moveFeedback.type === 'success'
+                      ? 'text-macos-success'
+                      : 'text-macos-danger'
+                  }
+                >
+                  {moveFeedback.message}
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Box Detail Modal */}
         <BoxDetailModal

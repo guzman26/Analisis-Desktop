@@ -29,20 +29,52 @@ export const api = async <T = any>(
       ...options,
     });
 
+    // Attempt to parse body (even for non-2xx) to extract standardized error info
+    let data: any = null;
+    const contentType = response.headers.get('content-type') || '';
+    try {
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+    } catch {
+      // ignore body parse errors
+    }
+
+    // Handle non-OK with standardized shape
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const message =
+        (data && typeof data === 'object' && (data.message || data.error)) ||
+        `HTTP ${response.status}`;
+      const error: any = new Error(message);
+      if (data && typeof data === 'object') {
+        error.status = data.status || 'error';
+        error.meta = data.meta;
+      }
+      error.httpStatus = response.status;
+      throw error;
     }
 
-    const data = await response.json();
+    // Standardized wrapper { status, message, data, meta }
+    if (data && typeof data === 'object') {
+      // If backend used wrapper with non-success status even with 2xx, treat as error
+      if (data.status && data.status !== 'success') {
+        const error: any = new Error(data.message || 'Error de API');
+        error.status = data.status;
+        error.meta = data.meta;
+        throw error;
+      }
 
-    // Handle paginated responses
-    if (data?.data?.items !== undefined) {
-      return data as T;
-    }
-
-    // Handle wrapped responses
-    if (data?.data !== undefined) {
-      return data.data as T;
+      // If the response follows the standardized wrapper, always return the wrapper as-is
+      if (data.status && data.data !== undefined) {
+        return data as T;
+      }
     }
 
     return data as T;

@@ -12,8 +12,14 @@ import { RefreshCcw, Package } from 'lucide-react';
 import styles from './UnassignedBoxes.module.css';
 
 const UnassignedBoxes = () => {
-  const { unassignedBoxes: unassignedBoxesInPacking } =
-    useUnassignedBoxes('PACKING');
+  const {
+    unassignedBoxes: unassignedBoxesInPacking,
+    hasMore,
+    loadMore,
+    refresh,
+    loading,
+    setServerFilters,
+  } = useUnassignedBoxes('PACKING');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
@@ -31,6 +37,9 @@ const UnassignedBoxes = () => {
     setFilteredBoxes(unassignedBoxesInPacking);
   }, [unassignedBoxesInPacking]);
 
+  // Server-side filters state to pass to context
+  // No local server filters state needed; we forward filters to context
+
   const handleCreateSinglePallet = async (boxCode: string) => {
     try {
       // Establecer el estado de carga para esta caja específica
@@ -39,7 +48,7 @@ const UnassignedBoxes = () => {
       await createSingleBoxPallet(boxCode, 'PACKING');
 
       // Refrescar la lista después de crear el pallet
-      // TODO: Implement refresh functionality
+      await refresh();
 
       console.log('Pallet individual creado exitosamente');
     } catch (error) {
@@ -62,7 +71,7 @@ const UnassignedBoxes = () => {
       await assignBoxToCompatiblePallet(boxCode);
 
       // Refrescar la lista después de asignar a pallet compatible
-      // TODO: Implement refresh functionality
+      await refresh();
 
       console.log('Caja asignada a pallet compatible exitosamente');
     } catch (error) {
@@ -82,16 +91,15 @@ const UnassignedBoxes = () => {
       <div className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h1 className={styles.title}>Cajas sin asignar</h1>
-          <span className={styles.count}>
-            {filteredBoxes.length} de {unassignedBoxesInPacking.length} cajas
-          </span>
+          <span className={styles.count}>{filteredBoxes.length} cajas</span>
         </div>
         <button
           className={styles.refreshButton}
-          onClick={() => console.log('Refrescar - TODO: Implement')}
+          onClick={refresh}
+          disabled={loading}
         >
           <RefreshCcw size={16} />
-          Refrescar
+          {loading ? 'Actualizando...' : 'Refrescar'}
         </button>
       </div>
 
@@ -99,6 +107,10 @@ const UnassignedBoxes = () => {
       <BoxFilters
         boxes={unassignedBoxesInPacking}
         onFiltersChange={setFilteredBoxes}
+        onServerFiltersChange={(filters) => {
+          // Trigger a refresh with server-side filters
+          setServerFilters(filters as any);
+        }}
       />
 
       {/* Empty State */}
@@ -113,32 +125,52 @@ const UnassignedBoxes = () => {
         </div>
       ) : (
         /* Boxes Grid */
-        <div className={styles.grid}>
-          {filteredBoxes.map((box: any) => (
-            <BoxCard
-              key={box.codigo}
-              box={box}
-              setSelectedBox={setSelectedBox}
-              setIsModalOpen={setIsModalOpen}
-              showCreatePalletButton={true}
-              showAssignToCompatibleButton={true}
-              isCreatingPallet={creatingPalletStates[box.codigo] || false}
-              isAssigningToCompatible={
-                assigningToCompatibleStates[box.codigo] || false
-              }
-              onCreateSinglePallet={
-                creatingPalletStates[box.codigo]
-                  ? undefined
-                  : handleCreateSinglePallet
-              }
-              onAssignToCompatiblePallet={
-                assigningToCompatibleStates[box.codigo]
-                  ? undefined
-                  : handleAssignToCompatiblePallet
-              }
-            />
-          ))}
-        </div>
+        <>
+          <div className={styles.grid}>
+            {filteredBoxes.map((box: any) => (
+              <BoxCard
+                key={box.codigo}
+                box={box}
+                setSelectedBox={setSelectedBox}
+                setIsModalOpen={setIsModalOpen}
+                showCreatePalletButton={true}
+                showAssignToCompatibleButton={true}
+                isCreatingPallet={creatingPalletStates[box.codigo] || false}
+                isAssigningToCompatible={
+                  assigningToCompatibleStates[box.codigo] || false
+                }
+                onCreateSinglePallet={
+                  creatingPalletStates[box.codigo]
+                    ? undefined
+                    : handleCreateSinglePallet
+                }
+                onAssignToCompatiblePallet={
+                  assigningToCompatibleStates[box.codigo]
+                    ? undefined
+                    : handleAssignToCompatiblePallet
+                }
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 16,
+              }}
+            >
+              <button
+                className={styles.refreshButton}
+                onClick={loadMore}
+                disabled={loading}
+              >
+                Cargar más
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <BoxDetailModal

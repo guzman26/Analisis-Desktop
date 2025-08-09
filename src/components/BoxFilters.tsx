@@ -2,12 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Box } from '@/types';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import { Button, Input, Card } from './design-system';
-import { Filter, X, Calendar, Package, Hash } from 'lucide-react';
+import { Filter, X, Package, Hash } from 'lucide-react';
 import styles from './BoxFilters.module.css';
+
+interface ServerFilters {
+  calibre?: string;
+  formato?: string;
+  formato_caja?: string;
+  empresa?: string;
+  horario?: string;
+  horario_proceso?: string;
+  codigoPrefix?: string;
+}
 
 interface BoxFiltersProps {
   boxes: Box[];
   onFiltersChange: (filteredBoxes: Box[]) => void;
+  onServerFiltersChange?: (filters: ServerFilters) => void;
 }
 
 interface FilterState {
@@ -18,7 +29,11 @@ interface FilterState {
   searchTerm: string;
 }
 
-const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
+const BoxFilters: React.FC<BoxFiltersProps> = ({
+  boxes,
+  onFiltersChange,
+  onServerFiltersChange,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     calibre: '',
@@ -27,6 +42,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
     hasCustomInfo: null,
     searchTerm: '',
   });
+  const [serverFilters, setServerFilters] = useState<ServerFilters>({});
 
   // Obtener calibres únicos de las cajas
   const uniqueCalibres = Array.from(
@@ -63,7 +79,9 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
     // Filtro por tipo de caja (especial/normal)
     if (filters.hasCustomInfo !== null) {
       filteredBoxes = filteredBoxes.filter(
-        (box) => (box.customInfo && box.customInfo.length > 0) === filters.hasCustomInfo
+        (box) =>
+          (box.customInfo && box.customInfo.length > 0) ===
+          filters.hasCustomInfo
       );
     }
 
@@ -81,6 +99,12 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
     onFiltersChange(filteredBoxes);
   }, [filters, boxes, onFiltersChange]);
 
+  // Emitir filtros de servidor cuando cambien
+  useEffect(() => {
+    onServerFiltersChange?.(serverFilters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverFilters]);
+
   const clearFilters = () => {
     setFilters({
       calibre: '',
@@ -89,11 +113,12 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
       hasCustomInfo: null,
       searchTerm: '',
     });
+    setServerFilters({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(
-    (value) => value !== '' && value !== null
-  );
+  const hasActiveFilters =
+    Object.values(filters).some((value) => value !== '' && value !== null) ||
+    Object.values(serverFilters).some((v) => v !== '' && v !== undefined);
 
   return (
     <Card variant="flat" className={styles.filtersContainer}>
@@ -157,6 +182,12 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, calibre: e.target.value }))
                 }
+                onBlur={() =>
+                  setServerFilters((prev) => ({
+                    ...prev,
+                    calibre: filters.calibre,
+                  }))
+                }
               >
                 <option value="">Todos los calibres</option>
                 {uniqueCalibres.map((calibre) => (
@@ -167,32 +198,64 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
               </select>
             </div>
 
-            {/* Filtro por fecha desde */}
+            {/* Filtro server-side: formato */}
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <Calendar className="w-4 h-4" />
-                Fecha desde
-              </label>
+              <label className={styles.filterLabel}>Formato</label>
               <Input
-                type="date"
-                value={filters.dateFrom}
+                placeholder="formato o formato_caja"
+                value={serverFilters.formato || ''}
                 onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, dateFrom: e.target.value }))
+                  setServerFilters((prev) => ({
+                    ...prev,
+                    formato: e.target.value,
+                    formato_caja: e.target.value,
+                  }))
                 }
               />
             </div>
 
-            {/* Filtro por fecha hasta */}
+            {/* Filtro server-side: empresa */}
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <Calendar className="w-4 h-4" />
-                Fecha hasta
-              </label>
+              <label className={styles.filterLabel}>Empresa</label>
               <Input
-                type="date"
-                value={filters.dateTo}
+                placeholder="código de empresa"
+                value={serverFilters.empresa || ''}
                 onChange={(e) =>
-                  setFilters((prev) => ({ ...prev, dateTo: e.target.value }))
+                  setServerFilters((prev) => ({
+                    ...prev,
+                    empresa: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            {/* Filtro server-side: horario */}
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>Horario</label>
+              <Input
+                placeholder="Mañana/Tarde"
+                value={serverFilters.horario || ''}
+                onChange={(e) =>
+                  setServerFilters((prev) => ({
+                    ...prev,
+                    horario: e.target.value,
+                    horario_proceso: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            {/* Filtro server-side: código prefix */}
+            <div className={styles.filterGroup}>
+              <label className={styles.filterLabel}>Prefijo de código</label>
+              <Input
+                placeholder="Ej: 1234"
+                value={serverFilters.codigoPrefix || ''}
+                onChange={(e) =>
+                  setServerFilters((prev) => ({
+                    ...prev,
+                    codigoPrefix: e.target.value,
+                  }))
                 }
               />
             </div>
@@ -249,4 +312,4 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({ boxes, onFiltersChange }) => {
   );
 };
 
-export default BoxFilters; 
+export default BoxFilters;

@@ -18,8 +18,40 @@ export const extractDataFromResponse = async (
 
   // Handle nested structures
   if (typeof response === 'object') {
-    // Handle error responses first
-    if (response.statusCode >= 400) {
+    // Standardized wrapper handling
+    if (typeof response.status === 'string') {
+      const status = response.status;
+      if (status !== 'success') {
+        throw new Error(response.message || 'Error de API');
+      }
+      // Success case: prefer data.items if available
+      if (response.data?.items !== undefined) {
+        return Array.isArray(response.data.items)
+          ? response.data.items
+          : [response.data.items].filter(Boolean);
+      }
+      if (Array.isArray(response.data)) return response.data;
+      if (typeof response.data === 'object') {
+        // Try common arrays under data
+        const nestedArrays = [
+          response.data.items,
+          response.data.customers,
+          response.data.pallets,
+          response.data.boxes,
+          response.data.history,
+          response.data.movements,
+          response.data.orders,
+        ];
+        for (const arr of nestedArrays) {
+          if (Array.isArray(arr)) return arr;
+        }
+        // Single object
+        return [response.data];
+      }
+    }
+
+    // Legacy style: Handle error responses with statusCode
+    if (typeof response.statusCode === 'number' && response.statusCode >= 400) {
       throw new Error(
         `Error ${response.statusCode}: ${response.message || 'Unknown error'}`
       );

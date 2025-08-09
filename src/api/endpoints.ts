@@ -15,6 +15,9 @@ import {
   GetIssuesParamsPaginated,
   PaginatedResponse,
   PalletAuditResult,
+  BoxFilterParams,
+  PaginationParams,
+  CreateLooseEggPalletRequest,
 } from '@/types';
 
 // Pallet operations
@@ -38,6 +41,10 @@ export const getActivePallets = (params: {
 
 export const createPallet = (baseCode: string, ubicacion: string) =>
   post<Pallet>('/pallets', { baseCode, ubicacion });
+
+// Loose-egg pallets
+export const createLooseEggPallet = (data: CreateLooseEggPalletRequest) =>
+  post<Pallet>('/createLooseEggPallet', data);
 
 export const togglePalletStatus = (codigo: string) =>
   put<Pallet>(`/pallets/${codigo}/toggle`);
@@ -66,8 +73,19 @@ export const updatePalletStatus = (codigo: string, status: string) =>
 export const getBoxByCode = (codigo: string) =>
   get<Box>('/getEggsByCodigo', { codigo });
 
-export const getUnassignedBoxesByLocation = (ubicacion: string) =>
-  get<Box[]>('/getUnassignedBoxesByLocation', { ubicacion });
+// Unassigned boxes (supports pagination per new API)
+export const getUnassignedBoxesByLocation = (
+  params: (PaginationParams & { ubicacion?: string }) & BoxFilterParams = {}
+) => {
+  const withAlias =
+    (params as any).lastKey && !(params as any).lastEvaluatedKey
+      ? { ...(params as any), lastEvaluatedKey: (params as any).lastKey }
+      : params;
+  return get<PaginatedResponse<Box>>(
+    '/getUnassignedBoxesByLocation',
+    withAlias
+  );
+};
 
 export const addBoxToPallet = (palletId: string, boxCode: string) =>
   post<Pallet>(`/pallets/${palletId}/boxes`, { boxCode });
@@ -75,8 +93,8 @@ export const addBoxToPallet = (palletId: string, boxCode: string) =>
 export const unassignBox = (codigo: string) =>
   post<any>('/unassignBox', { codigo });
 
-export const assignBox = (boxCode: string, palletCode: string) =>
-  post<any>('/reassignBoxToPallet', { boxCode, palletCode });
+export const assignBox = (boxCode: string, palletId: string) =>
+  post<any>('/reassignBoxToPallet', { boxCode, palletId });
 
 export const createSingleBoxPallet = (boxCode: string, ubicacion: string) =>
   post<any>('/createSingleBoxPallet', { boxCode, ubicacion });

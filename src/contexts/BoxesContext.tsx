@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Box, Location } from '@/types';
+import { Box, Location, PaginatedResponse, BoxFilterParams } from '@/types';
 import { getUnassignedBoxesByLocation } from '@/api/endpoints';
 import {
   createContextFactory,
@@ -7,7 +7,7 @@ import {
   BaseAction,
 } from './core/createContext';
 import { ActionType } from './core/apiUtils';
-import { extractDataFromResponse } from '@/utils';
+// import { extractDataFromResponse } from '@/utils';
 // Removing unused import
 // import { useDataFetch, useDataMutation } from './core/dataHooks';
 
@@ -17,6 +17,9 @@ interface BoxesState extends BaseState {
   currentLocation: Location | null;
   lastUpdated: number | undefined;
   data: Box[]; // Required by DataState constraint
+  nextKey: string | null;
+  limit: number;
+  filterParams: BoxFilterParams;
 }
 
 // Define action types for this context
@@ -25,11 +28,21 @@ type BoxesAction = BaseAction<ActionType | string>;
 // Add custom action types specific to boxes context
 enum BoxesActionType {
   SET_LOCATION = 'SET_LOCATION',
+  SET_NEXT_KEY = 'SET_NEXT_KEY',
+  APPEND_BOXES = 'APPEND_BOXES',
+  RESET_BOXES = 'RESET_BOXES',
+  SET_FILTERS = 'SET_FILTERS',
 }
 
 // Add a type guard to check if an action is a boxes action
 const isBoxesAction = (action: any): action is BoxesAction => {
-  return action.type === BoxesActionType.SET_LOCATION;
+  return (
+    action.type === BoxesActionType.SET_LOCATION ||
+    action.type === BoxesActionType.SET_NEXT_KEY ||
+    action.type === BoxesActionType.APPEND_BOXES ||
+    action.type === BoxesActionType.RESET_BOXES ||
+    action.type === BoxesActionType.SET_FILTERS
+  );
 };
 
 // Create initial state
@@ -40,6 +53,9 @@ const initialState: BoxesState = {
   status: 'idle',
   error: null,
   lastUpdated: undefined,
+  nextKey: null,
+  limit: 50,
+  filterParams: {},
 };
 
 // Create action creators with array type for boxes data
@@ -60,6 +76,21 @@ const boxesActions = {
     type: BoxesActionType.SET_LOCATION,
     payload: location,
   }),
+  setNextKey: (nextKey: string | null): BoxesAction => ({
+    type: BoxesActionType.SET_NEXT_KEY,
+    payload: nextKey,
+  }),
+  appendBoxes: (boxes: Box[]): BoxesAction => ({
+    type: BoxesActionType.APPEND_BOXES,
+    payload: boxes,
+  }),
+  resetBoxes: (): BoxesAction => ({
+    type: BoxesActionType.RESET_BOXES,
+  }),
+  setFilters: (filters: BoxFilterParams): BoxesAction => ({
+    type: BoxesActionType.SET_FILTERS,
+    payload: filters,
+  }),
 };
 
 // Create a custom reducer
@@ -75,6 +106,29 @@ const boxesReducer = (
           ...state,
           currentLocation: action.payload as Location,
         };
+      case BoxesActionType.SET_NEXT_KEY:
+        return { ...state, nextKey: (action.payload as string | null) ?? null };
+      case BoxesActionType.SET_FILTERS:
+        return {
+          ...state,
+          filterParams: (action.payload as BoxFilterParams) || {},
+        };
+      case BoxesActionType.APPEND_BOXES: {
+        const boxes = Array.isArray(action.payload)
+          ? (action.payload as Box[])
+          : [];
+        const merged = [...state.unassignedBoxes, ...boxes];
+        return {
+          ...state,
+          status: 'success',
+          unassignedBoxes: merged,
+          data: merged,
+          error: null,
+          lastUpdated: Date.now(),
+        };
+      }
+      case BoxesActionType.RESET_BOXES:
+        return { ...state, unassignedBoxes: [], data: [], nextKey: null };
     }
   }
 
@@ -103,8 +157,18 @@ const boxesReducer = (
 
 // Define the API interface
 type BoxesAPI = {
-  fetchUnassignedBoxes: (location: Location) => Promise<void>;
+  fetchUnassignedBoxes: (
+    location: Location,
+    opts?: {
+      limit?: number;
+      lastKey?: string;
+      reset?: boolean;
+    } & BoxFilterParams
+  ) => Promise<void>;
   setLocation: (location: Location) => void;
+  loadMore: () => Promise<void>;
+  refresh: () => Promise<void>;
+  setServerFilters: (filters: BoxFilterParams) => Promise<void>;
 };
 
 // Create the context using our factory
@@ -118,21 +182,45 @@ const { Provider, useContext } = createContextFactory<
   reducer: boxesReducer,
   createAPI: (dispatch) => ({
     // API implementation using hooks internally
-    fetchUnassignedBoxes: async (location: Location) => {
+    fetchUnassignedBoxes: async (
+      location: Location,
+      opts?: {
+        limit?: number;
+        lastKey?: string;
+        reset?: boolean;
+      } & BoxFilterParams
+    ) => {
       dispatch(boxesActions.fetchStart());
       try {
         // Set the current location
         dispatch(boxesActions.setLocation(location));
 
-        // Then fetch the unassigned boxes for that location
-        // Get the boxes and ensure proper typing
-        const boxes = await getUnassignedBoxesByLocation(location);
-        // Make sure we're passing an array to fetchSuccess
-        const parsedBoxes = await extractDataFromResponse(boxes);
-        const boxesArray = Array.isArray(parsedBoxes)
-          ? parsedBoxes
-          : [parsedBoxes].filter(Boolean);
-        dispatch(boxesActions.fetchSuccess(boxesArray));
+        const { limit = 50, lastKey, reset = false, ...filters } = opts || {};
+        // Persist filters in state so loadMore/refresh reuse them
+        dispatch(boxesActions.setFilters(filters));
+        const response: PaginatedResponse<Box> =
+          await getUnassignedBoxesByLocation({
+            ubicacion: location,
+            limit,
+            lastKey,
+            ...filters,
+          });
+
+        const items = Array.isArray(response?.data?.items)
+          ? response.data.items
+          : Array.isArray((response as any)?.data?.boxes)
+            ? (response as any).data.boxes
+            : [];
+        const nextKey = response?.data?.nextKey ?? null;
+
+        if (reset) {
+          dispatch(boxesActions.fetchSuccess(items));
+        } else if (lastKey) {
+          dispatch(boxesActions.appendBoxes(items));
+        } else {
+          dispatch(boxesActions.fetchSuccess(items));
+        }
+        dispatch(boxesActions.setNextKey(nextKey));
       } catch (error) {
         dispatch(boxesActions.fetchError(error as Error));
         throw error;
@@ -141,6 +229,16 @@ const { Provider, useContext } = createContextFactory<
 
     setLocation: (location: Location) => {
       dispatch(boxesActions.setLocation(location));
+    },
+
+    loadMore: async () => {
+      return Promise.resolve();
+    },
+    refresh: async () => {
+      return Promise.resolve();
+    },
+    setServerFilters: async (_filters: BoxFilterParams) => {
+      return Promise.resolve();
     },
   }),
 });
@@ -154,14 +252,47 @@ export const useUnassignedBoxes = (location: Location) => {
   // Fetch unassigned boxes when location changes
   React.useEffect(() => {
     if (location) {
-      api.fetchUnassignedBoxes(location);
+      api.fetchUnassignedBoxes(location, { limit: state.limit, reset: true });
     }
-  }, [location, api]);
+  }, [location]);
+
+  const loadMore = React.useCallback(async () => {
+    if (state.nextKey) {
+      await api.fetchUnassignedBoxes(location, {
+        limit: state.limit,
+        lastKey: state.nextKey,
+        ...state.filterParams,
+      });
+    }
+  }, [api, location, state.nextKey, state.limit]);
+
+  const refresh = React.useCallback(async () => {
+    await api.fetchUnassignedBoxes(location, {
+      limit: state.limit,
+      reset: true,
+      ...state.filterParams,
+    });
+  }, [api, location, state.limit]);
+
+  const setServerFilters = React.useCallback(
+    async (filters: BoxFilterParams) => {
+      await api.fetchUnassignedBoxes(location, {
+        limit: state.limit,
+        reset: true,
+        ...filters,
+      });
+    },
+    [api, location, state.limit]
+  );
 
   return {
     unassignedBoxes: state.unassignedBoxes,
     loading: state.status === 'loading',
     error: state.error,
+    hasMore: Boolean(state.nextKey),
+    loadMore,
+    refresh,
+    setServerFilters,
   };
 };
 

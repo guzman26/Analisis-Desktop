@@ -5,7 +5,12 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
-import { Pallet, Location, PaginatedResponse } from '@/types';
+import {
+  Pallet,
+  Location,
+  PaginatedResponse,
+  CreateLooseEggPalletRequest,
+} from '@/types';
 import {
   getPallets,
   createPallet,
@@ -14,6 +19,7 @@ import {
   getClosedPallets,
   getActivePallets,
   movePallet,
+  createLooseEggPallet as createLooseEggPalletApi,
 } from '@/api/endpoints';
 
 // Simple state interface
@@ -51,6 +57,7 @@ interface PalletContextType {
   deletePallet: (id: string) => Promise<void>;
   closePallet: (codigo: string) => Promise<void>;
   movePallet: (codigo: string, location: Location) => Promise<void>;
+  createLooseEggPallet: (data: CreateLooseEggPalletRequest) => Promise<Pallet>;
 }
 
 // Create context
@@ -266,6 +273,38 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
+  // Create loose-egg pallet
+  const createLooseEggPalletAction = useCallback(
+    async (data: CreateLooseEggPalletRequest) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const newPallet = await createLooseEggPalletApi({
+          codigo: data.codigo,
+          ubicacion: data.ubicacion || 'PACKING',
+          carts: data.carts,
+          trays: data.trays,
+          eggs: data.eggs,
+        });
+        setState((prev) => ({
+          ...prev,
+          openPallets: [...prev.openPallets, newPallet],
+          loading: false,
+        }));
+        return newPallet;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error ? error.message : 'Error al crear pallet de huevo suelto',
+          loading: false,
+        }));
+        throw error;
+      }
+    },
+    []
+  );
+
   // Update pallet
   const updatePalletAction = useCallback(
     async (id: string, data: Partial<Pallet>) => {
@@ -437,6 +476,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     deletePallet: deletePalletAction,
     closePallet: closePalletAction,
     movePallet: movePalletAction,
+    createLooseEggPallet: createLooseEggPalletAction,
   };
 
   return (

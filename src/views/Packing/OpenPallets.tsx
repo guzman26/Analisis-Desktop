@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
+import PalletLooseEggsModal from '@/components/PalletLooseEggsModal';
 import { Card, Button, Input } from '@/components/design-system';
 import { Search, Plus, Filter } from 'lucide-react';
 import '../../styles/designSystem.css';
@@ -18,6 +19,7 @@ const OpenPallets = () => {
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLooseEggsModalOpen, setIsLooseEggsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredPallets, setFilteredPallets] = useState(
     activePalletsPaginated
@@ -69,8 +71,9 @@ const OpenPallets = () => {
               leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
               variant="primary"
               size="medium"
+            onClick={() => setIsLooseEggsModalOpen(true)}
             >
-              Nuevo Pallet
+              Nuevo Pallet (Huevo suelto)
             </Button>
           </div>
         </div>
@@ -265,6 +268,12 @@ const OpenPallets = () => {
             // TODO: Mostrar mensaje de error
           }
         }}
+      />
+
+      <PalletLooseEggsModal
+        isOpen={isLooseEggsModalOpen}
+        onClose={() => setIsLooseEggsModalOpen(false)}
+        defaultLocation={'PACKING'}
       />
     </div>
   );

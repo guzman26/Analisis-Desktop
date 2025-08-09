@@ -1,6 +1,12 @@
 // Core domain types
 export type PalletState = 'open' | 'closed';
-export type Location = 'PACKING' | 'TRANSITO' | 'BODEGA' | 'VENTA';
+export type Location =
+  | 'PACKING'
+  | 'TRANSITO'
+  | 'BODEGA'
+  | 'PREVENTA'
+  | 'VENTA'
+  | 'UNSUBSCRIBED';
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE';
 export type SaleType =
   | 'Venta'
@@ -12,20 +18,26 @@ export type SaleState = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
 
-// Pagination params
+// Pagination params (cursor-based). Support both keys during migration.
 export interface PaginationParams {
   limit?: number;
+  lastKey?: string;
+  // Deprecated alias supported by backend in some endpoints
   lastEvaluatedKey?: string;
 }
 
-// Paginated response
+// Paginated response – standardized wrapper
 export interface PaginatedResponse<T> {
-  statusCode: number;
+  status: 'success' | 'fail' | 'error';
   message: string;
   data: {
     items: T[];
     count: number;
     nextKey: string | null;
+  };
+  meta?: {
+    requestId: string;
+    timestamp: string; // ISO-8601
   };
 }
 
@@ -42,12 +54,33 @@ export interface Pallet {
   fechaCreacion: string;
   ubicacion: Location;
   calibre: string;
+  // Nuevo: tipo de contenido del pallet y cantidades de huevo suelto
+  contentType?: PalletContentType;
+  looseEggs?: LooseEggs;
 }
 
 // Custom info structure for eggs in a box
 export interface EggInfo {
   code: string;
   quantity: number;
+}
+
+// Tipos para pallets con huevo suelto
+export type PalletContentType = 'BOXES' | 'LOOSE' | 'MIXED';
+
+export interface LooseEggs {
+  carts: number; // carritos
+  trays: number; // bandejas
+  eggs: number; // huevos
+}
+
+// Requests para crear pallets de huevo suelto
+export interface CreateLooseEggPalletRequest {
+  codigo: string; // baseCode del pallet
+  ubicacion?: Location;
+  carts?: number;
+  trays?: number;
+  eggs?: number;
 }
 
 export interface Box {
@@ -195,6 +228,17 @@ export interface GetSalesOrdersParamsPaginated extends PaginationParams {
 }
 
 export interface GetIssuesParamsPaginated extends PaginationParams {}
+
+// Server filter parameters for boxes inventory listing
+export interface BoxFilterParams {
+  calibre?: string | number;
+  formato?: string;
+  formato_caja?: string;
+  empresa?: string | number;
+  horario?: string;
+  horario_proceso?: string;
+  codigoPrefix?: string;
+}
 
 // Form data types
 export interface CustomerFormData {
