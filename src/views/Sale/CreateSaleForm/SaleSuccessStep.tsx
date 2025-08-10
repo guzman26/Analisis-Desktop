@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate } from '@/utils/formatDate';
 import { Sale } from '@/types';
 import { Card, Button } from '@/components/design-system';
 import { Download, CheckCircle } from 'lucide-react';
@@ -68,10 +69,7 @@ const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
             <div className="text-center p-2">
               <span className="block text-sm text-gray-500 mb-1">Fecha</span>
               <span className="block font-medium">
-                {(() => {
-                  const { formatDate } = require('@/utils/formatDate');
-                  return formatDate(saleResult.createdAt);
-                })()}
+                {formatDate(saleResult.createdAt)}
               </span>
             </div>
           </div>

@@ -15,6 +15,7 @@ import PalletAuditModal from './PalletAuditModal';
 import '../styles/designSystem.css';
 import styles from './PalletCard.module.css';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+import { formatDate } from '@/utils/formatDate';
 
 interface PalletCardProps {
   pallet: Pallet;
@@ -118,7 +119,7 @@ const PalletCard = ({
 
   // Format date if available (DD/MM/YYYY)
   const formattedDate = pallet.fechaCreacion
-    ? require('@/utils/formatDate').formatDate(pallet.fechaCreacion)
+    ? formatDate(pallet.fechaCreacion)
     : 'N/A';
 
   return (
