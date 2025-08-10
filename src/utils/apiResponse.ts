@@ -24,12 +24,20 @@ export const unwrapApiResponse = <T = any>(raw: any): T => {
     }
     // If wrapper, but body is another JSON string (lambda-proxy), parse inner
     const data = raw.data;
-    if (data && typeof data === 'object' && typeof (data as any).body === 'string') {
+    if (
+      data &&
+      typeof data === 'object' &&
+      typeof (data as any).body === 'string'
+    ) {
       try {
         const inner = JSON.parse((data as any).body);
         if (isStandardWrapper(inner)) {
           if (inner.status && inner.status !== 'success') {
-            throw new ApiError({ message: inner.message || 'Error de API', status: inner.status, meta: inner.meta });
+            throw new ApiError({
+              message: inner.message || 'Error de API',
+              status: inner.status,
+              meta: inner.meta,
+            });
           }
           return (inner.data ?? inner) as T;
         }
