@@ -1,6 +1,5 @@
 // Unified API client with simplified logic
 import { ApiError } from '@/utils/apiErrors';
-import { unwrapApiResponse } from '@/utils/apiResponse';
 const API_URL = import.meta.env.VITE_API_URL as string;
 
 if (!API_URL) {
@@ -62,10 +61,20 @@ export const api = async <T = any>(
       });
     }
 
-    const unwrapped = unwrapApiResponse<T>(rawData);
-    return (unwrapped as any)?.items !== undefined || Array.isArray(unwrapped)
-      ? (unwrapped as T)
-      : ((rawData as T) ?? (unwrapped as T));
+    // Always return standardized wrapper when present
+    if (rawData && typeof rawData === 'object' && 'status' in rawData) {
+      const status = (rawData as any).status;
+      if (status && status !== 'success') {
+        throw new ApiError({
+          message: (rawData as any).message || 'Error de API',
+          status,
+          meta: (rawData as any).meta,
+        });
+      }
+      return rawData as T;
+    }
+
+    return rawData as T;
   } catch (error) {
     const normalized =
       error instanceof ApiError

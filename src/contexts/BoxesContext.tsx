@@ -198,7 +198,8 @@ const { Provider, useContext } = createContextFactory<
         const { limit = 50, lastKey, reset = false, ...filters } = opts || {};
         // Persist filters in state so loadMore/refresh reuse them
         dispatch(boxesActions.setFilters(filters));
-        const response: any = await getUnassignedBoxesByLocation({
+        const response: PaginatedResponse<Box> =
+          await getUnassignedBoxesByLocation({
             ubicacion: location,
             limit,
             lastKey,
@@ -207,16 +208,8 @@ const { Provider, useContext } = createContextFactory<
 
         const items: Box[] = Array.isArray(response?.data?.items)
           ? response.data.items
-          : Array.isArray(response?.items)
-          ? response.items
-          : Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data?.boxes)
-          ? response.data.boxes
           : [];
-        const nextKey =
-          (response?.data && (response.data.nextKey ?? null)) ??
-          (response?.nextKey ?? null);
+        const nextKey = response?.data?.nextKey ?? null;
 
         if (reset) {
           dispatch(boxesActions.fetchSuccess(items));

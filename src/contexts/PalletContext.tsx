@@ -5,7 +5,12 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
-import { Pallet, Location, CreateLooseEggPalletRequest } from '@/types';
+import {
+  Pallet,
+  Location,
+  CreateLooseEggPalletRequest,
+  PaginatedResponse,
+} from '@/types';
 import {
   getPallets,
   createPallet,
@@ -81,7 +86,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
       try {
-        let response: any;
+        let response: PaginatedResponse<Pallet>;
 
         const defaultLocation: Location = 'PACKING';
         const targetLocation: Location = location || defaultLocation;
@@ -98,11 +103,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
           response = await getPallets();
         }
 
-        const pallets = Array.isArray(response?.data?.items)
-          ? response.data.items
-          : Array.isArray(response?.items)
-            ? response.items
-            : [];
+        const pallets = response.data?.items || [];
 
         setState((prev) => ({
           ...prev,
@@ -126,16 +127,12 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
 
     try {
       const packingLocation: Location = 'PACKING';
-      const response: any = await getActivePallets({
+      const response: PaginatedResponse<Pallet> = await getActivePallets({
         ubicacion: packingLocation,
         limit: 50,
       });
 
-      const pallets = Array.isArray(response?.data?.items)
-        ? response.data.items
-        : Array.isArray(response?.items)
-          ? response.items
-          : [];
+      const pallets = response.data?.items || [];
 
       setState((prev) => ({
         ...prev,
@@ -159,16 +156,12 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const response: any = await getClosedPallets({
+      const response: PaginatedResponse<Pallet> = await getClosedPallets({
         ubicacion: 'PACKING' as const,
         limit: 50,
       });
 
-      const pallets = Array.isArray(response?.data?.items)
-        ? response.data.items
-        : Array.isArray(response?.items)
-          ? response.items
-          : [];
+      const pallets = response.data?.items || [];
 
       setState((prev) => ({
         ...prev,
@@ -192,16 +185,12 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const response: any = await getClosedPallets({
+      const response: PaginatedResponse<Pallet> = await getClosedPallets({
         ubicacion: 'TRANSITO' as Location,
         limit: 50,
       });
 
-      const pallets = Array.isArray(response?.data?.items)
-        ? response.data.items
-        : Array.isArray(response?.items)
-          ? response.items
-          : [];
+      const pallets = response.data?.items || [];
 
       setState((prev) => ({
         ...prev,
@@ -225,16 +214,12 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const response: any = await getClosedPallets({
+      const response: PaginatedResponse<Pallet> = await getClosedPallets({
         ubicacion: 'BODEGA' as Location,
         limit: 50,
       });
 
-      const pallets = Array.isArray(response?.data?.items)
-        ? response.data.items
-        : Array.isArray(response?.items)
-          ? response.items
-          : [];
+      const pallets = response.data?.items || [];
 
       setState((prev) => ({
         ...prev,

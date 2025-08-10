@@ -76,16 +76,7 @@ export const getBoxByCode = (codigo: string) =>
 // Unassigned boxes (supports pagination per new API)
 export const getUnassignedBoxesByLocation = (
   params: (PaginationParams & { ubicacion?: string }) & BoxFilterParams = {}
-) => {
-  const withAlias =
-    (params as any).lastKey && !(params as any).lastEvaluatedKey
-      ? { ...(params as any), lastEvaluatedKey: (params as any).lastKey }
-      : params;
-  return get<PaginatedResponse<Box>>(
-    '/getUnassignedBoxesByLocation',
-    withAlias
-  );
-};
+) => get<PaginatedResponse<Box>>('/getUnassignedBoxesByLocation', params);
 
 export const addBoxToPallet = (palletId: string, boxCode: string) =>
   post<Pallet>(`/pallets/${palletId}/boxes`, { boxCode });
