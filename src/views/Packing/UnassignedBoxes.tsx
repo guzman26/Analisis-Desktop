@@ -111,6 +111,7 @@ const UnassignedBoxes = () => {
           // Trigger a refresh with server-side filters
           setServerFilters(filters as any);
         }}
+        disabled={loading}
       />
 
       {/* Empty State */}

@@ -19,6 +19,7 @@ interface BoxFiltersProps {
   boxes: Box[];
   onFiltersChange: (filteredBoxes: Box[]) => void;
   onServerFiltersChange?: (filters: ServerFilters) => void;
+  disabled?: boolean;
 }
 
 interface FilterState {
@@ -33,6 +34,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
   boxes,
   onFiltersChange,
   onServerFiltersChange,
+  disabled = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -99,9 +101,12 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
     onFiltersChange(filteredBoxes);
   }, [filters, boxes, onFiltersChange]);
 
-  // Emitir filtros de servidor cuando cambien
+  // Emitir filtros de servidor con debounce para evitar spam de requests
   useEffect(() => {
-    onServerFiltersChange?.(serverFilters);
+    const handle = setTimeout(() => {
+      onServerFiltersChange?.(serverFilters);
+    }, 350);
+    return () => clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverFilters]);
 
@@ -131,12 +136,18 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
           )}
         </div>
         <div className={styles.filtersActions}>
+          {disabled && (
+            <span className={styles.activeBadge} style={{ marginRight: 8 }}>
+              Buscando...
+            </span>
+          )}
           {hasActiveFilters && (
             <Button
               variant="secondary"
               size="small"
               leftIcon={<X size={14} />}
               onClick={clearFilters}
+              disabled={disabled}
             >
               Limpiar
             </Button>
@@ -145,6 +156,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
             variant="secondary"
             size="small"
             onClick={() => setIsExpanded(!isExpanded)}
+            disabled={disabled}
           >
             {isExpanded ? 'Ocultar' : 'Mostrar'}
           </Button>
@@ -165,6 +177,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               onChange={(e) =>
                 setFilters((prev) => ({ ...prev, searchTerm: e.target.value }))
               }
+              disabled={disabled}
             />
           </div>
 
@@ -184,6 +197,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
                   setFilters((prev) => ({ ...prev, calibre: value }));
                   setServerFilters((prev) => ({ ...prev, calibre: value }));
                 }}
+                disabled={disabled}
               >
                 <option value="">Todos los calibres</option>
                 {uniqueCalibres.map((calibre) => (
@@ -207,6 +221,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
                     formato_caja: e.target.value,
                   }))
                 }
+                disabled={disabled}
               />
             </div>
 
@@ -222,6 +237,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
                     empresa: e.target.value,
                   }))
                 }
+                disabled={disabled}
               />
             </div>
 
@@ -239,6 +255,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
                     horario_proceso: value || undefined,
                   }));
                 }}
+                disabled={disabled}
               >
                 <option value="">Mañana/Tarde</option>
                 <option value="Mañana">Mañana</option>
@@ -258,6 +275,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
                     codigoPrefix: e.target.value,
                   }))
                 }
+                disabled={disabled}
               />
             </div>
           </div>

@@ -22,8 +22,24 @@ export const unwrapApiResponse = <T = any>(raw: any): T => {
         meta: raw.meta,
       });
     }
+    // If wrapper, but body is another JSON string (lambda-proxy), parse inner
+    const data = raw.data;
+    if (data && typeof data === 'object' && typeof (data as any).body === 'string') {
+      try {
+        const inner = JSON.parse((data as any).body);
+        if (isStandardWrapper(inner)) {
+          if (inner.status && inner.status !== 'success') {
+            throw new ApiError({ message: inner.message || 'Error de API', status: inner.status, meta: inner.meta });
+          }
+          return (inner.data ?? inner) as T;
+        }
+        return inner as T;
+      } catch {
+        // fall through and return data
+      }
+    }
     // If wrapper, prefer raw.data, otherwise return raw
-    return (raw.data ?? raw) as T;
+    return (data ?? raw) as T;
   }
 
   return raw as T;
