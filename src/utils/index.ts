@@ -3,6 +3,7 @@ export * from './extractDataFromResponse';
 export * from './formatDate';
 export * from './getParamsFromCodigo';
 export * from './validators';
+export * from './company';
 import { EggInfo } from '@/types';
 
 /**

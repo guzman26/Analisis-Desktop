@@ -3,7 +3,9 @@ import { Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
 import { Button } from '@/components/design-system';
-import { Calendar, MapPin, Check, Tag, Clipboard } from 'lucide-react';
+import { Calendar, MapPin, Check, Tag, Clipboard, Trash2 } from 'lucide-react';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import { deleteBox } from '@/api/endpoints';
 import { clsx } from 'clsx';
 import styles from './BoxCard.module.css';
 
@@ -92,6 +94,26 @@ const BoxCard = ({
 
   const formattedDate = formatDate(box.fecha_registro);
   const calibre = formatCalibreName(box.calibre.toString());
+
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      await deleteBox(box.codigo);
+      setShowDeleteModal(false);
+      // No hay un callback de refresh en props; el padre (vista) debe refrescar.
+      // Emitimos un CustomEvent para que la vista lo escuche si quiere.
+      window.dispatchEvent(
+        new CustomEvent('boxes:deleted', { detail: { codigo: box.codigo } })
+      );
+    } catch (e) {
+      console.error('Error al eliminar caja', e);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div
@@ -198,7 +220,31 @@ const BoxCard = ({
             {!isAssigningToCompatible && 'Asignar a Compatible'}
           </Button>
         )}
+
+        {/* Delete button */}
+        <Button
+          variant="secondary"
+          size="small"
+          leftIcon={<Trash2 size={14} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowDeleteModal(true);
+          }}
+          className="!bg-macos-danger-transparentize-6 !text-macos-danger hover:!bg-macos-danger-transparentize-5"
+        >
+          Eliminar
+        </Button>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title="Eliminar caja"
+        description={`¿Seguro que deseas eliminar la caja ${box.codigo}? Esta acción no se puede deshacer.`}
+        confirmLabel="Eliminar"
+      />
     </div>
   );
 };
