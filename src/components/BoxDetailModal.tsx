@@ -35,7 +35,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
 
   // Procesar customInfo si está disponible
   const processedCustomInfo = box.customInfo
-    ? processBoxCustomInfo(box.customInfo)
+    ? processBoxCustomInfo(box.customInfo as any)
     : [];
   const totalEggs = calculateTotalEggs(processedCustomInfo);
   const mostFrequentCode = getMostFrequentCode(processedCustomInfo);

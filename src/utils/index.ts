@@ -15,22 +15,48 @@ export const processBoxCustomInfo = (rawCustomInfo: any[]): EggInfo[] => {
     return [];
   }
 
-  return rawCustomInfo
-    .map((item) => {
-      // El formato de la API es: [ { "L" : [ { "S" : "code" }, { "N" : "quantity" } ] } ]
-      if (item.L && Array.isArray(item.L) && item.L.length >= 2) {
-        const codeItem = item.L[0];
-        const quantityItem = item.L[1];
+  const parseEntry = (item: any): EggInfo | null => {
+    // Caso 1: Formato DynamoDB: { L: [ { S: code }, { N: quantity } ] }
+    if (item && Array.isArray(item.L) && item.L.length >= 2) {
+      const codeItem = item.L[0];
+      const quantityItem = item.L[1];
+      const code =
+        (codeItem && (codeItem.S || codeItem.s)) ||
+        (typeof codeItem === 'string' ? codeItem : '');
+      const quantityRaw = quantityItem && (quantityItem.N || quantityItem.n);
+      const quantity = parseInt(String(quantityRaw ?? '0'), 10);
+      return code && quantity > 0 ? { code, quantity } : null;
+    }
 
-        const code = codeItem.S || '';
-        const quantity = parseInt(quantityItem.N || '0', 10);
+    // Caso 2: Objeto ya normalizado { code, quantity }
+    if (
+      item &&
+      typeof item === 'object' &&
+      ('code' in item || 'quantity' in item)
+    ) {
+      const code = String((item as any).code ?? '');
+      const quantity = Number((item as any).quantity ?? 0);
+      return code && quantity > 0 ? { code, quantity } : null;
+    }
 
-        return { code, quantity };
-      }
+    // Caso 3: Par en arreglo [code, quantity]
+    if (Array.isArray(item) && item.length >= 2) {
+      const code = String(item[0] ?? '');
+      const quantity = Number(item[1] ?? 0);
+      return code && quantity > 0 ? { code, quantity } : null;
+    }
 
-      return { code: '', quantity: 0 };
-    })
-    .filter((item) => item.code && item.quantity > 0);
+    // Caso 4: Objeto simple { S: code, N: quantity }
+    if (item && typeof item === 'object' && 'S' in item && 'N' in item) {
+      const code = String((item as any).S ?? '');
+      const quantity = parseInt(String((item as any).N ?? '0'), 10);
+      return code && quantity > 0 ? { code, quantity } : null;
+    }
+
+    return null;
+  };
+
+  return rawCustomInfo.map(parseEntry).filter((e): e is EggInfo => Boolean(e));
 };
 
 /**
