@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@/types';
-import { formatCalibreName } from '@/utils/getParamsFromCodigo';
+import {
+  formatCalibreName,
+  ALL_CALIBRE_CODES,
+} from '@/utils/getParamsFromCodigo';
 import { Button, Input, Card } from './design-system';
 import { Filter, X, Package, Hash } from 'lucide-react';
 import styles from './BoxFilters.module.css';
@@ -12,7 +15,7 @@ interface ServerFilters {
   empresa?: string;
   horario?: string;
   horario_proceso?: string;
-  codigoPrefix?: string;
+  codigo?: string;
 }
 
 interface BoxFiltersProps {
@@ -46,10 +49,10 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
   });
   const [serverFilters, setServerFilters] = useState<ServerFilters>({});
 
-  // Obtener calibres únicos de las cajas
-  const uniqueCalibres = Array.from(
-    new Set(boxes.map((box) => box.calibre.toString()))
-  ).sort();
+  // Usar lista canónica de calibres para siempre mostrar todas las opciones
+  const uniqueCalibres = React.useMemo(() => {
+    return ALL_CALIBRE_CODES.slice();
+  }, []);
 
   // Aplicar filtros
   useEffect(() => {
@@ -263,16 +266,18 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               </select>
             </div>
 
-            {/* Filtro server-side: código prefix */}
+            {/* Filtro server-side: código (exacto o contiene) */}
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Prefijo de código</label>
+              <label className={styles.filterLabel}>
+                Código (exacto o contiene)
+              </label>
               <Input
-                placeholder="Ej: 1234"
-                value={serverFilters.codigoPrefix || ''}
+                placeholder="Ej: 234 o 1234567890123456"
+                value={serverFilters.codigo || ''}
                 onChange={(e) =>
                   setServerFilters((prev) => ({
                     ...prev,
-                    codigoPrefix: e.target.value,
+                    codigo: e.target.value,
                   }))
                 }
                 disabled={disabled}

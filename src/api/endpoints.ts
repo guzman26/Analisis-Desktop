@@ -139,6 +139,8 @@ export const updateIssueStatus = (id: string, status: string) =>
 
 // Danger Zone operations
 export const deleteAllBoxes = () => post<any>('/admin/deleteAllBoxes');
+export const deletePackingBoxesAsync = () =>
+  post<any>('/admin/deletePackingBoxesAsync');
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>

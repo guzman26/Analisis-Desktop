@@ -64,6 +64,9 @@ const CALIBRE_MAP: Record<string, string> = {
   '08': 'SUCIO / TRIZADO',
 };
 
+// Export canonical list of all calibre codes
+export const ALL_CALIBRE_CODES: string[] = Object.keys(CALIBRE_MAP);
+
 // Type detection
 export const detectCodigoType = (
   codigo: string

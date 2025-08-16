@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { deleteAllBoxes } from '@/api/endpoints';
+import { deleteAllBoxes, deletePackingBoxesAsync } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
   AlertTriangle,
@@ -59,7 +59,33 @@ const DangerZone: React.FC = () => {
         '¿Estás seguro de que quieres eliminar TODAS las cajas del sistema? Esta acción es irreversible y eliminará permanentemente todos los datos de cajas.',
       dangerLevel: 'critical',
     },
-    // Aquí se pueden agregar más acciones peligrosas en el futuro
+    {
+      id: 'deletePackingBoxesAsync',
+      title: 'Eliminar cajas de PACKING (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra todas las cajas actualmente en PACKING. Puede tardar algunos minutos.',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async () => {
+        try {
+          await deletePackingBoxesAsync();
+          return {
+            success: true,
+            message:
+              'Se inició la eliminación asíncrona de las cajas en PACKING. Revisa los logs para el progreso.',
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas en PACKING? Esta acción no se puede deshacer.',
+      dangerLevel: 'high',
+    },
   ];
 
   const openConfirmationModal = (action: DangerAction) => {

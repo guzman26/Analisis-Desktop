@@ -238,7 +238,8 @@ export interface BoxFilterParams {
   empresa?: string | number;
   horario?: string;
   horario_proceso?: string;
-  codigoPrefix?: string;
+  codigoPrefix?: string; // deprecated, use codigo
+  codigo?: string; // nuevo: acepta exacto (16) o contiene (<16)
 }
 
 // Form data types
