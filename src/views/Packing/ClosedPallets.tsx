@@ -4,11 +4,12 @@ import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
+import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
 import { Card, Button } from '@/components/design-system';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
-  const { closedPalletsInPacking, fetchClosedPalletsInPacking } =
+  const { closedPalletsInPacking, fetchClosedPalletsInPacking, loading } =
     usePalletContext();
   // Create refresh function
   const refresh = () => {
@@ -17,9 +18,15 @@ const ClosedPallets = () => {
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [filtered, setFiltered] = useState<Pallet[]>([]);
+
   useEffect(() => {
     fetchClosedPalletsInPacking();
   }, []);
+
+  useEffect(() => {
+    setFiltered(closedPalletsInPacking);
+  }, [closedPalletsInPacking]);
 
   return (
     <div className="macos-animate-fade-in">
@@ -49,6 +56,19 @@ const ClosedPallets = () => {
           Lista de pallets que han sido cerrados en Packing
         </p>
       </div>
+
+      {/* Filtros */}
+      <ClosedPalletsFilters
+        pallets={closedPalletsInPacking}
+        onLocalFiltersChange={setFiltered}
+        onServerFiltersChange={(f) =>
+          fetchClosedPalletsInPacking({
+            fechaDesde: f.fechaDesde,
+            fechaHasta: f.fechaHasta,
+          })
+        }
+        disabled={loading}
+      />
 
       {/* Stats */}
       <div
@@ -104,7 +124,7 @@ const ClosedPallets = () => {
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           }}
         >
-          {closedPalletsInPacking.map((pallet: any) => (
+          {filtered.map((pallet: any) => (
             <PalletCard
               key={pallet.codigo}
               pallet={pallet}

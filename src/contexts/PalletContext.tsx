@@ -46,7 +46,11 @@ interface PalletContextType {
   // Actions
   fetchPallets: (status?: string, location?: Location) => Promise<void>;
   fetchActivePallets: () => Promise<void>;
-  fetchClosedPalletsInPacking: () => Promise<void>;
+  fetchClosedPalletsInPacking: (opts?: {
+    fechaDesde?: string;
+    fechaHasta?: string;
+    limit?: number;
+  }) => Promise<void>;
   fetchClosedPalletsInTransit: () => Promise<void>;
   fetchClosedPalletsInBodega: () => Promise<void>;
 
@@ -152,33 +156,53 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Fetch closed pallets in packing
-  const fetchClosedPalletsInPacking = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const fetchClosedPalletsInPacking = useCallback(
+    async (opts?: {
+      fechaDesde?: string;
+      fechaHasta?: string;
+      limit?: number;
+    }) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    try {
-      const response: PaginatedResponse<Pallet> = await getClosedPallets({
-        ubicacion: 'PACKING' as const,
-        limit: 50,
-      });
+      try {
+        let response: PaginatedResponse<Pallet>;
 
-      const pallets = response.data?.items || [];
+        // Si hay filtros de fecha, usamos el endpoint general con estado
+        if (opts?.fechaDesde || opts?.fechaHasta) {
+          response = await getPallets({
+            estado: 'closed',
+            ubicacion: 'PACKING',
+            fechaDesde: opts?.fechaDesde,
+            fechaHasta: opts?.fechaHasta,
+            limit: opts?.limit ?? 50,
+          } as any);
+        } else {
+          response = await getClosedPallets({
+            ubicacion: 'PACKING' as const,
+            limit: opts?.limit ?? 50,
+          });
+        }
 
-      setState((prev) => ({
-        ...prev,
-        closedPalletsInPacking: pallets,
-        loading: false,
-      }));
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Error al cargar pallets cerrados en packing',
-        loading: false,
-      }));
-    }
-  }, []);
+        const pallets = response.data?.items || [];
+
+        setState((prev) => ({
+          ...prev,
+          closedPalletsInPacking: pallets,
+          loading: false,
+        }));
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Error al cargar pallets cerrados en packing',
+          loading: false,
+        }));
+      }
+    },
+    []
+  );
 
   // Fetch closed pallets in transit
   const fetchClosedPalletsInTransit = useCallback(async () => {
