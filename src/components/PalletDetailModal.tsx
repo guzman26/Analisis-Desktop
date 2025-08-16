@@ -11,6 +11,7 @@ import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
 import { Modal, Button, Card } from './design-system';
+import SelectTargetPalletModal from './SelectTargetPalletModal';
 import {
   CheckCircle,
   Calendar,
@@ -56,6 +57,7 @@ const PalletDetailModal = ({
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+  const [showSelectTargetModal, setShowSelectTargetModal] = useState(false);
 
   // Estados para auditoría
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -165,6 +167,18 @@ const PalletDetailModal = ({
     } finally {
       setIsMovingBoxes(false);
     }
+  };
+
+  const openTargetPalletSelector = () => {
+    if (selectedBoxCodes.size === 0) return;
+    setShowSelectTargetModal(true);
+  };
+
+  const handleConfirmTargetPallet = (code: string) => {
+    setTargetPalletCode(code);
+    setShowSelectTargetModal(false);
+    // Ejecutar movimiento inmediatamente con el pallet elegido
+    handleMoveSelectedBoxes();
   };
 
   // Función para iniciar auditoría antes de cerrar pallet
@@ -284,316 +298,322 @@ const PalletDetailModal = ({
     statusColors.default;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Detalles de Pallet ${pallet.codigo}`}
-      size="large"
-      showTrafficLights={true}
-    >
-      <div className="space-y-6">
-        {/* Status Badges */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex gap-2">
-            <span
-              className={clsx(
-                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
-                locationColor
-              )}
-            >
-              <MapPin className="w-4 h-4" />
-              {pallet.ubicacion}
-            </span>
-            <span
-              className={clsx(
-                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
-                statusColor
-              )}
-            >
-              {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`Detalles de Pallet ${pallet.codigo}`}
+        size="large"
+        showTrafficLights={true}
+      >
+        <div className="space-y-6">
+          {/* Status Badges */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex gap-2">
+              <span
+                className={clsx(
+                  'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+                  locationColor
+                )}
+              >
+                <MapPin className="w-4 h-4" />
+                {pallet.ubicacion}
+              </span>
+              <span
+                className={clsx(
+                  'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+                  statusColor
+                )}
+              >
+                {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+              </span>
+            </div>
+            <span className="text-sm text-macos-text-secondary">
+              Cajas:{' '}
+              <span className="font-medium text-macos-accent">
+                {pallet.cantidadCajas}
+              </span>
             </span>
           </div>
-          <span className="text-sm text-macos-text-secondary">
-            Cajas:{' '}
-            <span className="font-medium text-macos-accent">
-              {pallet.cantidadCajas}
-            </span>
-          </span>
-        </div>
 
-        {/* Main Information */}
-        <Card variant="flat" padding="none">
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
-            <div className="space-y-1">
-              <InfoRow
-                icon={<Package className="w-5 h-5" />}
-                label="Calibre"
-                value={formatCalibreName(calibre)}
-              />
-              <InfoRow
-                icon={<Hash className="w-5 h-5" />}
-                label="Código Base"
-                value={pallet.baseCode || 'N/A'}
-              />
-              <InfoRow
-                icon={<Calendar className="w-5 h-5" />}
-                label="Fecha de Creación"
-                value={formattedDate}
-              />
-            </div>
-            <div className="space-y-1">
-              <InfoRow
-                icon={<Layers className="w-5 h-5" />}
-                label="Total de Cajas"
-                value={pallet.cantidadCajas}
-              />
-              <InfoRow
-                icon={<Hash className="w-5 h-5" />}
-                label="Estado"
-                value={pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Boxes */}
-        <Card variant="flat">
-          <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
-            <Layers className="w-4 h-4" />
-            Cajas
-            <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
-              {pallet.cajas.length}
-            </span>
-          </h3>
-          {pallet.cajas.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
-              <PackageX className="w-8 h-8 mb-3 opacity-60" />
-              No hay cajas registradas en este pallet
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
-              {pallet.cajas.map((caja, index) => (
-                <div
-                  key={index}
-                  className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
-                  onClick={() => handleBoxClick(caja)}
-                >
-                  {selectionMode && (
-                    <div className="absolute top-2 left-2 z-10">
-                      <input
-                        type="checkbox"
-                        checked={selectedBoxCodes.has(caja)}
-                        onChange={() => handleBoxClick(caja)}
-                        className="w-4 h-4 accent-macos-accent"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  )}
-                  {/* Status indicator */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-macos-accent to-macos-accent/70" />
-
-                  {/* Content */}
-                  <div className="p-3">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-macos-accent" />
-                        <span className="text-xs text-macos-text-secondary font-medium">
-                          Caja #{index + 1}
-                        </span>
-                      </div>
-                      <div className="w-2 h-2 rounded-full bg-macos-success" />
-                    </div>
-
-                    {/* Code */}
-                    <div className="mb-3">
-                      <p className="text-xs text-macos-text-secondary mb-1">
-                        Código
-                      </p>
-                      <p className="text-sm font-mono font-medium text-macos-text break-all">
-                        {caja}
-                      </p>
-                    </div>
-
-                    {/* Calibre info (extracted from code) */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-macos-text-secondary mb-1">
-                          Calibre
-                        </p>
-                        <p className="text-sm font-medium text-macos-text">
-                          {formatCalibreName(getCalibreFromCodigo(caja))}
-                        </p>
-                      </div>
-                      <div className="text-macos-text-secondary group-hover:text-macos-accent transition-colors">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-macos-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
-          <Button
-            variant="secondary"
-            size="medium"
-            leftIcon={<Printer size={16} />}
-            onClick={() => navigate(`/pallet/label/${pallet.codigo}`)}
-          >
-            Generar Etiqueta
-          </Button>
-          {pallet.estado === 'open' && (
-            <>
-              <Button
-                variant="secondary"
-                size="medium"
-                leftIcon={<Plus size={16} />}
-                onClick={() => onAddBox?.(pallet.codigo)}
-              >
-                Añadir Caja
-              </Button>
-              <Button
-                variant={selectionMode ? 'primary' : 'secondary'}
-                size="medium"
-                leftIcon={<MoveRight size={16} />}
-                onClick={() => {
-                  setSelectionMode((prev) => !prev);
-                  setMoveFeedback(null);
-                  setSelectedBoxCodes(new Set());
-                }}
-              >
-                {selectionMode ? 'Cancelar mover' : 'Mover Cajas'}
-              </Button>
-              <Button
-                variant="primary"
-                size="medium"
-                leftIcon={<CheckCircle size={16} />}
-                onClick={handleClosePalletWithAudit}
-              >
-                Cerrar Pallet
-              </Button>
-            </>
-          )}
-          {pallet.estado === 'closed' && (
-            <div className="relative">
-              <Button
-                variant="secondary"
-                size="medium"
-                leftIcon={<MoveRight size={16} />}
-                onClick={() => setShowMoveOptions(!showMoveOptions)}
-              >
-                Mover Pallet {showMoveOptions ? '▲' : '▼'}
-              </Button>
-              {showMoveOptions && (
-                <div className="absolute left-0 mt-1 w-full rounded-macos-sm bg-white shadow-lg z-10">
-                  {moveLocations.map((location) => (
-                    <button
-                      key={location}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
-                      onClick={() => {
-                        onMovePallet?.(pallet.codigo, location);
-                        setShowMoveOptions(false);
-                      }}
-                    >
-                      <MapPin size={14} />
-                      Mover a {location}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Move Boxes Toolbar */}
-        {selectionMode && (
-          <Card variant="flat">
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <button
-                  className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent"
-                  onClick={toggleSelectAll}
-                >
-                  {selectedBoxCodes.size === pallet.cajas.length
-                    ? 'Deseleccionar todo'
-                    : 'Seleccionar todo'}
-                </button>
-                <span className="text-sm text-macos-text-secondary">
-                  {selectedBoxCodes.size} seleccionada(s)
-                </span>
-              </div>
-              <div className="flex flex-col md:flex-row md:items-center gap-2">
-                <input
-                  className="flex-1 border border-macos-border rounded-macos-sm px-3 py-2 outline-none focus:border-macos-accent"
-                  placeholder="Código de pallet destino"
-                  value={targetPalletCode}
-                  onChange={(e) => setTargetPalletCode(e.target.value)}
+          {/* Main Information */}
+          <Card variant="flat" padding="none">
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
+              <div className="space-y-1">
+                <InfoRow
+                  icon={<Package className="w-5 h-5" />}
+                  label="Calibre"
+                  value={formatCalibreName(calibre)}
                 />
+                <InfoRow
+                  icon={<Hash className="w-5 h-5" />}
+                  label="Código Base"
+                  value={pallet.baseCode || 'N/A'}
+                />
+                <InfoRow
+                  icon={<Calendar className="w-5 h-5" />}
+                  label="Fecha de Creación"
+                  value={formattedDate}
+                />
+              </div>
+              <div className="space-y-1">
+                <InfoRow
+                  icon={<Layers className="w-5 h-5" />}
+                  label="Total de Cajas"
+                  value={pallet.cantidadCajas}
+                />
+                <InfoRow
+                  icon={<Hash className="w-5 h-5" />}
+                  label="Estado"
+                  value={pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Boxes */}
+          <Card variant="flat">
+            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+              <Layers className="w-4 h-4" />
+              Cajas
+              <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
+                {pallet.cajas.length}
+              </span>
+            </h3>
+            {pallet.cajas.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
+                <PackageX className="w-8 h-8 mb-3 opacity-60" />
+                No hay cajas registradas en este pallet
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
+                {pallet.cajas.map((caja, index) => (
+                  <div
+                    key={index}
+                    className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                    onClick={() => handleBoxClick(caja)}
+                  >
+                    {selectionMode && (
+                      <div className="absolute top-2 left-2 z-10">
+                        <input
+                          type="checkbox"
+                          checked={selectedBoxCodes.has(caja)}
+                          onChange={() => handleBoxClick(caja)}
+                          className="w-4 h-4 accent-macos-accent"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                    )}
+                    {/* Status indicator */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-macos-accent to-macos-accent/70" />
+
+                    {/* Content */}
+                    <div className="p-3">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Package className="w-4 h-4 text-macos-accent" />
+                          <span className="text-xs text-macos-text-secondary font-medium">
+                            Caja #{index + 1}
+                          </span>
+                        </div>
+                        <div className="w-2 h-2 rounded-full bg-macos-success" />
+                      </div>
+
+                      {/* Code */}
+                      <div className="mb-3">
+                        <p className="text-xs text-macos-text-secondary mb-1">
+                          Código
+                        </p>
+                        <p className="text-sm font-mono font-medium text-macos-text break-all">
+                          {caja}
+                        </p>
+                      </div>
+
+                      {/* Calibre info (extracted from code) */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-macos-text-secondary mb-1">
+                            Calibre
+                          </p>
+                          <p className="text-sm font-medium text-macos-text">
+                            {formatCalibreName(getCalibreFromCodigo(caja))}
+                          </p>
+                        </div>
+                        <div className="text-macos-text-secondary group-hover:text-macos-accent transition-colors">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Hover effect */}
+                    <div className="absolute inset-0 bg-macos-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+            <Button
+              variant="secondary"
+              size="medium"
+              leftIcon={<Printer size={16} />}
+              onClick={() => navigate(`/pallet/label/${pallet.codigo}`)}
+            >
+              Generar Etiqueta
+            </Button>
+            {pallet.estado === 'open' && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="medium"
+                  leftIcon={<Plus size={16} />}
+                  onClick={() => onAddBox?.(pallet.codigo)}
+                >
+                  Añadir Caja
+                </Button>
+                <Button
+                  variant={selectionMode ? 'primary' : 'secondary'}
+                  size="medium"
+                  leftIcon={<MoveRight size={16} />}
+                  onClick={() => {
+                    setSelectionMode((prev) => !prev);
+                    setMoveFeedback(null);
+                    setSelectedBoxCodes(new Set());
+                  }}
+                >
+                  {selectionMode ? 'Cancelar mover' : 'Mover Cajas'}
+                </Button>
                 <Button
                   variant="primary"
                   size="medium"
-                  disabled={
-                    isMovingBoxes ||
-                    selectedBoxCodes.size === 0 ||
-                    !targetPalletCode
-                  }
-                  onClick={handleMoveSelectedBoxes}
+                  leftIcon={<CheckCircle size={16} />}
+                  onClick={handleClosePalletWithAudit}
                 >
-                  {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
+                  Cerrar Pallet
                 </Button>
-              </div>
-              {moveFeedback && (
-                <div
-                  className={
-                    moveFeedback.type === 'success'
-                      ? 'text-macos-success'
-                      : 'text-macos-danger'
-                  }
+              </>
+            )}
+            {pallet.estado === 'closed' && (
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="medium"
+                  leftIcon={<MoveRight size={16} />}
+                  onClick={() => setShowMoveOptions(!showMoveOptions)}
                 >
-                  {moveFeedback.message}
+                  Mover Pallet {showMoveOptions ? '▲' : '▼'}
+                </Button>
+                {showMoveOptions && (
+                  <div className="absolute left-0 mt-1 w-full rounded-macos-sm bg-white shadow-lg z-10">
+                    {moveLocations.map((location) => (
+                      <button
+                        key={location}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
+                        onClick={() => {
+                          onMovePallet?.(pallet.codigo, location);
+                          setShowMoveOptions(false);
+                        }}
+                      >
+                        <MapPin size={14} />
+                        Mover a {location}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Move Boxes Toolbar */}
+          {selectionMode && (
+            <Card variant="flat">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent"
+                    onClick={toggleSelectAll}
+                  >
+                    {selectedBoxCodes.size === pallet.cajas.length
+                      ? 'Deseleccionar todo'
+                      : 'Seleccionar todo'}
+                  </button>
+                  <span className="text-sm text-macos-text-secondary">
+                    {selectedBoxCodes.size} seleccionada(s)
+                  </span>
                 </div>
-              )}
-            </div>
-          </Card>
-        )}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="medium"
+                    onClick={openTargetPalletSelector}
+                    disabled={selectedBoxCodes.size === 0 || isMovingBoxes}
+                  >
+                    Seleccionar pallet destino
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="medium"
+                    disabled={isMovingBoxes || selectedBoxCodes.size === 0}
+                    onClick={openTargetPalletSelector}
+                  >
+                    {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
+                  </Button>
+                </div>
+                {moveFeedback && (
+                  <div
+                    className={
+                      moveFeedback.type === 'success'
+                        ? 'text-macos-success'
+                        : 'text-macos-danger'
+                    }
+                  >
+                    {moveFeedback.message}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
 
-        {/* Box Detail Modal */}
-        <BoxDetailModal
-          isOpen={showBoxDetailModal}
-          onClose={() => setShowBoxDetailModal(false)}
-          box={selectedBox}
-        />
+          {/* Box Detail Modal */}
+          <BoxDetailModal
+            isOpen={showBoxDetailModal}
+            onClose={() => setShowBoxDetailModal(false)}
+            box={selectedBox}
+          />
 
-        {/* Audit Modal */}
-        <PalletAuditModal
-          isOpen={showAuditModal}
-          onClose={handleCancelAudit}
-          auditResult={auditResult}
-          onConfirmClose={handleConfirmClose}
-          isLoading={isAuditing}
-          palletCode={pallet.codigo}
-        />
-      </div>
-    </Modal>
+          {/* Audit Modal */}
+          <PalletAuditModal
+            isOpen={showAuditModal}
+            onClose={handleCancelAudit}
+            auditResult={auditResult}
+            onConfirmClose={handleConfirmClose}
+            isLoading={isAuditing}
+            palletCode={pallet.codigo}
+          />
+        </div>
+      </Modal>
+      <SelectTargetPalletModal
+        isOpen={showSelectTargetModal}
+        onClose={() => setShowSelectTargetModal(false)}
+        excludePalletCode={pallet.codigo}
+        onConfirm={handleConfirmTargetPallet}
+      />
+    </>
   );
 };
 

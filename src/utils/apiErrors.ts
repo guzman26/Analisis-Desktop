@@ -50,3 +50,4 @@ export const toResult = async <T>(fn: () => Promise<T>): Promise<Result<T>> => {
     return { ok: false, error: normalizeApiError(e) };
   }
 };
+
