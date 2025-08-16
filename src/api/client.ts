@@ -76,6 +76,13 @@ export const api = async <T = any>(
 
     return rawData as T;
   } catch (error) {
+    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+    // Emit global event so UI can show an offline overlay
+    if (isOffline) {
+      window.dispatchEvent(
+        new CustomEvent('network:request-error', { detail: { offline: true } })
+      );
+    }
     const normalized =
       error instanceof ApiError
         ? error

@@ -5,7 +5,7 @@ import PalletDetailModal from '@/components/PalletDetailModal';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
-import { Card, Button } from '@/components/design-system';
+import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
@@ -30,6 +30,7 @@ const ClosedPallets = () => {
 
   return (
     <div className="macos-animate-fade-in">
+      <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
         <div

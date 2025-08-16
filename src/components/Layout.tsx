@@ -1,6 +1,7 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import '../styles/designSystem.css';
+import { NetworkOfflineOverlay } from '@/components/design-system';
 
 interface LayoutProps {
   children: ReactNode;
@@ -30,6 +31,7 @@ const Layout = ({ children }: LayoutProps) => {
             'margin-left var(--macos-duration-normal) var(--macos-ease-out)',
         }}
       >
+        <NetworkOfflineOverlay />
         {children}
       </main>
     </div>

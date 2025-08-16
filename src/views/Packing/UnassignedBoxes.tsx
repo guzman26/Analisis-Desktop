@@ -9,6 +9,7 @@ import {
   assignBoxToCompatiblePallet,
 } from '@/api/endpoints';
 import { RefreshCcw, Package } from 'lucide-react';
+import { LoadingOverlay } from '@/components/design-system';
 import styles from './UnassignedBoxes.module.css';
 
 const UnassignedBoxes = () => {
@@ -88,6 +89,7 @@ const UnassignedBoxes = () => {
 
   return (
     <div className={styles.container}>
+      <LoadingOverlay show={loading} text="Cargando cajas…" />
       <div className={styles.header}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <h1 className={styles.title}>Cajas sin asignar</h1>

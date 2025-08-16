@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Modal from '@/components/design-system/Modal';
-import { Button, Card, Input } from '@/components/design-system';
+import {
+  Button,
+  Card,
+  Input,
+  LoadingOverlay,
+} from '@/components/design-system';
 import { usePalletContext } from '@/contexts/PalletContext';
 import {
   getCalibreFromCodigo,
@@ -48,6 +53,7 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
       size="large"
     >
       <div className="macos-stack" style={{ gap: 12 }}>
+        <LoadingOverlay show={loading} text="Cargando pallets abiertos…" />
         <Input
           label="Buscar por código"
           placeholder="Ej: 43225…"
