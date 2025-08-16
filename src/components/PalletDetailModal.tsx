@@ -4,6 +4,8 @@ import { Box, Pallet, PalletAuditResult } from '@/types';
 import {
   formatCalibreName,
   getCalibreFromCodigo,
+  getTurnoNombre,
+  getEmpacadoraFromCodigo,
 } from '@/utils/getParamsFromCodigo';
 import { getBoxByCode, auditPallet, assignBox } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
@@ -23,6 +25,8 @@ import {
   PackageX,
   Hash,
   Printer,
+  Building2,
+  Clock,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -366,6 +370,22 @@ const PalletDetailModal = ({
                   icon={<Hash className="w-5 h-5" />}
                   label="Estado"
                   value={pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
+                />
+                <InfoRow
+                  icon={<Building2 className="w-5 h-5" />}
+                  label="Empresa"
+                  value={
+                    pallet.baseCode
+                      ? getEmpacadoraFromCodigo(pallet.baseCode)
+                      : 'N/A'
+                  }
+                />
+                <InfoRow
+                  icon={<Clock className="w-5 h-5" />}
+                  label="Turno"
+                  value={
+                    pallet.baseCode ? getTurnoNombre(pallet.baseCode) : 'N/A'
+                  }
                 />
               </div>
             </div>
