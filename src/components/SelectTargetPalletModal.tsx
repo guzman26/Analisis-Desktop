@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import Modal from '@/components/design-system/Modal';
 import { Button, Card, Input } from '@/components/design-system';
 import { usePalletContext } from '@/contexts/PalletContext';
+import {
+  getCalibreFromCodigo,
+  getTurnoNombre,
+} from '@/utils/getParamsFromCodigo';
 
 interface SelectTargetPalletModalProps {
   isOpen: boolean;
@@ -79,7 +83,9 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
                           {p.codigo}
                         </span>
                         <span className="text-sm text-macos-text-secondary">
-                          Cajas: {p.cantidadCajas} · Ubicación: {p.ubicacion}
+                          Calibre: {getCalibreFromCodigo(p.codigo)} · Cajas:{' '}
+                          {p.cantidadCajas} · Turno:{' '}
+                          {getTurnoNombre(p.baseCode)}
                         </span>
                       </div>
                       {isSelected && (
