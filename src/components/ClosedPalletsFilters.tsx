@@ -1,8 +1,11 @@
 import React from 'react';
 import { Pallet } from '@/types';
 import { Button, Card, Input } from '@/components/design-system';
-import { Filter, X, Package, Search } from 'lucide-react';
-import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+import { Filter, X, Package, Search, Clock } from 'lucide-react';
+import {
+  getCalibreFromCodigo,
+  getTurnoFromCodigo,
+} from '@/utils/getParamsFromCodigo';
 
 type ServerFilters = {
   fechaDesde?: string;
@@ -14,6 +17,7 @@ type LocalFilters = {
   searchTerm: string;
   dateFrom: string;
   dateTo: string;
+  turno: string;
 };
 
 interface ClosedPalletsFiltersProps {
@@ -35,6 +39,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
     searchTerm: '',
     dateFrom: '',
     dateTo: '',
+    turno: '',
   });
   const [server, setServer] = React.useState<ServerFilters>({});
 
@@ -65,6 +70,11 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
           .includes(q)
       );
     }
+    if (local.turno) {
+      filtered = filtered.filter((p) =>
+        p.baseCode ? getTurnoFromCodigo(p.baseCode) === local.turno : false
+      );
+    }
     onLocalFiltersChange(filtered);
   }, [local, pallets, onLocalFiltersChange]);
 
@@ -76,13 +86,23 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
   }, [server]);
 
   const clearAll = () => {
-    setLocal({ calibre: '', searchTerm: '', dateFrom: '', dateTo: '' });
+    setLocal({
+      calibre: '',
+      searchTerm: '',
+      dateFrom: '',
+      dateTo: '',
+      turno: '',
+    });
     setServer({});
   };
 
   const hasActive =
     Boolean(
-      local.calibre || local.searchTerm || local.dateFrom || local.dateTo
+      local.calibre ||
+        local.searchTerm ||
+        local.dateFrom ||
+        local.dateTo ||
+        local.turno
     ) || Boolean(server.fechaDesde || server.fechaHasta);
 
   return (
@@ -121,7 +141,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Búsqueda */}
           <div className="space-y-1">
             <label className="text-xs text-macos-text-secondary flex items-center gap-1">
@@ -156,6 +176,26 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
                   {c}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Turno (client-side) */}
+          <div className="space-y-1">
+            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+              <Clock size={14} /> Turno
+            </label>
+            <select
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              value={local.turno}
+              onChange={(e) =>
+                setLocal((prev) => ({ ...prev, turno: e.target.value }))
+              }
+              disabled={disabled}
+            >
+              <option value="">Todos</option>
+              <option value="1">Turno 1</option>
+              <option value="2">Turno 2</option>
+              <option value="3">Turno 3</option>
             </select>
           </div>
 
