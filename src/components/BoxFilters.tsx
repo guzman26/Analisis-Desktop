@@ -104,29 +104,18 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
     onFiltersChange(filteredBoxes);
   }, [filters, boxes, onFiltersChange]);
 
-  // Emitir filtros de servidor con debounce para evitar spam de requests
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      onServerFiltersChange?.(serverFilters);
-    }, 350);
-    return () => clearTimeout(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverFilters]);
-
-  // Si el usuario escribe un código (sólo dígitos) en la búsqueda general,
-  // sincronizamos con el filtro de servidor `codigo` para que el backend lo use.
-  useEffect(() => {
+  // Aplicar filtros al backend sólo cuando el usuario presione el botón
+  const handleApplyServerFilters = () => {
     const raw = (filters.searchTerm || '').trim();
     const isOnlyDigits = /^\d{1,16}$/.test(raw);
-    if (isOnlyDigits) {
-      setServerFilters((prev) => ({ ...prev, codigo: raw }));
-    } else if (serverFilters.codigo) {
-      // Si dejó de ser un código numérico, no forzamos a limpiar otros
-      // filtros de servidor, pero sí removemos `codigo` auto-asignado
-      setServerFilters((prev) => ({ ...prev, codigo: undefined }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.searchTerm]);
+    const payload = {
+      ...serverFilters,
+      // Si el usuario escribió un código numérico en la búsqueda general,
+      // úsalo como `codigo` para el backend (exacto o contiene).
+      codigo: isOnlyDigits ? raw : serverFilters.codigo,
+    } as ServerFilters;
+    onServerFiltersChange?.(payload);
+  };
 
   const clearFilters = () => {
     setFilters({
@@ -170,6 +159,14 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               Limpiar
             </Button>
           )}
+          <Button
+            variant="primary"
+            size="small"
+            onClick={handleApplyServerFilters}
+            disabled={disabled}
+          >
+            Aplicar
+          </Button>
           <Button
             variant="secondary"
             size="small"
