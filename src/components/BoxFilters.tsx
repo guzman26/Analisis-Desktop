@@ -113,6 +113,21 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverFilters]);
 
+  // Si el usuario escribe un código (sólo dígitos) en la búsqueda general,
+  // sincronizamos con el filtro de servidor `codigo` para que el backend lo use.
+  useEffect(() => {
+    const raw = (filters.searchTerm || '').trim();
+    const isOnlyDigits = /^\d{1,16}$/.test(raw);
+    if (isOnlyDigits) {
+      setServerFilters((prev) => ({ ...prev, codigo: raw }));
+    } else if (serverFilters.codigo) {
+      // Si dejó de ser un código numérico, no forzamos a limpiar otros
+      // filtros de servidor, pero sí removemos `codigo` auto-asignado
+      setServerFilters((prev) => ({ ...prev, codigo: undefined }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.searchTerm]);
+
   const clearFilters = () => {
     setFilters({
       calibre: '',
