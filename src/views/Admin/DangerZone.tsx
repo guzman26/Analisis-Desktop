@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { deleteAllBoxes, deletePackingBoxesAsync } from '@/api/endpoints';
+import {
+  deleteAllBoxes,
+  deletePackingBoxesAsync,
+  deleteAllBoxesAsync,
+  deletePackingPalletsAsync,
+} from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
   AlertTriangle,
@@ -85,6 +90,60 @@ const DangerZone: React.FC = () => {
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas en PACKING? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
+    },
+    {
+      id: 'deletePackingPalletsAsync',
+      title: 'Eliminar pallets de PACKING (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra todos los pallets en PACKING. Afecta pallets abiertos/cerrados según backend.',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async () => {
+        try {
+          await deletePackingPalletsAsync();
+          return {
+            success: true,
+            message:
+              'Se inició la eliminación asíncrona de pallets en PACKING.',
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de todos los pallets en PACKING? Esta acción no se puede deshacer.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'deleteAllBoxesAsync',
+      title: 'Eliminar TODAS las cajas (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra todas las cajas del sistema (todas las ubicaciones).',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async () => {
+        try {
+          await deleteAllBoxesAsync();
+          return {
+            success: true,
+            message:
+              'Se inició la eliminación asíncrona de todas las cajas. Verifica los logs para el progreso.',
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de TODAS las cajas del sistema? Esta acción no se puede deshacer.',
+      dangerLevel: 'critical',
     },
   ];
 

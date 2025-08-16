@@ -141,6 +141,10 @@ export const updateIssueStatus = (id: string, status: string) =>
 export const deleteAllBoxes = () => post<any>('/admin/deleteAllBoxes');
 export const deletePackingBoxesAsync = () =>
   post<any>('/admin/deletePackingBoxesAsync');
+export const deleteAllBoxesAsync = () =>
+  post<any>('/admin/deleteAllBoxesAsync');
+export const deletePackingPalletsAsync = () =>
+  post<any>('/admin/deletePackingPalletsAsync');
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
