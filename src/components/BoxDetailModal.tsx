@@ -94,6 +94,11 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
       onClose={onClose}
       title={`Detalles de Caja ${box.codigo}`}
       size="large"
+      resizable
+      minWidth={560}
+      minHeight={420}
+      defaultWidth={920}
+      defaultHeight={680}
       showTrafficLights={true}
     >
       <div className="space-y-6">

@@ -145,6 +145,8 @@ export const deleteAllBoxesAsync = () =>
   post<any>('/admin/deleteAllBoxesAsync');
 export const deletePackingPalletsAsync = () =>
   post<any>('/admin/deletePackingPalletsAsync');
+export const deletePalletsAndAssignedBoxesAsync = () =>
+  post<any>('/admin/deletePalletsAndAssignedBoxesAsync');
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
