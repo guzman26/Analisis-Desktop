@@ -48,16 +48,29 @@ const Modal: React.FC<ModalProps> = ({
       case 'small':
         return 28 * 16; // 28rem
       case 'large':
-        return 64 * 10; // 64rem
+        return 64 * 16; // 64rem
       case 'medium':
       default:
         return 48 * 16; // 48rem
     }
   };
 
-  const initialWidth = defaultWidth ?? toPxWidthFromSize(size);
-  const initialHeight =
+  const clampToViewport = (w: number, h: number) => {
+    const maxW = Math.floor(window.innerWidth * 0.95);
+    const maxH = Math.floor(window.innerHeight * 0.9);
+    return {
+      w: Math.min(Math.max(w, minWidth), maxW),
+      h: Math.min(Math.max(h, minHeight), maxH),
+    };
+  };
+
+  const initialWidthRaw = defaultWidth ?? toPxWidthFromSize(size);
+  const initialHeightRaw =
     defaultHeight ?? Math.min(Math.round(window.innerHeight * 0.7), 640);
+  const { w: initialWidth, h: initialHeight } = clampToViewport(
+    initialWidthRaw,
+    initialHeightRaw
+  );
 
   const [width, setWidth] = useState<number>(initialWidth);
   const [height, setHeight] = useState<number>(initialHeight);
@@ -136,11 +149,15 @@ const Modal: React.FC<ModalProps> = ({
             </Dialog.Overlay>
 
             {/* Modal Content */}
-            <Dialog.Content asChild>
+            <Dialog.Content
+              asChild
+              onEscapeKeyDown={(e) => e.stopPropagation()}
+              onPointerDownOutside={(e) => e.preventDefault()}
+            >
               <motion.div
                 className={twMerge(
                   clsx(
-                    'fixed top-[5%] left-1/2 z-[51] overflow-hidden',
+                    'fixed left-[25%] top-[12%] -translate-x-0 translate-y-0 z-[51] overflow-hidden max-w-[75vw] max-h-[88vh]',
                     'bg-white/95 rounded-lg border border-white/20',
                     'shadow-[0_0_0_0.5px_rgba(0,0,0,0.1),0_4px_20px_rgba(0,0,0,0.15),0_25px_50px_rgba(0,0,0,0.25)]',
                     !resizable && sizes[size],
@@ -150,25 +167,12 @@ const Modal: React.FC<ModalProps> = ({
                 style={{
                   backdropFilter: 'blur(40px)',
                   WebkitBackdropFilter: 'blur(40px)',
-                  transform: 'translate(-50%, 0)',
                   width: resizable ? `${width}px` : undefined,
                   height: resizable ? `${height}px` : undefined,
                 }}
-                initial={{
-                  opacity: 0,
-                  scale: 0.95,
-                  y: -20,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.95,
-                  y: -20,
-                }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{
                   duration: 0.2,
                   ease: [0.25, 0.1, 0.25, 1],
