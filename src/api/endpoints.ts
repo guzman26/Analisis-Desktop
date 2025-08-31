@@ -87,6 +87,11 @@ export const unassignBox = (codigo: string) =>
 export const assignBox = (boxCode: string, palletId: string) =>
   post<any>('/reassignBoxToPallet', { boxCode, palletId });
 
+export const moveBoxBetweenPallets = (
+  boxCode: string,
+  destinationPalletCode: string
+) => post<any>('/moveBoxBetweenPallets', { boxCode, destinationPalletCode });
+
 // Admin – delete a box by codigo (16 dígitos). Requiere permisos de admin.
 export const deleteBox = (codigo: string) =>
   post<any>('/admin/deleteBox', { codigo });

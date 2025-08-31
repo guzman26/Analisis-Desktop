@@ -7,7 +7,11 @@ import {
   getTurnoNombre,
   getEmpacadoraFromCodigo,
 } from '@/utils/getParamsFromCodigo';
-import { getBoxByCode, auditPallet, assignBox } from '@/api/endpoints';
+import {
+  getBoxByCode,
+  auditPallet,
+  moveBoxBetweenPallets,
+} from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
@@ -134,7 +138,7 @@ const PalletDetailModal = ({
     try {
       const codes = Array.from(selectedBoxCodes);
       const results = await Promise.allSettled(
-        codes.map((code) => assignBox(code, targetPalletCode))
+        codes.map((code) => moveBoxBetweenPallets(code, targetPalletCode))
       );
       const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
       const rejected = results.length - fulfilled;
