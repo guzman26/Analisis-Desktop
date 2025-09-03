@@ -5,6 +5,7 @@ import {
   deleteAllBoxesAsync,
   deletePackingPalletsAsync,
   deletePalletsAndAssignedBoxesAsync,
+  deleteUnassignedBoxesAsync,
 } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
@@ -90,6 +91,33 @@ const DangerZone: React.FC = () => {
       },
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas en PACKING? Esta acción no se puede deshacer.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'deleteUnassignedBoxesAsync',
+      title: 'Eliminar cajas UNASSIGNED (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra todas las cajas no asignadas a ningún pallet.',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async () => {
+        try {
+          await deleteUnassignedBoxesAsync();
+          return {
+            success: true,
+            message:
+              'Se inició la eliminación asíncrona de cajas UNASSIGNED. Revisa los logs para el progreso.',
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas UNASSIGNED? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
     },
     {

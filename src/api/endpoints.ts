@@ -152,6 +152,8 @@ export const deletePackingPalletsAsync = () =>
   post<any>('/admin/deletePackingPalletsAsync');
 export const deletePalletsAndAssignedBoxesAsync = () =>
   post<any>('/admin/deletePalletsAndAssignedBoxesAsync');
+export const deleteUnassignedBoxesAsync = () =>
+  post<any>('/admin/deleteUnassignedBoxesAsync');
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
