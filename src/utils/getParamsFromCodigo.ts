@@ -21,7 +21,8 @@
 const FORMATS = {
   box: {
     length: 16,
-    pattern: /^\d{16}$/,
+    // Aceptar códigos numéricos de longitud variable; normalizaremos más abajo
+    pattern: /^\d{13,}$/,
     fields: {
       dia: [0, 1],
       semana: [1, 3],
@@ -37,7 +38,7 @@ const FORMATS = {
   },
   pallet: {
     length: 13,
-    pattern: /^\d{13}$/,
+    pattern: /^\d{13,}$/,
     fields: {
       calibre: [6, 8],
     },
@@ -83,9 +84,12 @@ const extractField = (
   field: string
 ): string => {
   const format = FORMATS[type];
+  // Normalizar tomando los últimos N dígitos esperados si el código es más largo
+  const normalized =
+    codigo.length >= format.length ? codigo.slice(-format.length) : codigo;
   const fields = format.fields as Record<string, readonly [number, number]>;
   const [start, end] = fields[field] || [];
-  return start !== undefined ? codigo.slice(start, end) : '';
+  return start !== undefined ? normalized.slice(start, end) : '';
 };
 
 // Calibre formatting
@@ -104,19 +108,24 @@ export const getBaseCodeFromCodigo = (codigo: string): string => {
   const type = detectCodigoType(codigo);
   if (type === 'unknown') return '';
   const [start, end] = FORMATS[type].baseCode;
-  return codigo.slice(start, end);
+  const fmt = FORMATS[type];
+  const normalized =
+    codigo.length >= fmt.length ? codigo.slice(-fmt.length) : codigo;
+  return normalized.slice(start, end);
 };
 
 // Box-specific extractors
 export const getBoxInfo = (codigo: string) => {
-  if (detectCodigoType(codigo) !== 'box') {
-    throw new Error('Código de caja debe tener exactamente 16 dígitos');
+  if (!FORMATS.box.pattern.test(codigo)) {
+    throw new Error('Código de caja inválido');
   }
 
   const format = FORMATS.box;
+  const normalized =
+    codigo.length >= format.length ? codigo.slice(-format.length) : codigo;
   return Object.entries(format.fields).reduce(
     (acc, [field, range]) => {
-      acc[field] = codigo.slice(range[0], range[1]);
+      acc[field] = normalized.slice(range[0], range[1]);
       return acc;
     },
     {} as Record<string, string>

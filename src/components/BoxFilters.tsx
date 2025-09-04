@@ -107,7 +107,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
   // Aplicar filtros al backend sólo cuando el usuario presione el botón
   const handleApplyServerFilters = () => {
     const raw = (filters.searchTerm || '').trim();
-    const isOnlyDigits = /^\d{1,16}$/.test(raw);
+    const isOnlyDigits = /^\d{1,}$/.test(raw);
     const payload = {
       ...serverFilters,
       // Si el usuario escribió un código numérico en la búsqueda general,
