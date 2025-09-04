@@ -1,14 +1,22 @@
 /**
- * Nuevo formato de código de caja (16 dígitos):
- * D (1 dígito): Día de la semana
- * SS (2 dígitos): Semana
- * AA (2 dígitos): Año
- * OO (2 dígitos): Operario
- * E (1 dígito): Empacadora
- * T (1 dígito): Turno
- * CC (2 dígitos): Calibre
- * F (1 dígito): Formato
- * CCCC (4 dígitos): Contador
+ * Esquemas de códigos
+ *
+ * Caja – 16 dígitos (config/schemas/box.js)
+ * 1 díaSemana
+ * 2 semanaISO
+ * 2 año (YY)
+ * 2 operario
+ * 1 empacadora
+ * 1 turno (1=mañana, 2=tarde)
+ * 2 calibre
+ * 1 formato
+ * 1 empresa
+ * 3 contador
+ *
+ * Pallet – 14 dígitos (config/schemas/pallet.js)
+ * BaseCode 11 dígitos:
+ * 1 díaSemana, 2 semanaISO, 2 año (YY), 1 turno, 2 calibre, 1 formato, 2 empresa
+ * Sufijo 3 dígitos: contador incremental
  */
 
 /**
@@ -22,7 +30,7 @@ const FORMATS = {
   box: {
     length: 16,
     // Aceptar códigos numéricos de longitud variable; normalizaremos más abajo
-    pattern: /^\d{13,}$/,
+    pattern: /^\d{16,}$/,
     fields: {
       dia: [0, 1],
       semana: [1, 3],
@@ -32,17 +40,27 @@ const FORMATS = {
       turno: [8, 9],
       calibre: [9, 11],
       formato: [11, 12],
-      contador: [12, 16],
+      empresa: [12, 13],
+      contador: [13, 16],
     },
-    baseCode: [0, 12],
+    // Para cajas, baseCode = todo excepto el contador (13 primeros dígitos)
+    baseCode: [0, 13],
   },
   pallet: {
-    length: 13,
-    pattern: /^\d{13,}$/,
+    length: 14,
+    pattern: /^\d{14,}$/,
     fields: {
+      dia: [0, 1],
+      semana: [1, 3],
+      ano: [3, 5],
+      turno: [5, 6],
       calibre: [6, 8],
+      formato: [8, 9],
+      empresa: [9, 11],
+      contador: [11, 14],
     },
-    baseCode: [2, 10],
+    // Para pallets, baseCode = primeros 11 dígitos
+    baseCode: [0, 11],
   },
 } as const;
 
@@ -141,9 +159,21 @@ export const validateCodigoPallet = (codigo: string): boolean =>
 
 // Display formatting
 export const formatCodigoForDisplay = (codigo: string): string => {
-  if (detectCodigoType(codigo) === 'box') {
+  const type = detectCodigoType(codigo);
+  if (type === 'box') {
     const info = getBoxInfo(codigo);
-    return `${info.dia}-${info.semana}-${info.ano}-${info.operario}-${info.empacadora}-${info.turno}-${info.calibre}-${info.formato}-${info.contador}`;
+    return `${info.dia}-${info.semana}-${info.ano}-${info.operario}-${info.empacadora}-${info.turno}-${info.calibre}-${info.formato}-${info.empresa}-${info.contador}`;
+  }
+  if (type === 'pallet') {
+    const fmt = FORMATS.pallet;
+    const normalized =
+      codigo.length >= fmt.length ? codigo.slice(-fmt.length) : codigo;
+    const base = normalized.slice(fmt.baseCode[0], fmt.baseCode[1]);
+    const sufijo = normalized.slice(
+      fmt.fields.contador[0],
+      fmt.fields.contador[1]
+    );
+    return `${base}-${sufijo}`;
   }
   return codigo;
 };
