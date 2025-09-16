@@ -88,7 +88,7 @@ const CreatePallet: React.FC = () => {
   const [empresa, setEmpresa] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [maxBoxes, setMaxBoxes] = React.useState<number>(48);
+  const [maxBoxes, setMaxBoxes] = React.useState<number>(60);
 
   const canSubmit = Boolean(turno && calibre && formato && empresa);
 
@@ -217,7 +217,7 @@ const CreatePallet: React.FC = () => {
               max={200}
               className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
               value={maxBoxes}
-              onChange={(e) => setMaxBoxes(Number(e.target.value) || 48)}
+              onChange={(e) => setMaxBoxes(Number(e.target.value) || 60)}
             />
           </div>
         </div>

@@ -284,7 +284,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
           data.baseCode || '',
           typeof data.maxBoxes === 'number' && data.maxBoxes > 0
             ? data.maxBoxes
-            : 48
+            : 60
         );
         setState((prev) => ({
           ...prev,
