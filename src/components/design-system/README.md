@@ -11,6 +11,7 @@ This design system provides a set of React components and utilities that follow 
 ## Components
 
 ### Button
+
 A versatile button component with multiple variants and states.
 
 ```tsx
@@ -30,12 +31,14 @@ import { Button } from '@/components/design-system';
 ```
 
 **Props:**
+
 - `variant`: 'primary' | 'secondary' | 'ghost' | 'danger'
 - `size`: 'small' | 'medium' | 'large'
 - `isLoading`: boolean
 - `leftIcon` / `rightIcon`: ReactNode
 
 ### Card
+
 A container component with depth and hover effects.
 
 ```tsx
@@ -59,12 +62,14 @@ import { Card } from '@/components/design-system';
 ```
 
 **Props:**
+
 - `variant`: 'default' | 'elevated' | 'flat'
 - `isHoverable`: boolean
 - `isPressable`: boolean
 - `padding`: 'none' | 'small' | 'medium' | 'large'
 
 ### Modal
+
 A dialog component with smooth animations and backdrop blur.
 
 ```tsx
@@ -82,10 +87,11 @@ import { Modal } from '@/components/design-system';
     </Button>
     <Button variant="primary">Confirm</Button>
   </div>
-</Modal>
+</Modal>;
 ```
 
 **Props:**
+
 - `isOpen`: boolean
 - `onClose`: () => void
 - `title`: string
@@ -94,6 +100,7 @@ import { Modal } from '@/components/design-system';
 - `showCloseButton`: boolean
 
 ### Input
+
 A form input component with label and error states.
 
 ```tsx
@@ -122,6 +129,7 @@ import { Input } from '@/components/design-system';
 ```
 
 **Props:**
+
 - `label`: string
 - `error`: string
 - `helperText`: string
@@ -133,23 +141,20 @@ The design system uses a carefully selected color palette that matches macOS aes
 
 ```scss
 // Primary colors
---macos-accent: #007AFF      // Blue
---macos-success: #34C759     // Green
---macos-warning: #FF9500     // Orange
---macos-error: #FF3B30       // Red
-
-// Background colors
---macos-bg: #F5F5F7          // Light gray
---macos-bg-secondary: #FFFFFF // White
---macos-bg-tertiary: #F9F9F9  // Off-white
-
-// Text colors
---macos-text: #1D1D1F        // Dark gray
---macos-text-secondary: #86868B // Medium gray
-
-// UI colors
---macos-border: #D2D2D7      // Light border
---macos-sidebar: #F5F5F7     // Sidebar background
+--macos-accent: #007aff // Blue
+  --macos-success: #34c759 // Green
+  --macos-warning: #ff9500 // Orange
+  --macos-error: #ff3b30 // Red
+  // Background colors
+  --macos-bg: #f5f5f7 // Light gray
+  --macos-bg-secondary: #ffffff // White
+  --macos-bg-tertiary: #f9f9f9 // Off-white
+  // Text colors
+  --macos-text: #1d1d1f // Dark gray
+  --macos-text-secondary: #86868b // Medium gray
+  // UI colors
+  --macos-border: #d2d2d7 // Light border
+  --macos-sidebar: #f5f5f7; // Sidebar background
 ```
 
 ## Typography
@@ -157,22 +162,26 @@ The design system uses a carefully selected color palette that matches macOS aes
 The design system uses the San Francisco font family (falls back to system fonts):
 
 ```css
-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 
-             'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+font-family:
+  -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+  'Helvetica Neue', Arial, sans-serif;
 ```
 
 ## Utility Classes
 
 ### Animations
+
 - `animate-in`: Fade in animation
 - `animate-slide`: Slide in from top
 - `animate-scale`: Scale in effect
 
 ### Text
+
 - `text-primary`: Primary text color
 - `text-secondary`: Secondary text color
 
 ### Effects
+
 - `vibrancy`: Glass morphism effect
 - `card-macos`: Standard card styling
 - `window-macos`: Window-like container
@@ -188,6 +197,7 @@ font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
 ## Examples
 
 ### Form Layout
+
 ```tsx
 <Card>
   <h2 className="text-xl font-semibold mb-4">User Settings</h2>
@@ -203,6 +213,7 @@ font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
 ```
 
 ### Dashboard Card
+
 ```tsx
 <Card variant="elevated" isHoverable>
   <div className="flex items-center justify-between">

@@ -56,7 +56,9 @@ interface PalletContextType {
 
   selectPallet: (pallet: Pallet) => void;
   clearSelectedPallet: () => void;
-  createPallet: (data: Partial<Pallet>) => Promise<Pallet>;
+  createPallet: (
+    data: Partial<Pallet> & { maxBoxes?: number }
+  ) => Promise<Pallet>;
   updatePallet: (id: string, data: Partial<Pallet>) => Promise<Pallet>;
   deletePallet: (id: string) => Promise<void>;
   closePallet: (codigo: string) => Promise<void>;
@@ -273,29 +275,35 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   // Create pallet
-  const createPalletAction = useCallback(async (data: Partial<Pallet>) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const createPalletAction = useCallback(
+    async (data: Partial<Pallet> & { maxBoxes?: number }) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
 
-    try {
-      const newPallet = await createPallet(
-        data.baseCode || '',
-        (data.ubicacion || 'PACKING') as Location
-      );
-      setState((prev) => ({
-        ...prev,
-        openPallets: [...prev.openPallets, newPallet],
-        loading: false,
-      }));
-      return newPallet;
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error al crear pallet',
-        loading: false,
-      }));
-      throw error;
-    }
-  }, []);
+      try {
+        const newPallet = await createPallet(
+          data.baseCode || '',
+          typeof data.maxBoxes === 'number' && data.maxBoxes > 0
+            ? data.maxBoxes
+            : 48
+        );
+        setState((prev) => ({
+          ...prev,
+          openPallets: [...prev.openPallets, newPallet],
+          loading: false,
+        }));
+        return newPallet;
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error ? error.message : 'Error al crear pallet',
+          loading: false,
+        }));
+        throw error;
+      }
+    },
+    []
+  );
 
   // Create loose-egg pallet
   const createLooseEggPalletAction = useCallback(

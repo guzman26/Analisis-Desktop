@@ -383,8 +383,8 @@
   }
 
   /* Override any dark theme or container backgrounds */
-  [data-theme="dark"],
-  [data-theme="dark"] *,
+  [data-theme='dark'],
+  [data-theme='dark'] *,
   .dark,
   .dark * {
     background: white !important;

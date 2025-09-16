@@ -39,8 +39,8 @@ export const getActivePallets = (params: {
   lastKey?: string;
 }) => get<PaginatedResponse<Pallet>>('/getActivePallets', params);
 
-export const createPallet = (baseCode: string, ubicacion: string) =>
-  post<Pallet>('/pallets', { baseCode, ubicacion });
+export const createPallet = (codigo: string, maxBoxes: number) =>
+  post<Pallet>('/createPallet', { codigo, maxBoxes });
 
 // Loose-egg pallets
 export const createLooseEggPallet = (data: CreateLooseEggPalletRequest) =>

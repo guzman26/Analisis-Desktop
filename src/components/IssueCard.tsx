@@ -23,11 +23,14 @@ const IssueCard: React.FC<IssueCardProps> = ({
   console.log('issue', issue);
 
   // Fecha normalizada DD/MM/YYYY
-  const formattedDate = `${new Date(issue.createdAt).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })}`;
+  const formattedDate = `${new Date(issue.createdAt).toLocaleDateString(
+    'es-ES',
+    {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }
+  )}`;
 
   // Compute CSS class for status badge based on current status
   const statusClass = `status-badge ${currentStatus

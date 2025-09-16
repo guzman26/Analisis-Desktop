@@ -27,13 +27,13 @@ This Modal component follows Apple's macOS Human Interface Guidelines to create 
         <X className="h-4 w-4" />
       </button>
     )}
-    
+
     {title && (
       <Dialog.Title className="text-xl font-semibold">
         {title}
       </Dialog.Title>
     )}
-    
+
     <div className="mt-4">
       {children}
     </div>
@@ -42,6 +42,7 @@ This Modal component follows Apple's macOS Human Interface Guidelines to create 
 ```
 
 **Issues with Original:**
+
 - Generic card appearance, not window-like
 - Simple close button, not macOS traffic lights
 - Basic backdrop blur
@@ -85,7 +86,7 @@ This Modal component follows Apple's macOS Human Interface Guidelines to create 
           {/* Minimize and Maximize buttons */}
         </div>
       )}
-      
+
       <Dialog.Title className="flex-1 text-center text-[13px] font-semibold text-black/85 font-sf">
         {title}
       </Dialog.Title>
@@ -100,6 +101,7 @@ This Modal component follows Apple's macOS Human Interface Guidelines to create 
 ```
 
 **Improvements in New Version:**
+
 - ✅ Authentic macOS window appearance
 - ✅ Traffic light controls (red, yellow, green)
 - ✅ Proper title bar with SF Pro typography
@@ -130,7 +132,9 @@ This Modal component follows Apple's macOS Human Interface Guidelines to create 
 
 ```css
 /* Title Bar Text */
-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+font-family:
+  -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+  'Helvetica Neue', Arial, sans-serif;
 font-size: 13px;
 font-weight: 600;
 letter-spacing: -0.01em;
@@ -192,7 +196,7 @@ backdrop-filter: blur(40px);
 -webkit-backdrop-filter: blur(40px);
 
 /* Shadow Stack */
-box-shadow: 
+box-shadow:
   0 0 0 0.5px rgba(0, 0, 0, 0.1),
   0 4px 20px rgba(0, 0, 0, 0.15),
   0 25px 50px rgba(0, 0, 0, 0.25);
@@ -201,17 +205,20 @@ box-shadow:
 ## Usage Guidelines
 
 ### When to Use Traffic Lights
+
 - ✅ **Use for primary modal dialogs** that represent a window or document
 - ✅ **Use when minimize functionality is available** (e.g., move to dock)
 - ❌ **Don't use for simple confirmations** or alerts
 - ❌ **Don't use for form modals** without window-like behavior
 
 ### Size Guidelines
+
 - **Small (320px)**: Simple confirmations, alerts
 - **Medium (384px)**: Standard forms, information dialogs
 - **Large (448px)**: Complex forms, detailed content
 
 ### Accessibility Features
+
 - Escape key support for closing
 - Focus management
 - ARIA labels for all controls
@@ -222,16 +229,19 @@ box-shadow:
 ## Implementation Notes
 
 ### Browser Support
+
 - **Backdrop blur**: Requires modern browsers (Chrome 76+, Safari 9+, Firefox 103+)
 - **Fallbacks**: Background color opacity increased when backdrop-filter unavailable
 - **Performance**: GPU acceleration enabled for smooth animations
 
 ### Touch Devices
+
 - Traffic light controls increase to 16px on touch devices
 - Icons become always visible (no hover state)
 - Larger touch targets for better usability
 
 ### Dark Mode Support
+
 The component automatically adapts to system dark mode preferences:
 
 ```css
@@ -260,6 +270,7 @@ The component automatically adapts to system dark mode preferences:
 ## Code Examples
 
 ### Basic Modal
+
 ```jsx
 <Modal
   isOpen={isOpen}
@@ -272,6 +283,7 @@ The component automatically adapts to system dark mode preferences:
 ```
 
 ### Modal with Minimize
+
 ```jsx
 <Modal
   isOpen={isOpen}
@@ -285,6 +297,7 @@ The component automatically adapts to system dark mode preferences:
 ```
 
 ### Alert Modal (No Traffic Lights)
+
 ```jsx
 <Modal
   isOpen={isOpen}
