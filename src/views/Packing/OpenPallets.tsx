@@ -5,6 +5,7 @@ import PalletDetailModal from '@/components/PalletDetailModal';
 import PalletLooseEggsModal from '@/components/PalletLooseEggsModal';
 import { Card, Button, Input } from '@/components/design-system';
 import { Search, Plus, Filter } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
@@ -12,6 +13,7 @@ import PalletCard from '@/components/PalletCard';
 const OpenPallets = () => {
   const { openPallets: activePalletsPaginated, fetchActivePallets } =
     usePalletContext();
+  const navigate = useNavigate();
 
   // Create refresh function
   const refresh = () => {
@@ -71,7 +73,16 @@ const OpenPallets = () => {
               leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
               variant="primary"
               size="medium"
+              onClick={() => navigate('/packing/createPallet')}
+            >
+              Crear Pallet
+            </Button>
+            <Button
+              leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
+              variant="secondary"
+              size="medium"
               onClick={() => setIsLooseEggsModalOpen(true)}
+              style={{ marginLeft: 'var(--macos-space-2)' }}
             >
               Nuevo Pallet (Huevo suelto)
             </Button>
