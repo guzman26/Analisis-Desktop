@@ -5,7 +5,9 @@ import {
   formatCalibreName,
   getCalibreFromCodigo,
   getTurnoNombre,
-  getEmpacadoraFromCodigo,
+  getEmpresaFromCodigo,
+  getOperarioFromCodigo,
+  getContadorFromCodigo,
 } from '@/utils/getParamsFromCodigo';
 import {
   getBoxByCode,
@@ -382,7 +384,7 @@ const PalletDetailModal = ({
                   label="Empresa"
                   value={
                     pallet.baseCode
-                      ? getEmpacadoraFromCodigo(pallet.baseCode)
+                      ? getEmpresaFromCodigo(pallet.baseCode)
                       : 'N/A'
                   }
                 />
@@ -401,7 +403,7 @@ const PalletDetailModal = ({
           <Card variant="flat">
             <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
               <Layers className="w-4 h-4" />
-              Cajas
+              Historial reciente
               <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
                 {pallet.cajas.length}
               </span>
@@ -454,6 +456,19 @@ const PalletDetailModal = ({
                         <p className="text-sm font-mono font-medium text-macos-text break-all">
                           {caja}
                         </p>
+                      </div>
+
+                      {/* Parsed badges: Operario, Calibre, Contador */}
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                          Op: {getOperarioFromCodigo(caja)}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                          Cal: {formatCalibreName(getCalibreFromCodigo(caja))}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                          N°{getContadorFromCodigo(caja)}
+                        </span>
                       </div>
 
                       {/* Calibre info (extracted from code) */}

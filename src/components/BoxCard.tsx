@@ -159,6 +159,10 @@ const BoxCard = ({
       {/* Info Cards Section */}
       <div className={styles.infoSection}>
         <div className={styles.infoItem}>
+          <div className={styles.infoLabel}>Código</div>
+          <div className={styles.infoValue}>{box.codigo}</div>
+        </div>
+        <div className={styles.infoItem}>
           <div className={styles.infoLabel}>
             <Calendar size={14} />
             Fecha

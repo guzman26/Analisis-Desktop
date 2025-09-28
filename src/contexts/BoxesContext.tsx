@@ -117,7 +117,11 @@ const boxesReducer = (
         const boxes = Array.isArray(action.payload)
           ? (action.payload as Box[])
           : [];
-        const merged = [...state.unassignedBoxes, ...boxes];
+        // Merge by codigo to avoid duplicates when paginating
+        const map = new Map<string, Box>();
+        for (const b of state.unassignedBoxes) map.set(b.codigo, b);
+        for (const b of boxes) map.set(b.codigo, b);
+        const merged = Array.from(map.values());
         return {
           ...state,
           status: 'success',
@@ -230,12 +234,33 @@ const { Provider, useContext } = createContextFactory<
     },
 
     loadMore: async () => {
-      return Promise.resolve();
+      const state = (Provider as any).StateContext
+        ?._currentValue?.[0] as BoxesState;
+      const apiSelf = (Provider as any).StateContext
+        ?._currentValue?.[1] as BoxesAPI;
+      if (state?.nextKey && apiSelf) {
+        await apiSelf.fetchUnassignedBoxes(state.currentLocation as Location, {
+          limit: state.limit,
+          lastKey: state.nextKey,
+          ...state.filterParams,
+        });
+      }
     },
     refresh: async () => {
-      return Promise.resolve();
+      const state = (Provider as any).StateContext
+        ?._currentValue?.[0] as BoxesState;
+      const apiSelf = (Provider as any).StateContext
+        ?._currentValue?.[1] as BoxesAPI;
+      if (apiSelf && state?.currentLocation) {
+        await apiSelf.fetchUnassignedBoxes(state.currentLocation, {
+          limit: state.limit,
+          reset: true,
+          ...state.filterParams,
+        });
+      }
     },
     setServerFilters: async (_filters: BoxFilterParams) => {
+      // Esta función es remplazada por el hook; mantenemos compatibilidad
       return Promise.resolve();
     },
   }),

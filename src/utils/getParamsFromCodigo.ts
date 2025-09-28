@@ -228,9 +228,14 @@ export const getFormatoFromCodigo = (codigo: string) => {
   return codigo.slice(11, 12);
 };
 
+export const getEmpresaFromCodigo = (codigo: string) => {
+  // Empresa: posición 12-13
+  return codigo.slice(12, 14);
+};
+
 export const getContadorFromCodigo = (codigo: string) => {
-  // Contador: posiciones 12-15 (4 dígitos)
-  return codigo.slice(12, 16);
+  // Contador: posiciones 14-16 (3 dígitos)
+  return codigo.slice(14, 17);
 };
 
 /**
