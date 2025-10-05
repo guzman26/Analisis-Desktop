@@ -54,6 +54,8 @@ export interface Pallet {
   fechaCreacion: string;
   ubicacion: Location;
   calibre: string;
+  // Capacidad máxima de cajas configurada para el pallet
+  maxBoxes?: number;
   // Nuevo: tipo de contenido del pallet y cantidades de huevo suelto
   contentType?: PalletContentType;
   looseEggs?: LooseEggs;

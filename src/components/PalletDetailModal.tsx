@@ -27,7 +27,6 @@ import {
   Package,
   Layers,
   MapPin,
-  Plus,
   MoveRight,
   PackageX,
   Hash,
@@ -42,7 +41,6 @@ interface PalletDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onClosePallet?: (codigo: string) => void;
-  onAddBox?: (codigo: string) => void;
   onMovePallet?: (codigo: string, location: string) => void;
 }
 
@@ -51,7 +49,6 @@ const PalletDetailModal = ({
   isOpen,
   onClose,
   onClosePallet,
-  onAddBox,
   onMovePallet,
 }: PalletDetailModalProps) => {
   const navigate = useNavigate();
@@ -309,6 +306,12 @@ const PalletDetailModal = ({
     statusColors[pallet.estado as keyof typeof statusColors] ||
     statusColors.default;
 
+  // Mostrar resumen de cajas como cantidad/capacidad (ej: 2/60)
+  const boxesSummary =
+    typeof pallet.maxBoxes === 'number' && !Number.isNaN(pallet.maxBoxes)
+      ? `${pallet.cantidadCajas}/${pallet.maxBoxes}`
+      : String(pallet.cantidadCajas);
+
   return (
     <>
       <Modal
@@ -343,7 +346,7 @@ const PalletDetailModal = ({
             <span className="text-sm text-macos-text-secondary">
               Cajas:{' '}
               <span className="font-medium text-macos-accent">
-                {pallet.cantidadCajas}
+                {boxesSummary}
               </span>
             </span>
           </div>
@@ -373,6 +376,11 @@ const PalletDetailModal = ({
                   icon={<Layers className="w-5 h-5" />}
                   label="Total de Cajas"
                   value={pallet.cantidadCajas}
+                />
+                <InfoRow
+                  icon={<Package className="w-5 h-5" />}
+                  label="Capacidad (maxBoxes)"
+                  value={pallet.maxBoxes ?? 'N/A'}
                 />
                 <InfoRow
                   icon={<Hash className="w-5 h-5" />}
@@ -519,14 +527,6 @@ const PalletDetailModal = ({
             </Button>
             {pallet.estado === 'open' && (
               <>
-                <Button
-                  variant="secondary"
-                  size="medium"
-                  leftIcon={<Plus size={16} />}
-                  onClick={() => onAddBox?.(pallet.codigo)}
-                >
-                  Añadir Caja
-                </Button>
                 <Button
                   variant={selectionMode ? 'primary' : 'secondary'}
                   size="medium"

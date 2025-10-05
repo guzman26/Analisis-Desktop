@@ -145,9 +145,6 @@ const ClosedPallets = () => {
           setIsModalOpen(false);
           setSelectedPallet(null);
         }}
-        onAddBox={(codigo) => {
-          console.log('Añadir caja a:', codigo);
-        }}
         onMovePallet={async (codigo, location) => {
           try {
             await movePallet(

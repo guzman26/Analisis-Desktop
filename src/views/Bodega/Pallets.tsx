@@ -132,9 +132,6 @@ const BodegaPallets = () => {
             console.error('Error al cerrar pallet:', error);
           }
         }}
-        onAddBox={(codigo) => {
-          console.log('Añadir caja a:', codigo);
-        }}
         onMovePallet={async (codigo, location) => {
           try {
             await movePallet(
