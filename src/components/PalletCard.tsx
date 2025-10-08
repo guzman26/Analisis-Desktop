@@ -213,7 +213,10 @@ const PalletCard = ({
                   className="macos-text-title-2"
                   style={{ fontWeight: 600 }}
                 >
-                  {pallet.cantidadCajas}
+                  {typeof pallet.maxBoxes === 'number' &&
+                  !Number.isNaN(pallet.maxBoxes)
+                    ? `${pallet.cantidadCajas}/${pallet.maxBoxes}`
+                    : pallet.cantidadCajas}
                 </span>
               </div>
             </div>
