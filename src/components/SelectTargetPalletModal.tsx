@@ -10,7 +10,9 @@ import { usePalletContext } from '@/contexts/PalletContext';
 import {
   getCalibreFromCodigo,
   getTurnoNombre,
+  formatCalibreName,
 } from '@/utils/getParamsFromCodigo';
+import { Package, CheckCircle } from 'lucide-react';
 
 interface SelectTargetPalletModalProps {
   isOpen: boolean;
@@ -54,6 +56,14 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
     >
       <div className="macos-stack" style={{ gap: 12 }}>
         <LoadingOverlay show={loading} text="Cargando pallets abiertos…" />
+        
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-macos-sm">
+          <p className="text-sm text-blue-800">
+            <Package className="w-4 h-4 inline mr-1" />
+            Seleccione el pallet de destino para mover las cajas seleccionadas.
+          </p>
+        </div>
+        
         <Input
           label="Buscar por código"
           placeholder="Ej: 43225…"
@@ -66,38 +76,51 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
               <div className="p-3 text-macos-text-secondary">Cargando…</div>
             )}
             {!loading && pallets.length === 0 && (
-              <div className="p-3 text-macos-text-secondary">
+              <div className="p-3 text-macos-text-secondary text-center">
                 No hay pallets abiertos disponibles en PACKING
               </div>
             )}
             {!loading &&
               pallets.map((p) => {
                 const isSelected = selectedCode === p.codigo;
+                const calibre = getCalibreFromCodigo(p.codigo);
+                const capacityInfo = p.maxBoxes 
+                  ? `${p.cantidadCajas}/${p.maxBoxes}`
+                  : `${p.cantidadCajas}`;
+                
                 return (
                   <button
                     key={p.codigo}
-                    className={`w-full text-left px-3 py-2 transition-colors ${
+                    className={`w-full text-left px-4 py-3 transition-all ${
                       isSelected
                         ? 'bg-macos-accent/10 border-l-4 border-macos-accent'
                         : 'hover:bg-gray-50'
                     }`}
                     onClick={() => setSelectedCode(p.codigo)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-macos-text">
-                          {p.codigo}
-                        </span>
-                        <span className="text-sm text-macos-text-secondary">
-                          Calibre: {getCalibreFromCodigo(p.codigo)} · Cajas:{' '}
-                          {p.cantidadCajas} · Turno:{' '}
-                          {getTurnoNombre(p.baseCode)}
-                        </span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Package className="w-4 h-4 text-macos-accent" />
+                          <span className="font-mono font-semibold text-macos-text">
+                            {p.codigo}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-macos-text-secondary">
+                          <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 border border-macos-border">
+                            {formatCalibreName(calibre)}
+                          </span>
+                          <span>Cajas: {capacityInfo}</span>
+                          <span>Turno: {getTurnoNombre(p.baseCode)}</span>
+                        </div>
                       </div>
                       {isSelected && (
-                        <span className="text-macos-accent text-sm font-medium">
-                          Seleccionado
-                        </span>
+                        <div className="flex items-center gap-1 text-macos-accent">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="text-sm font-medium">
+                            Seleccionado
+                          </span>
+                        </div>
                       )}
                     </div>
                   </button>
@@ -118,7 +141,7 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
             disabled={!selectedCode}
             onClick={() => onConfirm(selectedCode)}
           >
-            Enviar
+            Confirmar y mover
           </Button>
         </div>
       </div>

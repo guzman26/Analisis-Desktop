@@ -59,7 +59,6 @@ const PalletDetailModal = ({
   const [selectedBoxCodes, setSelectedBoxCodes] = useState<Set<string>>(
     new Set()
   );
-  const [targetPalletCode, setTargetPalletCode] = useState('');
   const [isMovingBoxes, setIsMovingBoxes] = useState(false);
   const [moveFeedback, setMoveFeedback] = useState<{
     type: 'success' | 'error';
@@ -130,11 +129,14 @@ const PalletDetailModal = ({
     }
   };
 
-  const handleMoveSelectedBoxes = async () => {
+  const handleConfirmTargetPallet = async (targetPalletCode: string) => {
     if (!pallet) return;
     if (!targetPalletCode || selectedBoxCodes.size === 0) return;
+    
+    setShowSelectTargetModal(false);
     setIsMovingBoxes(true);
     setMoveFeedback(null);
+    
     try {
       const codes = Array.from(selectedBoxCodes);
       const results = await Promise.allSettled(
@@ -142,28 +144,31 @@ const PalletDetailModal = ({
       );
       const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
       const rejected = results.length - fulfilled;
+      
       // Optimistic local update: remover cajas movidas de la lista visible
       if (fulfilled > 0) {
         (pallet as any).cajas = pallet.cajas.filter(
           (c: string) => !selectedBoxCodes.has(c)
         );
         setSelectedBoxCodes(new Set());
+        setSelectionMode(false);
       }
+      
       if (rejected === 0) {
         setMoveFeedback({
           type: 'success',
-          message: `Se movieron ${fulfilled} caja(s) correctamente.`,
+          message: `✓ Se movieron ${fulfilled} caja(s) correctamente al pallet ${targetPalletCode}.`,
         });
       } else if (fulfilled > 0) {
         setMoveFeedback({
           type: 'error',
-          message: `Se movieron ${fulfilled} caja(s), ${rejected} fallaron.`,
+          message: `Se movieron ${fulfilled} caja(s), pero ${rejected} fallaron. Intente nuevamente con las restantes.`,
         });
       } else {
         setMoveFeedback({
           type: 'error',
           message:
-            'No se pudo mover ninguna caja. Verifique el código del pallet destino o intente nuevamente.',
+            'No se pudo mover ninguna caja. Verifique que el pallet destino esté disponible e intente nuevamente.',
         });
       }
     } catch (error) {
@@ -175,18 +180,6 @@ const PalletDetailModal = ({
     } finally {
       setIsMovingBoxes(false);
     }
-  };
-
-  const openTargetPalletSelector = () => {
-    if (selectedBoxCodes.size === 0) return;
-    setShowSelectTargetModal(true);
-  };
-
-  const handleConfirmTargetPallet = (code: string) => {
-    setTargetPalletCode(code);
-    setShowSelectTargetModal(false);
-    // Ejecutar movimiento inmediatamente con el pallet elegido
-    handleMoveSelectedBoxes();
   };
 
   // Función para iniciar auditoría antes de cerrar pallet
@@ -584,44 +577,39 @@ const PalletDetailModal = ({
           {selectionMode && (
             <Card variant="flat">
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent"
-                    onClick={toggleSelectAll}
-                  >
-                    {selectedBoxCodes.size === pallet.cajas.length
-                      ? 'Deseleccionar todo'
-                      : 'Seleccionar todo'}
-                  </button>
-                  <span className="text-sm text-macos-text-secondary">
-                    {selectedBoxCodes.size} seleccionada(s)
-                  </span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent transition-colors"
+                      onClick={toggleSelectAll}
+                    >
+                      {selectedBoxCodes.size === pallet.cajas.length
+                        ? 'Deseleccionar todo'
+                        : 'Seleccionar todo'}
+                    </button>
+                    <span className="text-sm text-macos-text-secondary">
+                      {selectedBoxCodes.size} seleccionada(s)
+                    </span>
+                  </div>
                 </div>
-                <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    size="medium"
-                    onClick={openTargetPalletSelector}
-                    disabled={selectedBoxCodes.size === 0 || isMovingBoxes}
-                  >
-                    Seleccionar pallet destino
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="medium"
-                    disabled={isMovingBoxes || selectedBoxCodes.size === 0}
-                    onClick={openTargetPalletSelector}
-                  >
-                    {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
-                  </Button>
-                </div>
+                
+                <Button
+                  variant="primary"
+                  size="medium"
+                  leftIcon={<MoveRight size={16} />}
+                  disabled={isMovingBoxes || selectedBoxCodes.size === 0}
+                  onClick={() => setShowSelectTargetModal(true)}
+                >
+                  {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
+                </Button>
+                
                 {moveFeedback && (
                   <div
-                    className={
+                    className={`p-3 rounded-macos-sm border ${
                       moveFeedback.type === 'success'
-                        ? 'text-macos-success'
-                        : 'text-macos-danger'
-                    }
+                        ? 'bg-green-50 border-green-200 text-green-700'
+                        : 'bg-red-50 border-red-200 text-red-700'
+                    }`}
                   >
                     {moveFeedback.message}
                   </div>
