@@ -323,7 +323,7 @@ const PalletDetailModal = ({
       >
         <div className="space-y-6">
           {/* Status Badges */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex gap-2">
               <span
                 className={clsx(
@@ -343,12 +343,12 @@ const PalletDetailModal = ({
                 {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
               </span>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-xs text-macos-text-secondary">Cajas</span>
-              <span className="text-2xl font-bold text-macos-accent">
+            <span className="text-sm text-macos-text-secondary">
+              Cajas:{' '}
+              <span className="font-medium text-macos-accent">
                 {boxesSummary}
               </span>
-            </div>
+            </span>
           </div>
 
           {/* Main Information */}
