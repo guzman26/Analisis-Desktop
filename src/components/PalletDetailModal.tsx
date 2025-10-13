@@ -14,7 +14,6 @@ import {
   auditPallet,
   moveBoxBetweenPallets,
 } from '@/api/endpoints';
-import { unwrapApiResponse } from '@/utils/apiResponse';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
@@ -132,11 +131,11 @@ const PalletDetailModal = ({
   const handleConfirmTargetPallet = async (targetPalletCode: string) => {
     if (!pallet) return;
     if (!targetPalletCode || selectedBoxCodes.size === 0) return;
-    
+
     setShowSelectTargetModal(false);
     setIsMovingBoxes(true);
     setMoveFeedback(null);
-    
+
     try {
       const codes = Array.from(selectedBoxCodes);
       const results = await Promise.allSettled(
@@ -144,7 +143,7 @@ const PalletDetailModal = ({
       );
       const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
       const rejected = results.length - fulfilled;
-      
+
       // Optimistic local update: remover cajas movidas de la lista visible
       if (fulfilled > 0) {
         (pallet as any).cajas = pallet.cajas.filter(
@@ -153,7 +152,7 @@ const PalletDetailModal = ({
         setSelectedBoxCodes(new Set());
         setSelectionMode(false);
       }
-      
+
       if (rejected === 0) {
         setMoveFeedback({
           type: 'success',
@@ -190,8 +189,7 @@ const PalletDetailModal = ({
     setShowAuditModal(true);
 
     try {
-      const auditResponse = await auditPallet(pallet.codigo);
-      const auditData = unwrapApiResponse<PalletAuditResult>(auditResponse);
+      const auditData = await auditPallet(pallet.codigo);
       setAuditResult(auditData);
     } catch (error) {
       console.error('Error durante la auditoría:', error);
@@ -592,7 +590,7 @@ const PalletDetailModal = ({
                     </span>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="primary"
                   size="medium"
@@ -602,7 +600,7 @@ const PalletDetailModal = ({
                 >
                   {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
                 </Button>
-                
+
                 {moveFeedback && (
                   <div
                     className={`p-3 rounded-macos-sm border ${

@@ -109,7 +109,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
           response = await getPallets();
         }
 
-        const pallets = response.data?.items || [];
+        const pallets = response.items || [];
 
         setState((prev) => ({
           ...prev,
@@ -138,7 +138,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
         limit: 50,
       });
 
-      const pallets = response.data?.items || [];
+      const pallets = response.items || [];
 
       setState((prev) => ({
         ...prev,
@@ -185,7 +185,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
           });
         }
 
-        const pallets = response.data?.items || [];
+        const pallets = response.items || [];
 
         setState((prev) => ({
           ...prev,
@@ -216,7 +216,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
         limit: 50,
       });
 
-      const pallets = response.data?.items || [];
+      const pallets = response.items || [];
 
       setState((prev) => ({
         ...prev,
@@ -245,7 +245,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
         limit: 50,
       });
 
-      const pallets = response.data?.items || [];
+      const pallets = response.items || [];
 
       setState((prev) => ({
         ...prev,

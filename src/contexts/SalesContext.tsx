@@ -37,9 +37,9 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
 
       return {
         data: {
-          items: response.data.items || [],
-          nextKey: response.data.nextKey,
-          count: response.data.count || 0,
+          items: response.items || [],
+          nextKey: response.nextKey,
+          count: response.count || 0,
         },
       };
     },
@@ -53,9 +53,9 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
       });
       return {
         data: {
-          items: response.data.items || [],
-          nextKey: response.data.nextKey,
-          count: response.data.count || 0,
+          items: response.items || [],
+          nextKey: response.nextKey,
+          count: response.count || 0,
         },
       };
     },

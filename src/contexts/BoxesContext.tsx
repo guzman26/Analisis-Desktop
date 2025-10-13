@@ -210,10 +210,10 @@ const { Provider, useContext } = createContextFactory<
             ...filters,
           });
 
-        const items: Box[] = Array.isArray(response?.data?.items)
-          ? response.data.items
+        const items: Box[] = Array.isArray(response?.items)
+          ? response.items
           : [];
-        const nextKey = response?.data?.nextKey ?? null;
+        const nextKey = response?.nextKey ?? null;
 
         if (reset) {
           dispatch(boxesActions.fetchSuccess(items));

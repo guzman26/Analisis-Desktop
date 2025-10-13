@@ -26,19 +26,11 @@ export interface PaginationParams {
   lastEvaluatedKey?: string;
 }
 
-// Paginated response – standardized wrapper
+// Paginated response – consolidated API format (data is unwrapped)
 export interface PaginatedResponse<T> {
-  status: 'success' | 'fail' | 'error';
-  message: string;
-  data: {
-    items: T[];
-    count: number;
-    nextKey: string | null;
-  };
-  meta?: {
-    requestId: string;
-    timestamp: string; // ISO-8601
-  };
+  items: T[];
+  count: number;
+  nextKey?: string | null;
 }
 
 // Domain entities
@@ -228,9 +220,20 @@ export interface GetSalesOrdersParamsPaginated extends PaginationParams {
   state?: string;
   fechaDesde?: string;
   fechaHasta?: string;
+  filters?: {
+    state?: string;
+    customerId?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+  };
 }
 
-export interface GetIssuesParamsPaginated extends PaginationParams {}
+export interface GetIssuesParamsPaginated extends PaginationParams {
+  filters?: {
+    status?: string;
+    ubicacion?: string;
+  };
+}
 
 // Server filter parameters for boxes inventory listing
 export interface BoxFilterParams {

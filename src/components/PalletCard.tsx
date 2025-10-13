@@ -11,7 +11,6 @@ import {
   MapPin,
 } from 'lucide-react';
 import { auditPallet } from '@/api/endpoints';
-import { unwrapApiResponse } from '@/utils/apiResponse';
 import PalletAuditModal from './PalletAuditModal';
 import '../styles/designSystem.css';
 import styles from './PalletCard.module.css';
@@ -52,8 +51,7 @@ const PalletCard = ({
     setShowAuditModal(true);
 
     try {
-      const auditResponse = await auditPallet(pallet.codigo);
-      const auditData = unwrapApiResponse<PalletAuditResult>(auditResponse);
+      const auditData = await auditPallet(pallet.codigo);
       setAuditResult(auditData);
     } catch (error) {
       console.error('Error durante la auditoría:', error);
