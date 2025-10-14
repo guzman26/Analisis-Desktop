@@ -253,9 +253,16 @@ export const DIAS_SEMANA = {
 } as const;
 
 export const TURNOS = {
-  '1': 'Turno 1',
-  '2': 'Turno 2',
-  '3': 'Turno 3',
+  '1': 'Mañana',
+  '2': 'Tarde',
+} as const;
+
+export const EMPRESAS = {
+  '1': 'Lomas Altas',
+  '2': 'Santa Marta',
+  '3': 'Coliumo',
+  '4': 'El Monte',
+  '5': 'Libre',
 } as const;
 
 /**
@@ -267,9 +274,17 @@ export const getDiaNombre = (codigo: string): string => {
 };
 
 /**
- * Obtiene el nombre del turno
+ * Obtiene el nombre del turno (horario de proceso)
  */
 export const getTurnoNombre = (codigo: string): string => {
   const turno = getTurnoFromCodigo(codigo);
   return TURNOS[turno as keyof typeof TURNOS] || `Turno ${turno}`;
+};
+
+/**
+ * Obtiene el nombre de la empresa desde el código
+ */
+export const getEmpresaNombre = (codigo: string): string => {
+  const empresa = getEmpresaFromCodigo(codigo);
+  return EMPRESAS[empresa as keyof typeof EMPRESAS] || `Empresa ${empresa}`;
 };

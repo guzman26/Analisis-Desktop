@@ -5,7 +5,7 @@ import {
   formatCalibreName,
   getCalibreFromCodigo,
   getTurnoNombre,
-  getEmpresaFromCodigo,
+  getEmpresaNombre,
   getOperarioFromCodigo,
   getContadorFromCodigo,
 } from '@/utils/getParamsFromCodigo';
@@ -392,7 +392,7 @@ const PalletDetailModal = ({
                   label="Empresa"
                   value={
                     pallet.baseCode
-                      ? getEmpresaFromCodigo(pallet.baseCode)
+                      ? getEmpresaNombre(pallet.baseCode)
                       : 'N/A'
                   }
                 />
