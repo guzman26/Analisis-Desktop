@@ -42,7 +42,7 @@ export interface Pallet {
   fechaCalibreFormato: string;
   estado: PalletState;
   cajas: string[];
-  cantidadCajas: number;
+  cantidadCajas?: number; // Optional: may be undefined for legacy data
   fechaCreacion: string;
   ubicacion: Location;
   calibre: string;

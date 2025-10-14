@@ -213,8 +213,8 @@ const PalletCard = ({
                 >
                   {typeof pallet.maxBoxes === 'number' &&
                   !Number.isNaN(pallet.maxBoxes)
-                    ? `${pallet.cantidadCajas}/${pallet.maxBoxes}`
-                    : pallet.cantidadCajas}
+                    ? `${pallet.cantidadCajas ?? 0}/${pallet.maxBoxes}`
+                    : pallet.cantidadCajas ?? 0}
                 </span>
               </div>
             </div>
