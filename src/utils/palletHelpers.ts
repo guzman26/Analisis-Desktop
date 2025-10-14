@@ -17,4 +17,3 @@ export function getPalletBoxCount(pallet: Pallet): number {
   }
   return getPalletBoxes(pallet).length;
 }
-

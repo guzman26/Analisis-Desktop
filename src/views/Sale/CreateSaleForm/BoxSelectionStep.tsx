@@ -248,7 +248,8 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                     <div className="flex flex-col">
                       <span className="text-gray-500">Total:</span>
                       <span className="font-medium">
-                        {getPalletBoxes(selectedPalletGroup.pallet).length} cajas
+                        {getPalletBoxes(selectedPalletGroup.pallet).length}{' '}
+                        cajas
                       </span>
                     </div>
                     <div className="flex flex-col">
