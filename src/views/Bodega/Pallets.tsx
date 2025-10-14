@@ -80,6 +80,28 @@ const BodegaPallets = () => {
             </p>
           </div>
         </Card>
+        <Card variant="flat">
+          <div style={{ textAlign: 'center' }}>
+            <p
+              className="macos-text-footnote"
+              style={{
+                color: 'var(--macos-text-secondary)',
+                marginBottom: 'var(--macos-space-1)',
+              }}
+            >
+              Total Cajas
+            </p>
+            <p
+              className="macos-text-title-1"
+              style={{ color: 'var(--macos-green)', fontWeight: 700 }}
+            >
+              {closedPalletsInBodega.reduce(
+                (sum, pallet) => sum + (pallet.cantidadCajas || 0),
+                0
+              )}
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* Content */}
