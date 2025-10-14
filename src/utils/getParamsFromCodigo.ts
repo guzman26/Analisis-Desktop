@@ -90,8 +90,16 @@ export const ALL_CALIBRE_CODES: string[] = Object.keys(CALIBRE_MAP);
 export const detectCodigoType = (
   codigo: string
 ): 'box' | 'pallet' | 'unknown' => {
-  if (FORMATS.box.pattern.test(codigo)) return 'box';
-  if (FORMATS.pallet.pattern.test(codigo)) return 'pallet';
+  if (!codigo) return 'unknown';
+  
+  // Normalize: take last N digits if longer
+  const normalized16 = codigo.length >= 16 ? codigo.slice(-16) : codigo;
+  const normalized14 = codigo.length >= 14 ? codigo.slice(-14) : codigo;
+  
+  // Check exact length for precise detection
+  if (normalized16.length === 16 && /^\d{16}$/.test(normalized16)) return 'box';
+  if (normalized14.length === 14 && /^\d{14}$/.test(normalized14)) return 'pallet';
+  
   return 'unknown';
 };
 
@@ -258,11 +266,18 @@ export const TURNOS = {
 } as const;
 
 export const EMPRESAS = {
+  // Box format (1 digit)
   '1': 'Lomas Altas',
   '2': 'Santa Marta',
   '3': 'Coliumo',
   '4': 'El Monte',
   '5': 'Libre',
+  // Pallet format (2 digits with leading zero)
+  '01': 'Lomas Altas',
+  '02': 'Santa Marta',
+  '03': 'Coliumo',
+  '04': 'El Monte',
+  '05': 'Libre',
 } as const;
 
 /**
@@ -275,16 +290,30 @@ export const getDiaNombre = (codigo: string): string => {
 
 /**
  * Obtiene el nombre del turno (horario de proceso)
+ * Works with both box (16 digits) and pallet (14 digits) codes
  */
 export const getTurnoNombre = (codigo: string): string => {
-  const turno = getTurnoFromCodigo(codigo);
+  if (!codigo) return 'N/A';
+  
+  const type = detectCodigoType(codigo);
+  if (type === 'unknown') return 'N/A';
+  
+  const turno = extractField(codigo, type, 'turno');
   return TURNOS[turno as keyof typeof TURNOS] || `Turno ${turno}`;
 };
 
 /**
  * Obtiene el nombre de la empresa desde el código
+ * Works with both box (16 digits) and pallet (14 digits) codes
  */
 export const getEmpresaNombre = (codigo: string): string => {
-  const empresa = getEmpresaFromCodigo(codigo);
+  if (!codigo) return 'N/A';
+  
+  const type = detectCodigoType(codigo);
+  if (type === 'unknown') return 'N/A';
+  
+  const empresa = extractField(codigo, type, 'empresa');
+  
+  // EMPRESAS mapping supports both 1-digit (box) and 2-digit (pallet) formats
   return EMPRESAS[empresa as keyof typeof EMPRESAS] || `Empresa ${empresa}`;
 };

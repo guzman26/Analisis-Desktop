@@ -390,16 +390,12 @@ const PalletDetailModal = ({
                 <InfoRow
                   icon={<Building2 className="w-5 h-5" />}
                   label="Empresa"
-                  value={
-                    pallet.baseCode ? getEmpresaNombre(pallet.baseCode) : 'N/A'
-                  }
+                  value={getEmpresaNombre(pallet.codigo)}
                 />
                 <InfoRow
                   icon={<Clock className="w-5 h-5" />}
                   label="Turno"
-                  value={
-                    pallet.baseCode ? getTurnoNombre(pallet.baseCode) : 'N/A'
-                  }
+                  value={getTurnoNombre(pallet.codigo)}
                 />
               </div>
             </div>
