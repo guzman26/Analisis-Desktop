@@ -202,21 +202,24 @@ export const getIssues = (params?: GetIssuesParamsPaginated) =>
 export const updateIssueStatus = (id: string, resolution: string) =>
   admin<any>('update', 'issue', { issueId: id, resolution });
 
-// Danger Zone operations
-// ⚠️ TODO: Backend needs to implement bulk-delete operations in AdminController
-// Then migrate to: admin<any>('bulk-delete', 'box', { scope: 'all' | 'packing' | 'unassigned', async?: boolean })
-// For now, these will fail until backend supports them - keeping legacy endpoints
-export const deleteAllBoxes = () => post<any>('/admin/deleteAllBoxes');
+// Danger Zone operations - Using consolidated /admin endpoint with 'bulk' resource
+export const deleteAllBoxes = () =>
+  admin<any>('delete-boxes', 'bulk', { scope: 'all' });
+
 export const deletePackingBoxesAsync = () =>
-  post<any>('/admin/deletePackingBoxesAsync');
+  admin<any>('delete-boxes', 'bulk', { scope: 'packing', ubicacion: 'PACKING' });
+
 export const deleteAllBoxesAsync = () =>
-  post<any>('/admin/deleteAllBoxesAsync');
+  admin<any>('delete-boxes', 'bulk', { scope: 'all' });
+
 export const deletePackingPalletsAsync = () =>
-  post<any>('/admin/deletePackingPalletsAsync');
+  admin<any>('delete-pallets', 'bulk', { ubicacion: 'PACKING' });
+
 export const deletePalletsAndAssignedBoxesAsync = () =>
-  post<any>('/admin/deletePalletsAndAssignedBoxesAsync');
+  admin<any>('delete-pallets-and-boxes', 'bulk', {});
+
 export const deleteUnassignedBoxesAsync = () =>
-  post<any>('/admin/deleteUnassignedBoxesAsync');
+  admin<any>('delete-boxes', 'bulk', { scope: 'unassigned', palletId: 'UNASSIGNED' });
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>

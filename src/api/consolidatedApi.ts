@@ -55,11 +55,11 @@ export const sales = async <T = any>(
 
 /**
  * Consolidated Admin API (/admin endpoint)
- * Handles all administrative operations (issues, audits, reports, config)
+ * Handles all administrative operations (issues, audits, reports, config, bulk)
  */
 export const admin = async <T = any>(
   action: string,
-  resource: 'issue' | 'audit' | 'report' | 'config',
+  resource: 'issue' | 'audit' | 'report' | 'config' | 'bulk',
   params: Record<string, any>
 ): Promise<T> => {
   const response = await post<ConsolidatedResponse<T>>('/admin', {
