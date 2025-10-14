@@ -41,7 +41,8 @@ export interface Pallet {
   pkFecha: string;
   fechaCalibreFormato: string;
   estado: PalletState;
-  cajas: string[];
+  cajas?: string[]; // Optional: may be boxes instead
+  boxes?: string[]; // Alternative field name from API
   cantidadCajas?: number; // Optional: may be undefined for legacy data
   fechaCreacion: string;
   ubicacion: Location;

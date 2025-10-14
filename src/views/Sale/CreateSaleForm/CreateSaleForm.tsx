@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFilteredPallets } from '@/contexts/PalletContext';
 import { Customer, Pallet, Sale, SaleRequest, SaleItem } from '@/types';
+import { getPalletBoxes } from '@/utils/palletHelpers';
 import { createSale } from '@/api/endpoints';
 import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
@@ -66,7 +67,7 @@ const CreateSaleForm: React.FC = () => {
       const palletGroupedBoxes = new Map<string, string[]>();
 
       closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
-        const selectedBoxesInPallet = pallet.cajas.filter((boxId) =>
+        const selectedBoxesInPallet = getPalletBoxes(pallet).filter((boxId) =>
           state.selectedBoxCodes.includes(boxId)
         );
 
@@ -131,7 +132,7 @@ const CreateSaleForm: React.FC = () => {
     }[] = [];
 
     closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
-      pallet.cajas.forEach((boxId: string) => {
+      getPalletBoxes(pallet).forEach((boxId: string) => {
         if (state.selectedBoxCodes.includes(boxId)) {
           selectedBoxData.push({
             boxId,

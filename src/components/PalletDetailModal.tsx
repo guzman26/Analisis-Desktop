@@ -15,6 +15,7 @@ import {
   moveBoxBetweenPallets,
 } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
+import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
@@ -121,10 +122,11 @@ const PalletDetailModal = ({
 
   const toggleSelectAll = () => {
     if (!pallet) return;
-    if (selectedBoxCodes.size === pallet.cajas.length) {
+    const boxes = getPalletBoxes(pallet);
+    if (selectedBoxCodes.size === boxes.length) {
       setSelectedBoxCodes(new Set());
     } else {
-      setSelectedBoxCodes(new Set(pallet.cajas));
+      setSelectedBoxCodes(new Set(boxes));
     }
   };
 
@@ -146,9 +148,14 @@ const PalletDetailModal = ({
 
       // Optimistic local update: remover cajas movidas de la lista visible
       if (fulfilled > 0) {
-        (pallet as any).cajas = pallet.cajas.filter(
-          (c: string) => !selectedBoxCodes.has(c)
-        );
+        const boxes = getPalletBoxes(pallet);
+        const filteredBoxes = boxes.filter((c: string) => !selectedBoxCodes.has(c));
+        if (pallet.boxes) {
+          (pallet as any).boxes = filteredBoxes;
+        }
+        if (pallet.cajas) {
+          (pallet as any).cajas = filteredBoxes;
+        }
         setSelectedBoxCodes(new Set());
         setSelectionMode(false);
       }
@@ -404,17 +411,17 @@ const PalletDetailModal = ({
               <Layers className="w-4 h-4" />
               Historial reciente
               <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
-                {pallet.cajas.length}
+                {getPalletBoxes(pallet).length}
               </span>
             </h3>
-            {pallet.cajas.length === 0 ? (
+            {getPalletBoxes(pallet).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
                 <PackageX className="w-8 h-8 mb-3 opacity-60" />
                 No hay cajas registradas en este pallet
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
-                {pallet.cajas.map((caja, index) => (
+                {getPalletBoxes(pallet).map((caja, index) => (
                   <div
                     key={index}
                     className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
@@ -581,7 +588,7 @@ const PalletDetailModal = ({
                       className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent transition-colors"
                       onClick={toggleSelectAll}
                     >
-                      {selectedBoxCodes.size === pallet.cajas.length
+                      {selectedBoxCodes.size === getPalletBoxes(pallet).length
                         ? 'Deseleccionar todo'
                         : 'Seleccionar todo'}
                     </button>

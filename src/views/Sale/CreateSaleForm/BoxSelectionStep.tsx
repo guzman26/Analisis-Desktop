@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFilteredPallets } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
+import { getPalletBoxes } from '@/utils/palletHelpers';
 import { Card, Button } from '@/components/design-system';
 import { ArrowLeft, Check, Circle } from 'lucide-react';
 
@@ -31,7 +32,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
   const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.map(
     (pallet: any) => ({
       pallet,
-      selectedBoxIds: pallet.cajas.filter((boxId: any) =>
+      selectedBoxIds: getPalletBoxes(pallet).filter((boxId: any) =>
         selectedBoxCodes.includes(boxId)
       ),
     })
@@ -48,7 +49,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
     );
     if (!palletGroup) return;
 
-    const allBoxIds = palletGroup.pallet.cajas;
+    const allBoxIds = getPalletBoxes(palletGroup.pallet);
     const isFullySelected = allBoxIds.every((boxId) =>
       selectedBoxCodes.includes(boxId)
     );
@@ -138,7 +139,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {palletGroups.map((group) => {
                 const { pallet } = group;
-                const isFullySelected = pallet.cajas.every((boxId) =>
+                const isFullySelected = getPalletBoxes(pallet).every((boxId) =>
                   selectedBoxCodes.includes(boxId)
                 );
                 // We'll use the selectedBoxIds count directly instead of a separate variable
@@ -195,7 +196,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                         onClick={() => handlePalletClick(pallet.codigo)}
                         className="w-full"
                       >
-                        Ver Cajas ({pallet.cajas.length})
+                        Ver Cajas ({getPalletBoxes(pallet).length})
                       </Button>
                       <Button
                         variant={isFullySelected ? 'danger' : 'primary'}
@@ -247,7 +248,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                     <div className="flex flex-col">
                       <span className="text-gray-500">Total:</span>
                       <span className="font-medium">
-                        {selectedPalletGroup.pallet.cajas.length} cajas
+                        {getPalletBoxes(selectedPalletGroup.pallet).length} cajas
                       </span>
                     </div>
                     <div className="flex flex-col">
@@ -261,7 +262,7 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
               </Card>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {selectedPalletGroup.pallet.cajas.map((boxId) => (
+                {getPalletBoxes(selectedPalletGroup.pallet).map((boxId) => (
                   <Card
                     key={boxId}
                     className={`cursor-pointer transition-all ${selectedBoxCodes.includes(boxId) ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
