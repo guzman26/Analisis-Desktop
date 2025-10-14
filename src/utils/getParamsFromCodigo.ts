@@ -91,15 +91,16 @@ export const detectCodigoType = (
   codigo: string
 ): 'box' | 'pallet' | 'unknown' => {
   if (!codigo) return 'unknown';
-  
+
   // Normalize: take last N digits if longer
   const normalized16 = codigo.length >= 16 ? codigo.slice(-16) : codigo;
   const normalized14 = codigo.length >= 14 ? codigo.slice(-14) : codigo;
-  
+
   // Check exact length for precise detection
   if (normalized16.length === 16 && /^\d{16}$/.test(normalized16)) return 'box';
-  if (normalized14.length === 14 && /^\d{14}$/.test(normalized14)) return 'pallet';
-  
+  if (normalized14.length === 14 && /^\d{14}$/.test(normalized14))
+    return 'pallet';
+
   return 'unknown';
 };
 
@@ -294,10 +295,10 @@ export const getDiaNombre = (codigo: string): string => {
  */
 export const getTurnoNombre = (codigo: string): string => {
   if (!codigo) return 'N/A';
-  
+
   const type = detectCodigoType(codigo);
   if (type === 'unknown') return 'N/A';
-  
+
   const turno = extractField(codigo, type, 'turno');
   return TURNOS[turno as keyof typeof TURNOS] || `Turno ${turno}`;
 };
@@ -308,12 +309,12 @@ export const getTurnoNombre = (codigo: string): string => {
  */
 export const getEmpresaNombre = (codigo: string): string => {
   if (!codigo) return 'N/A';
-  
+
   const type = detectCodigoType(codigo);
   if (type === 'unknown') return 'N/A';
-  
+
   const empresa = extractField(codigo, type, 'empresa');
-  
+
   // EMPRESAS mapping supports both 1-digit (box) and 2-digit (pallet) formats
   return EMPRESAS[empresa as keyof typeof EMPRESAS] || `Empresa ${empresa}`;
 };
