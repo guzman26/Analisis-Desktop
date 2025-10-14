@@ -203,23 +203,36 @@ export const updateIssueStatus = (id: string, resolution: string) =>
   admin<any>('update', 'issue', { issueId: id, resolution });
 
 // Danger Zone operations - Using consolidated /admin endpoint with 'bulk' resource
+// Nueva sintaxis: Requiere confirmDelete: true explícitamente
 export const deleteAllBoxes = () =>
-  admin<any>('delete-boxes', 'bulk', { scope: 'all' });
+  admin<any>('delete-boxes', 'bulk', { confirmDelete: true });
 
 export const deletePackingBoxesAsync = () =>
-  admin<any>('delete-boxes', 'bulk', { scope: 'packing', ubicacion: 'PACKING' });
+  admin<any>('delete-boxes', 'bulk', {
+    confirmDelete: true,
+    ubicacion: 'PACKING',
+  });
 
 export const deleteAllBoxesAsync = () =>
-  admin<any>('delete-boxes', 'bulk', { scope: 'all' });
+  admin<any>('delete-boxes', 'bulk', { confirmDelete: true });
 
 export const deletePackingPalletsAsync = () =>
-  admin<any>('delete-pallets', 'bulk', { ubicacion: 'PACKING' });
+  admin<any>('delete-pallets', 'bulk', {
+    confirmDelete: true,
+    ubicacion: 'PACKING',
+  });
 
-export const deletePalletsAndAssignedBoxesAsync = () =>
-  admin<any>('delete-pallets-and-boxes', 'bulk', {});
+export const deletePalletsAndAssignedBoxesAsync = (ubicacion?: string) =>
+  admin<any>('delete-pallets-and-boxes', 'bulk', {
+    confirmDelete: true,
+    ...(ubicacion && { ubicacion }),
+  });
 
 export const deleteUnassignedBoxesAsync = () =>
-  admin<any>('delete-boxes', 'bulk', { scope: 'unassigned', palletId: 'UNASSIGNED' });
+  admin<any>('delete-boxes', 'bulk', {
+    confirmDelete: true,
+    palletId: 'UNASSIGNED',
+  });
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>

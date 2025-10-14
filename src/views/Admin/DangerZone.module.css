@@ -287,6 +287,108 @@
   box-shadow: var(--macos-shadow-medium);
 }
 
+/* Location Selection Styles */
+.locationSection {
+  padding: var(--macos-space-4);
+  background: var(--macos-bg-secondary);
+  border: 1px solid var(--macos-border-primary);
+  border-radius: var(--macos-radius-medium);
+  margin-bottom: var(--macos-space-4);
+}
+
+.locationHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  margin-bottom: var(--macos-space-2);
+  color: var(--macos-text-primary);
+}
+
+.locationHeader h4 {
+  font-size: var(--macos-font-size-subheadline);
+  font-weight: 600;
+  margin: 0;
+}
+
+.locationDescription {
+  font-size: var(--macos-font-size-footnote);
+  color: var(--macos-text-secondary);
+  margin-bottom: var(--macos-space-4);
+  line-height: var(--macos-line-height-relaxed);
+}
+
+.locationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--macos-space-3);
+  margin-bottom: var(--macos-space-3);
+}
+
+.locationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--macos-space-2);
+  padding: var(--macos-space-3);
+  background: var(--macos-bg-primary);
+  border: 2px solid var(--macos-border-primary);
+  border-radius: var(--macos-radius-medium);
+  color: var(--macos-text-primary);
+  font-size: var(--macos-font-size-subheadline);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--macos-duration-fast) var(--macos-ease-out);
+}
+
+.locationButton:hover:not(:disabled) {
+  background: var(--macos-bg-tertiary);
+  border-color: var(--macos-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--macos-shadow-small);
+}
+
+.locationButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.locationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.locationButtonActive {
+  background: var(--macos-accent);
+  border-color: var(--macos-accent);
+  color: white;
+}
+
+.locationButtonActive:hover:not(:disabled) {
+  background: var(--macos-accent);
+  border-color: var(--macos-accent);
+}
+
+.locationButtonDanger {
+  border-color: var(--macos-red);
+}
+
+.locationButtonDanger.locationButtonActive {
+  background: var(--macos-red);
+  border-color: var(--macos-red);
+}
+
+.locationWarning {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  padding: var(--macos-space-3);
+  background: rgba(255, 59, 48, 0.1);
+  border: 1px solid var(--macos-red);
+  border-radius: var(--macos-radius-small);
+  color: var(--macos-red);
+  font-size: var(--macos-font-size-footnote);
+  font-weight: 500;
+}
+
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   .actionCard {
@@ -295,5 +397,41 @@
 
   .actionCard:hover {
     transform: none;
+  }
+
+  .locationButton {
+    transition: none;
+  }
+
+  .locationButton:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Dark Mode for Location Selection */
+@media (prefers-color-scheme: dark) {
+  .locationSection {
+    background: var(--macos-gray-5);
+    border-color: var(--macos-border-primary);
+  }
+
+  .locationButton {
+    background: var(--macos-gray-4);
+    border-color: var(--macos-border-primary);
+  }
+
+  .locationButton:hover:not(:disabled) {
+    background: var(--macos-gray-3);
+  }
+
+  .locationWarning {
+    background: rgba(255, 59, 48, 0.15);
+  }
+}
+
+/* Responsive adjustments for location grid */
+@media (max-width: 768px) {
+  .locationGrid {
+    grid-template-columns: 1fr;
   }
 }

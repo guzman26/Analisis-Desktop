@@ -14,18 +14,24 @@ import {
   Shield,
   CheckCircle,
   AlertCircle,
+  MapPin,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './DangerZone.module.css';
+import { Location } from '@/types';
 
 interface DangerAction {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  action: () => Promise<{ success: boolean; message: string }>;
+  action: (
+    ubicacion?: Location | 'ALL'
+  ) => Promise<{ success: boolean; message: string }>;
   confirmationMessage: string;
   dangerLevel: 'high' | 'critical';
+  allowLocationSelection?: boolean;
+  defaultLocation?: Location | 'ALL';
 }
 
 const DangerZone: React.FC = () => {
@@ -38,6 +44,18 @@ const DangerZone: React.FC = () => {
     success: boolean;
     message: string;
   } | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Location | 'ALL'>(
+    'ALL'
+  );
+
+  const locations: Array<{ value: Location | 'ALL'; label: string }> = [
+    { value: 'ALL', label: 'Todas las ubicaciones' },
+    { value: 'PACKING', label: 'PACKING' },
+    { value: 'BODEGA', label: 'BODEGA' },
+    { value: 'TRANSITO', label: 'TRANSITO' },
+    { value: 'PREVENTA', label: 'PREVENTA' },
+    { value: 'VENTA', label: 'VENTA' },
+  ];
 
   const handleDeleteAllBoxes = async () => {
     try {
@@ -52,6 +70,13 @@ const DangerZone: React.FC = () => {
         message: `Error al eliminar las cajas: ${error instanceof Error ? error.message : 'Error desconocido'}`,
       };
     }
+  };
+
+  const getLocationMessage = (ubicacion?: Location | 'ALL') => {
+    if (!ubicacion || ubicacion === 'ALL') {
+      return 'de todas las ubicaciones';
+    }
+    return `de ${ubicacion}`;
   };
 
   const dangerActions: DangerAction[] = [
@@ -92,6 +117,7 @@ const DangerZone: React.FC = () => {
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas en PACKING? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
+      defaultLocation: 'PACKING',
     },
     {
       id: 'deleteUnassignedBoxesAsync',
@@ -146,20 +172,22 @@ const DangerZone: React.FC = () => {
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de todos los pallets en PACKING? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
+      defaultLocation: 'PACKING',
     },
     {
       id: 'deletePalletsAndAssignedBoxesAsync',
       title: 'Eliminar pallets y cajas asignadas (asíncrono)',
       description:
-        'Inicia un proceso asíncrono que borra todos los pallets y sus cajas asignadas. Afecta múltiples ubicaciones según backend.',
+        'Inicia un proceso asíncrono que borra pallets y sus cajas asignadas. Puedes seleccionar una ubicación específica o todas.',
       icon: <Trash2 className="w-6 h-6" />,
-      action: async () => {
+      action: async (ubicacion?: Location | 'ALL') => {
         try {
-          await deletePalletsAndAssignedBoxesAsync();
+          const loc = ubicacion && ubicacion !== 'ALL' ? ubicacion : undefined;
+          await deletePalletsAndAssignedBoxesAsync(loc);
+          const locationMsg = getLocationMessage(ubicacion);
           return {
             success: true,
-            message:
-              'Se inició la eliminación asíncrona de pallets y cajas asignadas. Revisa los logs para el progreso.',
+            message: `Se inició la eliminación asíncrona de pallets y cajas asignadas ${locationMsg}. Revisa los logs para el progreso.`,
           };
         } catch (error) {
           return {
@@ -171,8 +199,10 @@ const DangerZone: React.FC = () => {
         }
       },
       confirmationMessage:
-        '¿Confirmas iniciar la eliminación ASÍNCRONA de todos los pallets y sus cajas asignadas? Esta acción no se puede deshacer.',
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de pallets y sus cajas asignadas? Esta acción no se puede deshacer.',
       dangerLevel: 'critical',
+      allowLocationSelection: true,
+      defaultLocation: 'ALL',
     },
     {
       id: 'deleteAllBoxesAsync',
@@ -205,6 +235,7 @@ const DangerZone: React.FC = () => {
 
   const openConfirmationModal = (action: DangerAction) => {
     setSelectedAction(action);
+    setSelectedLocation(action.defaultLocation || 'ALL');
     setIsModalOpen(true);
     setExecutionResult(null);
   };
@@ -213,6 +244,7 @@ const DangerZone: React.FC = () => {
     setIsModalOpen(false);
     setSelectedAction(null);
     setExecutionResult(null);
+    setSelectedLocation('ALL');
   };
 
   const executeAction = async () => {
@@ -220,7 +252,12 @@ const DangerZone: React.FC = () => {
 
     setIsExecuting(true);
     try {
-      const result = await selectedAction.action();
+      const locationToPass = selectedAction.allowLocationSelection
+        ? selectedLocation === 'ALL'
+          ? undefined
+          : selectedLocation
+        : undefined;
+      const result = await selectedAction.action(locationToPass);
       setExecutionResult(result);
     } catch (error) {
       setExecutionResult({
@@ -334,6 +371,51 @@ const DangerZone: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Location Selection */}
+              {selectedAction.allowLocationSelection && !executionResult && (
+                <div className={styles.locationSection}>
+                  <div className={styles.locationHeader}>
+                    <MapPin className="w-5 h-5" />
+                    <h4>Seleccionar Ubicación</h4>
+                  </div>
+                  <p className={styles.locationDescription}>
+                    Elige una ubicación específica o selecciona "Todas" para
+                    afectar todo el sistema
+                  </p>
+                  <div className={styles.locationGrid}>
+                    {locations.map((loc) => (
+                      <button
+                        key={loc.value}
+                        type="button"
+                        className={clsx(
+                          styles.locationButton,
+                          selectedLocation === loc.value &&
+                            styles.locationButtonActive,
+                          loc.value === 'ALL' && styles.locationButtonDanger
+                        )}
+                        onClick={() => setSelectedLocation(loc.value)}
+                        disabled={isExecuting}
+                      >
+                        <MapPin className="w-4 h-4" />
+                        <span>{loc.label}</span>
+                        {selectedLocation === loc.value && (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {selectedLocation === 'ALL' && (
+                    <div className={styles.locationWarning}>
+                      <AlertTriangle className="w-4 h-4" />
+                      <span>
+                        ⚠️ Esta acción afectará TODAS las ubicaciones del
+                        sistema
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Execution Result */}
               {executionResult && (
