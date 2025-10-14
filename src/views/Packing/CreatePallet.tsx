@@ -65,6 +65,13 @@ const CreatePallet: React.FC = () => {
 
   const handleCreate = async () => {
     if (!canSubmit) return;
+
+    // Validar que maxBoxes no exceda 60
+    if (maxBoxes > 60) {
+      setError('La capacidad máxima de cajas es 60');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
@@ -184,15 +191,25 @@ const CreatePallet: React.FC = () => {
           {/* Capacidad de cajas */}
           <div>
             <label className="text-sm text-macos-text-secondary block mb-1">
-              Capacidad de cajas (opcional)
+              Capacidad de cajas (máximo 60)
             </label>
             <input
               type="number"
               min={1}
-              max={200}
+              max={60}
               className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
               value={maxBoxes}
-              onChange={(e) => setMaxBoxes(Number(e.target.value) || 60)}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                // Limitar el valor entre 1 y 60
+                if (value > 60) {
+                  setMaxBoxes(60);
+                } else if (value < 1) {
+                  setMaxBoxes(1);
+                } else {
+                  setMaxBoxes(value || 60);
+                }
+              }}
             />
           </div>
         </div>
