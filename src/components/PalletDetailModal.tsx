@@ -391,9 +391,7 @@ const PalletDetailModal = ({
                   icon={<Building2 className="w-5 h-5" />}
                   label="Empresa"
                   value={
-                    pallet.baseCode
-                      ? getEmpresaNombre(pallet.baseCode)
-                      : 'N/A'
+                    pallet.baseCode ? getEmpresaNombre(pallet.baseCode) : 'N/A'
                   }
                 />
                 <InfoRow
