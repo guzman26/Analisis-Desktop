@@ -15,7 +15,7 @@ import {
   moveBoxBetweenPallets,
 } from '@/api/endpoints';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
-import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
+import { getPalletBoxes } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
@@ -149,7 +149,9 @@ const PalletDetailModal = ({
       // Optimistic local update: remover cajas movidas de la lista visible
       if (fulfilled > 0) {
         const boxes = getPalletBoxes(pallet);
-        const filteredBoxes = boxes.filter((c: string) => !selectedBoxCodes.has(c));
+        const filteredBoxes = boxes.filter(
+          (c: string) => !selectedBoxCodes.has(c)
+        );
         if (pallet.boxes) {
           (pallet as any).boxes = filteredBoxes;
         }

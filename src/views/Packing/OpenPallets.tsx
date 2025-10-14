@@ -157,7 +157,7 @@ const OpenPallets = () => {
               }}
             >
               {filteredPallets.reduce(
-                (sum, pallet) => sum + pallet.cantidadCajas,
+                (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
                 0
               )}
             </p>
@@ -184,7 +184,7 @@ const OpenPallets = () => {
               {filteredPallets.length > 0
                 ? Math.round(
                     filteredPallets.reduce(
-                      (sum, pallet) => sum + pallet.cantidadCajas,
+                      (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
                       0
                     ) / filteredPallets.length
                   )
