@@ -19,6 +19,10 @@ import {
   BoxFilterParams,
   PaginationParams,
   CreateLooseEggPalletRequest,
+  InventoryValidationResult,
+  CustomerPreferences,
+  ReturnBoxesRequest,
+  AddBoxesToSaleRequest,
 } from '@/types';
 
 // Pallet operations - now using consolidated /inventory endpoint
@@ -127,6 +131,32 @@ export const unassignBox = (codigo: string) =>
 export const assignBox = (boxCode: string, palletCode: string) =>
   inventory<any>('assign', 'box', { boxCode, palletCode });
 
+/**
+ * Asignar automáticamente una caja al pallet correspondiente
+ * Busca el pallet basándose en el baseCode de la caja
+ * Puede crear pallet automáticamente si se especifica
+ */
+export const assignBoxToCorrespondingPallet = (
+  boxCode: string,
+  options?: {
+    ubicacion?: Location;
+    createIfNotExists?: boolean;
+  }
+) =>
+  inventory<{
+    success: boolean;
+    palletId?: string;
+    message: string;
+    boxCount?: number;
+    maxBoxes?: number;
+    created?: boolean;
+    alreadyAssigned?: boolean;
+    full?: boolean;
+  }>('assign-to-corresponding-pallet', 'box', {
+    boxCode,
+    options,
+  });
+
 export const moveBoxBetweenPallets = (
   boxCode: string,
   destinationPalletCode: string
@@ -140,11 +170,43 @@ export const moveBoxBetweenPallets = (
 export const deleteBox = (codigo: string) =>
   inventory<any>('delete', 'box', { codigo });
 
-export const createSingleBoxPallet = (boxCode: string, ubicacion: string) =>
-  inventory<any>('create', 'pallet', { boxCode, ubicacion, maxBoxes: 1 });
+/**
+ * Crear un pallet individual para una sola caja
+ * Útil cuando se necesita un pallet específico para una caja
+ */
+export const createSingleBoxPallet = (boxCode: string, ubicacion: Location = 'PACKING') =>
+  inventory<{
+    pallet: Pallet;
+    box: Box;
+    message: string;
+  }>('create-single-box-pallet', 'pallet', { boxCode, ubicacion });
 
-export const assignBoxToCompatiblePallet = (codigo: string) =>
-  inventory<any>('assign', 'box', { boxCode: codigo });
+/**
+ * Asignar una caja al pallet compatible automáticamente
+ * Usa la nueva función centralizada assignBoxToCorrespondingPallet del backend
+ * Busca el pallet con el baseCode correspondiente y lo asigna
+ */
+export const assignBoxToCompatiblePallet = (
+  boxCode: string,
+  options?: {
+    createIfNotExists?: boolean;
+  }
+) =>
+  inventory<{
+    success: boolean;
+    palletId?: string;
+    message: string;
+    boxCount?: number;
+    maxBoxes?: number;
+    created?: boolean;
+    alreadyAssigned?: boolean;
+    full?: boolean;
+  }>('assign-to-corresponding-pallet', 'box', {
+    boxCode,
+    options: {
+      createIfNotExists: options?.createIfNotExists || false,
+    },
+  });
 
 // Customer operations - now using consolidated /sales endpoint
 export const getCustomers = (params?: GetCustomersParams) =>
@@ -187,10 +249,52 @@ export const createSale = (data: SaleRequest) =>
 export const confirmSale = (id: string) =>
   sales<any>('confirm', 'order', { id });
 
-// TODO: Migrate to /admin endpoint when backend supports reports
-// admin<Report>('generate', 'report', { type: 'sale', id })
-export const generateSaleReport = (id: string) =>
-  post<any>(`/reports/sales/${id}`);
+/**
+ * Validate inventory availability before creating a sale
+ * Checks if all boxes are still available for sale
+ */
+export const validateInventory = (boxIds: string[]) =>
+  sales<InventoryValidationResult>('validate-inventory', 'order', { boxIds });
+
+/**
+ * Get customer purchase preferences based on history
+ */
+export const getCustomerPreferences = (customerId: string) =>
+  sales<CustomerPreferences>('get-preferences', 'customer', { customerId });
+
+/**
+ * Return boxes from a sale
+ */
+export const returnBoxes = (request: ReturnBoxesRequest) =>
+  sales<Sale>('return-boxes', 'order', request);
+
+/**
+ * Add boxes to an existing sale
+ */
+export const addBoxesToSale = (request: AddBoxesToSaleRequest) =>
+  sales<Sale>('add-boxes', 'order', request);
+
+/**
+ * Update sale state (dispatch, complete, etc.)
+ */
+export const updateSaleState = (saleId: string, newState: string, notes?: string) =>
+  sales<Sale>('update-state', 'order', { saleId, newState, notes });
+
+/**
+ * Generate sale report using consolidated admin endpoint
+ * @param id - Sale ID
+ * @param format - Report format (pdf, excel, json)
+ * @returns Report data or download URL
+ */
+export const generateSaleReport = (
+  id: string,
+  format: 'pdf' | 'excel' | 'json' = 'pdf'
+) =>
+  admin<any>('generate', 'report', {
+    type: 'sale',
+    id,
+    format,
+  });
 
 // Admin operations - now using consolidated /admin endpoint
 export const getIssues = (params?: GetIssuesParamsPaginated) =>

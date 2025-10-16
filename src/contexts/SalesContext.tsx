@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode } from 'react';
+import React, { createContext, ReactNode, useCallback } from 'react';
 import { GetSalesOrdersParamsPaginated, Sale } from '@/types';
 import { getSalesOrders } from '@/api/endpoints';
 import usePagination from '@/hooks/usePagination';
@@ -16,6 +16,7 @@ interface PaginatedSalesOrdersData {
 interface SalesContextType {
   salesOrdersDRAFTPaginated: PaginatedSalesOrdersData;
   salesOrdersCONFIRMEDPaginated: PaginatedSalesOrdersData;
+  refreshAllSales: () => void;
 }
 
 export const SalesContext = createContext<SalesContextType>(
@@ -61,6 +62,11 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
     },
   });
 
+  const refreshAllSales = useCallback(() => {
+    salesOrdersDRAFTPaginatedHook.refresh({});
+    salesOrdersCONFIRMEDPaginatedHook.refresh({});
+  }, [salesOrdersDRAFTPaginatedHook, salesOrdersCONFIRMEDPaginatedHook]);
+
   const value: SalesContextType = {
     salesOrdersDRAFTPaginated: {
       data: salesOrdersDRAFTPaginatedHook.data,
@@ -78,6 +84,7 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
       loadMore: salesOrdersCONFIRMEDPaginatedHook.loadMore,
       refresh: () => salesOrdersCONFIRMEDPaginatedHook.refresh({}),
     },
+    refreshAllSales,
   };
 
   return (

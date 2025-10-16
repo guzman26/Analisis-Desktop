@@ -8,6 +8,7 @@ import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
 } from '@/api/endpoints';
+import { useNotifications } from '@/components/Notification/Notification';
 import { RefreshCcw, Package } from 'lucide-react';
 import { LoadingOverlay } from '@/components/design-system';
 import styles from './UnassignedBoxes.module.css';
@@ -31,6 +32,7 @@ const UnassignedBoxes = () => {
     useState<{
       [key: string]: boolean;
     }>({});
+  const { showSuccess, showError, showWarning } = useNotifications();
 
   // Data is automatically fetched by useUnassignedBoxes hook
   // Inicializar filteredBoxes con todas las cajas
@@ -46,14 +48,19 @@ const UnassignedBoxes = () => {
       // Establecer el estado de carga para esta caja específica
       setCreatingPalletStates((prev) => ({ ...prev, [boxCode]: true }));
 
-      await createSingleBoxPallet(boxCode, 'PACKING');
+      const result = await createSingleBoxPallet(boxCode, 'PACKING');
 
       // Refrescar la lista después de crear el pallet
       await refresh();
 
-      console.log('Pallet individual creado exitosamente');
+      showSuccess(`Pallet individual creado: ${result.pallet.codigo}`);
     } catch (error) {
       console.error('Error al crear pallet individual:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al crear pallet individual'
+      );
     } finally {
       // Remover el estado de carga
       setCreatingPalletStates((prev) => {
@@ -69,14 +76,36 @@ const UnassignedBoxes = () => {
       // Establecer el estado de carga para esta caja específica
       setAssigningToCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
 
-      await assignBoxToCompatiblePallet(boxCode);
+      const result = await assignBoxToCompatiblePallet(boxCode);
 
-      // Refrescar la lista después de asignar a pallet compatible
-      await refresh();
+      if (result.success) {
+        // Refrescar la lista después de asignar a pallet compatible
+        await refresh();
 
-      console.log('Caja asignada a pallet compatible exitosamente');
+        if (result.created) {
+          showSuccess(`Pallet ${result.palletId} creado y caja asignada`);
+        } else if (result.alreadyAssigned) {
+          showWarning(`Caja ya estaba asignada a ${result.palletId}`);
+        } else {
+          showSuccess(
+            `Caja asignada a pallet ${result.palletId} (${result.boxCount}/${result.maxBoxes})`
+          );
+        }
+      } else {
+        // No se pudo asignar
+        if (result.full) {
+          showWarning(`El pallet ${result.palletId} está lleno`);
+        } else {
+          showWarning(result.message || 'No se pudo asignar la caja');
+        }
+      }
     } catch (error) {
       console.error('Error al asignar caja a pallet compatible:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al asignar caja a pallet compatible'
+      );
     } finally {
       // Remover el estado de carga
       setAssigningToCompatibleStates((prev) => {

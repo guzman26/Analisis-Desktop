@@ -4,7 +4,11 @@ import { SalesContext } from '../../contexts/SalesContext';
 import { Sale } from '@/types';
 import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
+import ReturnBoxesModal from '@/components/ReturnBoxesModal';
+import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
 import { WindowContainer, Button } from '../../components/design-system';
+import { updateSaleState } from '@/api/endpoints';
+import { useNotifications } from '@/components/Notification/Notification';
 
 import '@/styles/SalesOrdersList.css';
 
@@ -13,6 +17,9 @@ const ConfirmedSalesOrdersList: React.FC = () => {
   const { salesOrdersCONFIRMEDPaginated } = useContext(SalesContext);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showAddBoxesModal, setShowAddBoxesModal] = useState(false);
+  const { showSuccess, showError } = useNotifications();
 
   useEffect(() => {
     if (
@@ -47,6 +54,42 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handlePrintSale = (sale: Sale) => {
     navigate(`/sales/print/${sale.saleId}`);
+  };
+
+  const handleReturnBoxes = (sale: Sale) => {
+    setSelectedSale(sale);
+    setShowReturnModal(true);
+  };
+
+  const handleAddBoxes = (sale: Sale) => {
+    setSelectedSale(sale);
+    setShowAddBoxesModal(true);
+  };
+
+  const handleDispatchSale = async (sale: Sale) => {
+    try {
+      await updateSaleState(sale.saleId, 'DISPATCHED', 'Marcado como despachado');
+      showSuccess('Venta marcada como despachada');
+      salesOrdersCONFIRMEDPaginated.refresh();
+    } catch (error) {
+      console.error('Error dispatching sale:', error);
+      showError('Error al marcar como despachada');
+    }
+  };
+
+  const handleCompleteSale = async (sale: Sale) => {
+    try {
+      await updateSaleState(sale.saleId, 'COMPLETED', 'Marcado como completado');
+      showSuccess('Venta completada exitosamente');
+      salesOrdersCONFIRMEDPaginated.refresh();
+    } catch (error) {
+      console.error('Error completing sale:', error);
+      showError('Error al completar la venta');
+    }
+  };
+
+  const handleModalSuccess = () => {
+    salesOrdersCONFIRMEDPaginated.refresh();
   };
 
   // Early return if context is not available
@@ -138,6 +181,24 @@ const ConfirmedSalesOrdersList: React.FC = () => {
         isOpen={showDetailModal}
         onClose={handleCloseModal}
       />
+
+      {selectedSale && showReturnModal && (
+        <ReturnBoxesModal
+          sale={selectedSale}
+          isOpen={showReturnModal}
+          onClose={() => setShowReturnModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
+
+      {selectedSale && showAddBoxesModal && (
+        <AddBoxesToSaleModal
+          sale={selectedSale}
+          isOpen={showAddBoxesModal}
+          onClose={() => setShowAddBoxesModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
     </>
   );
 };

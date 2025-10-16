@@ -14,7 +14,14 @@ export type SaleType =
   | 'Donación'
   | 'Inutilizado'
   | 'Ración';
-export type SaleState = 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
+export type SaleState = 
+  | 'DRAFT' 
+  | 'CONFIRMED' 
+  | 'DISPATCHED' 
+  | 'PARTIALLY_RETURNED' 
+  | 'FULLY_RETURNED' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
 
@@ -130,12 +137,18 @@ export interface Sale {
   createdAt: string;
   reportUrl?: string;
   totalBoxes?: number;
+  totalEggs?: number;
   notes?: string;
   metadata?: {
     deliveryDate?: string;
     priority?: Priority;
+    returnHistory?: ReturnRecord[];
+    additionHistory?: AdditionRecord[];
     [key: string]: any;
   };
+  confirmedAt?: string;
+  dispatchedAt?: string;
+  completedAt?: string;
 }
 
 // Audit types
@@ -262,6 +275,7 @@ export interface CustomerFormData {
 export interface SaleItem {
   palletId: string;
   boxIds: string[];
+  totalEggs?: number;
 }
 
 export interface SaleRequest {
@@ -274,4 +288,98 @@ export interface SaleRequest {
     priority?: Priority;
     [key: string]: any;
   };
+}
+
+// Customer Preferences
+export interface CustomerPreferences {
+  customerId: string;
+  topCalibers: Array<{
+    caliber: string;
+    count: number;
+    percentage: number;
+  }>;
+  topFormats: Array<{
+    format: string;
+    count: number;
+    percentage: number;
+  }>;
+  avgBoxesPerOrder: number;
+  avgEggsPerOrder: number;
+  lastPurchase: string | null;
+  totalOrders: number;
+  totalBoxes: number;
+  totalEggs: number;
+}
+
+// Return and Exchange types
+export type ReturnReason = 
+  | 'damaged' 
+  | 'wrong_caliber' 
+  | 'customer_request' 
+  | 'quality_issue' 
+  | 'expired' 
+  | 'other';
+
+export interface ReturnRecord {
+  returnId: string;
+  boxIds: string[];
+  reason: ReturnReason;
+  reasonDetails?: string;
+  returnedAt: string;
+  returnedBy: string;
+}
+
+export interface AdditionRecord {
+  additionId: string;
+  boxIds: string[];
+  addedAt: string;
+  addedBy: string;
+  reason?: string;
+}
+
+export interface ReturnBoxesRequest {
+  saleId: string;
+  boxIds: string[];
+  reason: ReturnReason;
+  reasonDetails?: string;
+}
+
+export interface AddBoxesToSaleRequest {
+  saleId: string;
+  items: SaleItem[];
+  reason?: string;
+}
+
+// Inventory Validation types
+export interface BoxAvailability {
+  boxId: string;
+  available: boolean;
+  reason?: string;
+  currentUbicacion?: Location;
+  reservedFor?: string;
+}
+
+export interface InventoryValidationResult {
+  valid: boolean;
+  unavailableBoxes: BoxAvailability[];
+  totalChecked: number;
+  totalAvailable: number;
+}
+
+// Enhanced Error types
+export type SalesErrorCode =
+  | 'CUSTOMER_INACTIVE'
+  | 'BOX_NOT_AVAILABLE'
+  | 'BOX_NOT_FOUND'
+  | 'PALLET_MISMATCH'
+  | 'INVALID_TRANSITION'
+  | 'CONCURRENT_MODIFICATION'
+  | 'VALIDATION_ERROR'
+  | 'NETWORK_ERROR'
+  | 'UNKNOWN_ERROR';
+
+export interface SalesError extends Error {
+  code: SalesErrorCode;
+  details?: Record<string, any>;
+  recoverable?: boolean;
 }

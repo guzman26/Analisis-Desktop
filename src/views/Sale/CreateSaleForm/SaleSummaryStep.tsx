@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Customer } from '@/types';
 import { Card, Button } from '@/components/design-system';
+import FreshnessIndicator from '@/components/design-system/FreshnessIndicator';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { getEggCountForBox, formatEggCount } from '@/utils/eggCalculations';
+import { getFreshnessInfo, calculateAverageAge, findOldestPallet } from '@/utils/freshnessCalculations';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
 
@@ -9,6 +12,7 @@ interface BoxData {
   boxId: string;
   palletCode: string;
   calibre: string;
+  format?: string;
 }
 
 interface SaleSummaryStepProps {
@@ -33,6 +37,14 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
 
   const totalBoxes = boxes.length;
 
+  // Calculate total eggs
+  const totalEggs = useMemo(() => {
+    return boxes.reduce((sum, box) => {
+      const format = box.format || '1'; // Default to format 1 if not provided
+      return sum + getEggCountForBox(format);
+    }, 0);
+  }, [boxes]);
+
   // Group boxes by pallet for counting
   const palletGroups = boxes.reduce(
     (acc, box) => {
@@ -40,15 +52,21 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
         acc[box.palletCode] = {
           calibre: box.calibre,
           boxes: [],
+          format: box.format || '1',
         };
       }
       acc[box.palletCode].boxes.push(box.boxId);
       return acc;
     },
-    {} as Record<string, { calibre: string; boxes: string[] }>
+    {} as Record<string, { calibre: string; boxes: string[]; format: string }>
   );
 
   const totalPallets = Object.keys(palletGroups).length;
+
+  // Calculate freshness stats
+  const palletCodes = Object.keys(palletGroups);
+  const avgAge = calculateAverageAge(palletCodes);
+  const oldestPallet = findOldestPallet(palletCodes);
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
@@ -100,9 +118,41 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
                   Caja{totalBoxes !== 1 ? 's' : ''}
                 </span>
               </div>
+              <div className="text-center">
+                <span className="block text-2xl font-bold">{formatEggCount(totalEggs)}</span>
+                <span className="block text-sm text-gray-500">
+                  Huevo{totalEggs !== 1 ? 's' : ''}
+                </span>
+              </div>
             </div>
           </div>
         </Card>
+
+        {/* Freshness Summary */}
+        {avgAge !== null && (
+          <Card className="p-4" variant="flat">
+            <h3 className="text-lg font-medium mb-3">Frescura</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500">Edad Promedio:</span>
+                <span className="font-medium">{avgAge} días</span>
+              </div>
+              {oldestPallet && (
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Pallet Más Antiguo:</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{oldestPallet.palletCode}</span>
+                    <FreshnessIndicator 
+                      palletCode={oldestPallet.palletCode} 
+                      size="small" 
+                      showLabel={false}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Customer Details - Collapsible */}
         <Card className="p-4" variant="flat">
@@ -153,13 +203,20 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
                 >
                   <div className="p-3 flex justify-between items-center">
                     <div>
-                      <h4 className="font-medium">Pallet {palletCode}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">Pallet {palletCode}</h4>
+                        <FreshnessIndicator 
+                          palletCode={palletCode} 
+                          size="small" 
+                          showLabel={false}
+                        />
+                      </div>
                       <div className="flex gap-3 mt-1">
                         <span className="text-xs py-1 px-2 bg-blue-50 text-blue-700 rounded">
                           Calibre: {palletData.calibre}
                         </span>
                         <span className="text-xs py-1 px-2 bg-gray-50 text-gray-700 rounded">
-                          {palletData.boxes.length} cajas
+                          {palletData.boxes.length} cajas • {formatEggCount(palletData.boxes.length * getEggCountForBox(palletData.format))} huevos
                         </span>
                       </div>
                     </div>

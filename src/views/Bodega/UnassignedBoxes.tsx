@@ -4,7 +4,11 @@ import { useUnassignedBoxes } from '@/contexts/BoxesContext';
 import BoxCard from '@/components/BoxCard';
 import BoxDetailModal from '@/components/BoxDetailModal';
 import BoxFilters from '@/components/BoxFilters';
-import { createSingleBoxPallet } from '@/api/endpoints';
+import {
+  createSingleBoxPallet,
+  assignBoxToCompatiblePallet,
+} from '@/api/endpoints';
+import { useNotifications } from '@/components/Notification/Notification';
 
 const UnassignedBoxes = () => {
   const { unassignedBoxes: unassignedBoxesInBodega } =
@@ -15,6 +19,11 @@ const UnassignedBoxes = () => {
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [assigningToCompatibleStates, setAssigningToCompatibleStates] =
+    useState<{
+      [key: string]: boolean;
+    }>({});
+  const { showSuccess, showError, showWarning } = useNotifications();
 
   // Data is automatically fetched by useUnassignedBoxes hook
   // Inicializar filteredBoxes con todas las cajas
@@ -27,19 +36,61 @@ const UnassignedBoxes = () => {
       // Establecer el estado de carga para esta caja específica
       setCreatingPalletStates((prev) => ({ ...prev, [boxCode]: true }));
 
-      await createSingleBoxPallet(boxCode, 'BODEGA');
+      const result = await createSingleBoxPallet(boxCode, 'BODEGA');
 
-      // Refrescar la lista después de crear el pallet
-      // TODO: Implement refresh functionality
-
-      // TODO: Mostrar mensaje de éxito
-      console.log('Pallet individual creado exitosamente');
+      showSuccess(`Pallet individual creado: ${result.pallet.codigo}`);
     } catch (error) {
       console.error('Error al crear pallet individual:', error);
-      // TODO: Mostrar mensaje de error
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al crear pallet individual'
+      );
     } finally {
       // Remover el estado de carga
       setCreatingPalletStates((prev) => {
+        const newStates = { ...prev };
+        delete newStates[boxCode];
+        return newStates;
+      });
+    }
+  };
+
+  const handleAssignToCompatiblePallet = async (boxCode: string) => {
+    try {
+      // Establecer el estado de carga para esta caja específica
+      setAssigningToCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
+
+      const result = await assignBoxToCompatiblePallet(boxCode);
+
+      if (result.success) {
+        if (result.created) {
+          showSuccess(`Pallet ${result.palletId} creado y caja asignada`);
+        } else if (result.alreadyAssigned) {
+          showWarning(`Caja ya estaba asignada a ${result.palletId}`);
+        } else {
+          showSuccess(
+            `Caja asignada a pallet ${result.palletId} (${result.boxCount}/${result.maxBoxes})`
+          );
+        }
+      } else {
+        // No se pudo asignar
+        if (result.full) {
+          showWarning(`El pallet ${result.palletId} está lleno`);
+        } else {
+          showWarning(result.message || 'No se pudo asignar la caja');
+        }
+      }
+    } catch (error) {
+      console.error('Error al asignar caja a pallet compatible:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al asignar caja a pallet compatible'
+      );
+    } finally {
+      // Remover el estado de carga
+      setAssigningToCompatibleStates((prev) => {
         const newStates = { ...prev };
         delete newStates[boxCode];
         return newStates;
@@ -84,11 +135,19 @@ const UnassignedBoxes = () => {
               setSelectedBox={setSelectedBox}
               setIsModalOpen={setIsModalOpen}
               showCreatePalletButton={true}
+              showAssignToCompatibleButton={true}
               onCreateSinglePallet={
                 creatingPalletStates[box.codigo]
                   ? undefined
                   : handleCreateSinglePallet
               }
+              onAssignToCompatiblePallet={
+                assigningToCompatibleStates[box.codigo]
+                  ? undefined
+                  : handleAssignToCompatiblePallet
+              }
+              isCreatingPallet={creatingPalletStates[box.codigo]}
+              isAssigningToCompatible={assigningToCompatibleStates[box.codigo]}
             />
           ))}
         </div>

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { useFilteredPallets } from '@/contexts/PalletContext';
+import React, { useState, useContext } from 'react';
+import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
+import { SalesContext } from '@/contexts/SalesContext';
 import { Customer, Pallet, Sale, SaleRequest, SaleItem } from '@/types';
 import { getPalletBoxes } from '@/utils/palletHelpers';
-import { createSale } from '@/api/endpoints';
+import { createSale, validateInventory } from '@/api/endpoints';
+import { useNotifications } from '@/components/Notification/Notification';
 import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
 import BoxSelectionStep from './BoxSelectionStep';
@@ -34,6 +36,9 @@ const CreateSaleForm: React.FC = () => {
   });
 
   const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
+  const { fetchClosedPalletsInBodega } = usePalletContext();
+  const { refreshAllSales } = useContext(SalesContext);
+  const { showSuccess, showError } = useNotifications();
 
   const handleNext = () => {
     setState((prev) => ({ ...prev, step: prev.step + 1 }));
@@ -57,13 +62,32 @@ const CreateSaleForm: React.FC = () => {
       !state.selectedCustomer ||
       state.selectedBoxCodes.length === 0
     ) {
+      showError('Datos incompletos para crear la venta');
       return;
     }
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      // Group selected boxes by their pallets
+      // Step 1: Validate inventory availability
+      showSuccess('Validando inventario...');
+      const validationResult = await validateInventory(state.selectedBoxCodes);
+
+      if (!validationResult.valid) {
+        const unavailableCount = validationResult.unavailableBoxes.length;
+        const reasons = validationResult.unavailableBoxes
+          .slice(0, 3)
+          .map((box) => `${box.boxId}: ${box.reason}`)
+          .join(', ');
+
+        showError(
+          `${unavailableCount} caja(s) no disponible(s). Ejemplos: ${reasons}. Por favor, actualice la selección.`
+        );
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        return;
+      }
+
+      // Step 2: Group selected boxes by their pallets
       const palletGroupedBoxes = new Map<string, string[]>();
 
       closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
@@ -76,7 +100,13 @@ const CreateSaleForm: React.FC = () => {
         }
       });
 
-      // Create items array with pallets containing their boxes
+      if (palletGroupedBoxes.size === 0) {
+        showError('No se pudieron agrupar las cajas por pallets');
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        return;
+      }
+
+      // Step 3: Create items array with pallets containing their boxes
       const items: SaleItem[] = Array.from(palletGroupedBoxes.entries()).map(
         ([palletId, boxIds]) => ({
           palletId,
@@ -91,6 +121,8 @@ const CreateSaleForm: React.FC = () => {
         notes,
       };
 
+      // Step 4: Create the sale
+      showSuccess('Creando venta...');
       const sale = await createSale(saleRequest);
 
       setState((prev) => ({
@@ -100,10 +132,45 @@ const CreateSaleForm: React.FC = () => {
         isSubmitting: false,
       }));
 
-      // Refresh available pallets
-      // TODO: Implement refresh functionality
+      // Step 5: Refresh data in contexts
+      refreshAllSales();
+      fetchClosedPalletsInBodega();
+
+      showSuccess(
+        `Venta creada exitosamente: ${sale.totalBoxes} cajas${sale.totalEggs ? ` (${sale.totalEggs.toLocaleString()} huevos)` : ''}`
+      );
     } catch (error) {
       console.error('Error creating sale:', error);
+
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Error al crear la venta';
+
+      if (error instanceof Error) {
+        if (
+          error.message.includes('Customer') &&
+          error.message.includes('not active')
+        ) {
+          errorMessage = 'El cliente seleccionado no está activo';
+        } else if (error.message.includes('not found')) {
+          errorMessage =
+            'Algunos elementos no fueron encontrados. Actualice la página.';
+        } else if (
+          error.message.includes('not available') ||
+          error.message.includes('not in BODEGA')
+        ) {
+          errorMessage =
+            'Algunas cajas ya no están disponibles. Actualice la selección.';
+        } else if (
+          error.message.includes('network') ||
+          error.message.includes('NetworkError')
+        ) {
+          errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      showError(errorMessage);
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }
   };

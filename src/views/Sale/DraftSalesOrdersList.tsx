@@ -5,6 +5,7 @@ import { Sale } from '@/types';
 import { Button, WindowContainer } from '../../components/design-system';
 import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
+import { useNotifications } from '../../components/Notification';
 
 import '@/styles/SalesOrdersList.css';
 
@@ -18,6 +19,7 @@ const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
   const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
     useContext(SalesContext);
+  const { showSuccess, showError } = useNotifications();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [confirmingStates, setConfirmingStates] = useState<{
@@ -70,11 +72,14 @@ const SalesOrdersList: React.FC = () => {
       salesOrdersDRAFTPaginated?.refresh();
       salesOrdersCONFIRMEDPaginated?.refresh();
 
-      // TODO: Mostrar mensaje de éxito
-      console.log('Venta confirmada exitosamente');
+      showSuccess(`Venta ${sale.saleId} confirmada exitosamente`);
     } catch (error) {
       console.error('Error al confirmar la venta:', error);
-      // TODO: Mostrar mensaje de error
+      showError(
+        error instanceof Error
+          ? `Error al confirmar la venta: ${error.message}`
+          : 'Error desconocido al confirmar la venta'
+      );
     } finally {
       // Remover el estado de carga
       setConfirmingStates((prev) => {

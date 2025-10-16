@@ -1,0 +1,110 @@
+/* Freshness Indicator Styles */
+
+.freshness-indicator {
+  display: inline-flex;
+  align-items: center;
+}
+
+.freshness-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+}
+
+/* Size variants */
+.freshness-indicator.small .freshness-badge {
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  gap: 4px;
+}
+
+.freshness-indicator.medium .freshness-badge {
+  padding: 4px 12px;
+  font-size: 0.875rem;
+  gap: 6px;
+}
+
+.freshness-indicator.large .freshness-badge {
+  padding: 6px 16px;
+  font-size: 1rem;
+  gap: 8px;
+}
+
+/* Freshness level colors */
+.freshness-fresh {
+  background-color: #10b981;
+}
+
+.freshness-good {
+  background-color: #fbbf24;
+  color: #1f2937;
+}
+
+.freshness-aging {
+  background-color: #f97316;
+}
+
+.freshness-old {
+  background-color: #ef4444;
+}
+
+.freshness-label {
+  font-weight: 600;
+}
+
+.freshness-age {
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Freshness Details Component */
+.freshness-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.freshness-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.detail-value.freshness-fresh {
+  color: #10b981;
+}
+
+.detail-value.freshness-good {
+  color: #fbbf24;
+}
+
+.detail-value.freshness-aging {
+  color: #f97316;
+}
+
+.detail-value.freshness-old {
+  color: #ef4444;
+}
+

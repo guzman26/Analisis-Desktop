@@ -3,6 +3,7 @@ import { Customer } from '@/types';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { Input, Button, Card } from '@/components/design-system';
 import { Modal } from '@/components/design-system';
+import CustomerPreferencesPanel from '@/components/CustomerPreferencesPanel';
 import { Search } from 'lucide-react';
 
 interface CustomerSelectionStepProps {
@@ -209,6 +210,9 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               )}
             </div>
           </div>
+
+          {/* Customer Preferences */}
+          <CustomerPreferencesPanel customerId={selectedCustomer.customerId} />
         </Card>
       )}
 

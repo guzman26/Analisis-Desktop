@@ -50,7 +50,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
 
   const locationColor =
     locationColors[
-      box.ubicacion.toLowerCase() as keyof typeof locationColors
+      (box.ubicacion?.toLowerCase() ?? '') as keyof typeof locationColors
     ] || locationColors.default;
 
   const statusColors = {
@@ -60,8 +60,9 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
   };
 
   const statusColor =
-    statusColors[box.estado.toLowerCase() as keyof typeof statusColors] ||
-    statusColors.default;
+    statusColors[
+      (box.estado?.toLowerCase() ?? '') as keyof typeof statusColors
+    ] || statusColors.default;
 
   const InfoRow = ({
     icon,
@@ -112,7 +113,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
               )}
             >
               <MapPin className="w-4 h-4" />
-              {box.ubicacion}
+              {box.ubicacion || 'Sin ubicación'}
             </span>
             <span
               className={clsx(
@@ -120,7 +121,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
                 statusColor
               )}
             >
-              {box.estado}
+              {box.estado || 'Sin estado'}
             </span>
           </div>
           {box.palletId && (
