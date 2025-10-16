@@ -68,7 +68,11 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handleDispatchSale = async (sale: Sale) => {
     try {
-      await updateSaleState(sale.saleId, 'DISPATCHED', 'Marcado como despachado');
+      await updateSaleState(
+        sale.saleId,
+        'DISPATCHED',
+        'Marcado como despachado'
+      );
       showSuccess('Venta marcada como despachada');
       salesOrdersCONFIRMEDPaginated.refresh();
     } catch (error) {
@@ -79,7 +83,11 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handleCompleteSale = async (sale: Sale) => {
     try {
-      await updateSaleState(sale.saleId, 'COMPLETED', 'Marcado como completado');
+      await updateSaleState(
+        sale.saleId,
+        'COMPLETED',
+        'Marcado como completado'
+      );
       showSuccess('Venta completada exitosamente');
       salesOrdersCONFIRMEDPaginated.refresh();
     } catch (error) {
@@ -142,6 +150,10 @@ const ConfirmedSalesOrdersList: React.FC = () => {
                   sale={sale}
                   onViewDetails={handleViewDetails}
                   onPrint={handlePrintSale}
+                  onReturn={handleReturnBoxes}
+                  onAddBoxes={handleAddBoxes}
+                  onDispatch={handleDispatchSale}
+                  onComplete={handleCompleteSale}
                 />
               );
             })}

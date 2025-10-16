@@ -7,6 +7,10 @@ export interface SalesCardProps {
   onViewDetails?: (sale: Sale) => void;
   onPrint?: (sale: Sale) => void;
   onConfirm?: (sale: Sale) => void;
+  onReturn?: (sale: Sale) => void;
+  onAddBoxes?: (sale: Sale) => void;
+  onDispatch?: (sale: Sale) => void;
+  onComplete?: (sale: Sale) => void;
   isConfirming?: boolean;
   className?: string;
 }
@@ -20,6 +24,10 @@ const SalesCard: React.FC<SalesCardProps> = ({
   onViewDetails,
   onPrint,
   onConfirm,
+  onReturn,
+  onAddBoxes,
+  onDispatch,
+  onComplete,
   isConfirming,
   className,
 }) => {
@@ -101,7 +109,13 @@ const SalesCard: React.FC<SalesCardProps> = ({
         </div>
       )}
 
-      {(onViewDetails || onPrint || onConfirm) && (
+      {(onViewDetails ||
+        onPrint ||
+        onConfirm ||
+        onReturn ||
+        onAddBoxes ||
+        onDispatch ||
+        onComplete) && (
         <div className="sale-actions">
           {onViewDetails && (
             <button
@@ -128,6 +142,42 @@ const SalesCard: React.FC<SalesCardProps> = ({
               disabled={isConfirming}
             >
               {isConfirming ? 'Confirmando...' : 'Confirmar'}
+            </button>
+          )}
+          {onReturn && (
+            <button
+              className="action-button return-btn"
+              onClick={() => onReturn(sale)}
+              title="Devolver cajas de esta venta"
+            >
+              Devolver
+            </button>
+          )}
+          {onAddBoxes && (
+            <button
+              className="action-button add-boxes-btn"
+              onClick={() => onAddBoxes(sale)}
+              title="Agregar más cajas a esta venta"
+            >
+              Agregar Cajas
+            </button>
+          )}
+          {onDispatch && (
+            <button
+              className="action-button dispatch-btn"
+              onClick={() => onDispatch(sale)}
+              title="Marcar como despachada"
+            >
+              Despachar
+            </button>
+          )}
+          {onComplete && (
+            <button
+              className="action-button complete-btn"
+              onClick={() => onComplete(sale)}
+              title="Marcar como completada"
+            >
+              Completar
             </button>
           )}
         </div>
