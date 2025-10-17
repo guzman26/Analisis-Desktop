@@ -174,7 +174,10 @@ export const deleteBox = (codigo: string) =>
  * Crear un pallet individual para una sola caja
  * Útil cuando se necesita un pallet específico para una caja
  */
-export const createSingleBoxPallet = (boxCode: string, ubicacion: Location = 'PACKING') =>
+export const createSingleBoxPallet = (
+  boxCode: string,
+  ubicacion: Location = 'PACKING'
+) =>
   inventory<{
     pallet: Pallet;
     box: Box;
@@ -277,8 +280,11 @@ export const addBoxesToSale = (request: AddBoxesToSaleRequest) =>
 /**
  * Update sale state (dispatch, complete, etc.)
  */
-export const updateSaleState = (saleId: string, newState: string, notes?: string) =>
-  sales<Sale>('update-state', 'order', { saleId, newState, notes });
+export const updateSaleState = (
+  saleId: string,
+  newState: string,
+  notes?: string
+) => sales<Sale>('update-state', 'order', { saleId, newState, notes });
 
 /**
  * Generate sale report using consolidated admin endpoint
@@ -336,6 +342,12 @@ export const deleteUnassignedBoxesAsync = () =>
   admin<any>('delete-boxes', 'bulk', {
     confirmDelete: true,
     palletId: 'UNASSIGNED',
+  });
+
+export const deleteBoxesByLocationAsync = (ubicacion?: string) =>
+  admin<any>('delete-boxes-by-location', 'bulk', {
+    confirmDelete: true,
+    ...(ubicacion && { ubicacion }),
   });
 
 // Analytics operations

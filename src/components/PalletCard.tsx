@@ -238,17 +238,6 @@ const PalletCard = ({
             </div>
           </div>
 
-          {/* Additional Info based on available pallet data */}
-          <div className={styles.additionalInfo}>
-            <span
-              className="macos-text-footnote"
-              style={{ color: 'var(--macos-text-secondary)' }}
-            >
-              Código base:
-            </span>
-            <span className="macos-text-footnote">{pallet.baseCode}</span>
-          </div>
-
           {/* Actions */}
           <div className={styles.palletActions}>
             <Button

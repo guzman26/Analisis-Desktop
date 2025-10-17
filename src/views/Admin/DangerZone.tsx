@@ -6,6 +6,7 @@ import {
   deletePackingPalletsAsync,
   deletePalletsAndAssignedBoxesAsync,
   deleteUnassignedBoxesAsync,
+  deleteBoxesByLocationAsync,
 } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
@@ -145,6 +146,36 @@ const DangerZone: React.FC = () => {
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas UNASSIGNED? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
+    },
+    {
+      id: 'deleteBoxesByLocationAsync',
+      title: 'Eliminar cajas por ubicación (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra cajas de una ubicación específica o todas las ubicaciones.',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async (ubicacion?: Location | 'ALL') => {
+        try {
+          const loc = ubicacion && ubicacion !== 'ALL' ? ubicacion : undefined;
+          await deleteBoxesByLocationAsync(loc);
+          const locationMsg = getLocationMessage(ubicacion);
+          return {
+            success: true,
+            message: `Se inició la eliminación asíncrona de cajas ${locationMsg}. Revisa los logs para el progreso.`,
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de cajas en la ubicación seleccionada? Esta acción no se puede deshacer.',
+      dangerLevel: 'high',
+      allowLocationSelection: true,
+      defaultLocation: 'PACKING',
     },
     {
       id: 'deletePackingPalletsAsync',
