@@ -22,6 +22,7 @@ interface BoxCardProps {
   showAssignToCompatibleButton?: boolean;
   isCreatingPallet?: boolean;
   isAssigningToCompatible?: boolean;
+  onDeleted?: () => void | Promise<void>;
 }
 
 const BoxCard = ({
@@ -37,6 +38,7 @@ const BoxCard = ({
   showAssignToCompatibleButton = false,
   isCreatingPallet = false,
   isAssigningToCompatible = false,
+  onDeleted,
 }: BoxCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
     // Don't toggle selection if clicking on buttons
@@ -103,11 +105,11 @@ const BoxCard = ({
       setDeleting(true);
       await deleteBox(box.codigo);
       setShowDeleteModal(false);
-      // No hay un callback de refresh en props; el padre (vista) debe refrescar.
-      // Emitimos un CustomEvent para que la vista lo escuche si quiere.
-      window.dispatchEvent(
-        new CustomEvent('boxes:deleted', { detail: { codigo: box.codigo } })
-      );
+
+      // Llamar al callback de eliminación si existe
+      if (onDeleted) {
+        await onDeleted();
+      }
     } catch (e) {
       console.error('Error al eliminar caja', e);
     } finally {

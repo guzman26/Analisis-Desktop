@@ -181,6 +181,7 @@ const UnassignedBoxes = () => {
                     ? undefined
                     : handleAssignToCompatiblePallet
                 }
+                onDeleted={refresh}
               />
             ))}
           </div>

@@ -11,7 +11,7 @@ import {
 import { useNotifications } from '@/components/Notification/Notification';
 
 const UnassignedBoxes = () => {
-  const { unassignedBoxes: unassignedBoxesInBodega } =
+  const { unassignedBoxes: unassignedBoxesInBodega, refresh } =
     useUnassignedBoxes('BODEGA');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
@@ -37,6 +37,9 @@ const UnassignedBoxes = () => {
       setCreatingPalletStates((prev) => ({ ...prev, [boxCode]: true }));
 
       const result = await createSingleBoxPallet(boxCode, 'BODEGA');
+
+      // Refrescar la lista después de crear el pallet
+      await refresh();
 
       showSuccess(`Pallet individual creado: ${result.pallet.codigo}`);
     } catch (error) {
@@ -64,6 +67,9 @@ const UnassignedBoxes = () => {
       const result = await assignBoxToCompatiblePallet(boxCode);
 
       if (result.success) {
+        // Refrescar la lista después de asignar a pallet compatible
+        await refresh();
+
         if (result.created) {
           showSuccess(`Pallet ${result.palletId} creado y caja asignada`);
         } else if (result.alreadyAssigned) {
@@ -102,9 +108,7 @@ const UnassignedBoxes = () => {
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={() => console.log('Refrescar - TODO: Implement')}>
-          Refrescar
-        </button>
+        <button onClick={refresh}>Refrescar</button>
         <div className="open-pallets-count">
           {filteredBoxes.length} de {unassignedBoxesInBodega.length} cajas
         </div>
@@ -148,6 +152,7 @@ const UnassignedBoxes = () => {
               }
               isCreatingPallet={creatingPalletStates[box.codigo]}
               isAssigningToCompatible={assigningToCompatibleStates[box.codigo]}
+              onDeleted={refresh}
             />
           ))}
         </div>
