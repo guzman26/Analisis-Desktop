@@ -95,9 +95,9 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
       const searchLower = filters.searchTerm.toLowerCase();
       filteredBoxes = filteredBoxes.filter(
         (box) =>
-          box.codigo.toLowerCase().includes(searchLower) ||
-          box.empacadora.toLowerCase().includes(searchLower) ||
-          box.operario.toLowerCase().includes(searchLower)
+          box.codigo?.toLowerCase().includes(searchLower) ||
+          box.empacadora?.toLowerCase().includes(searchLower) ||
+          box.operario?.toLowerCase().includes(searchLower)
       );
     }
 
