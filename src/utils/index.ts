@@ -4,6 +4,8 @@ export * from './formatDate';
 export * from './getParamsFromCodigo';
 export * from './validators';
 export * from './company';
+export * from './boxCodeParser';
+export * from './boxCodeFormatters';
 import { EggInfo } from '@/types';
 
 /**

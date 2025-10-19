@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Box } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { formatCalibreName } from '@/utils/getParamsFromCodigo';
@@ -6,6 +6,10 @@ import {
   processBoxCustomInfo,
   calculateTotalEggs,
   getMostFrequentCode,
+  tryParseBoxCode,
+  formatParsedBoxCode,
+  getProductionInfo,
+  getProductInfo,
 } from '@/utils';
 import { Modal, Button, Card } from '@/components/design-system';
 import {
@@ -32,6 +36,23 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
   if (!isOpen || !box) {
     return null;
   }
+
+  // Parsear el código de la caja para extraer información
+  const parsedCode = useMemo(() => {
+    return tryParseBoxCode(box.codigo);
+  }, [box.codigo]);
+
+  const formattedCode = useMemo(() => {
+    return parsedCode ? formatParsedBoxCode(parsedCode) : null;
+  }, [parsedCode]);
+
+  const productionInfo = useMemo(() => {
+    return parsedCode ? getProductionInfo(parsedCode) : null;
+  }, [parsedCode]);
+
+  const productInfo = useMemo(() => {
+    return parsedCode ? getProductInfo(parsedCode) : null;
+  }, [parsedCode]);
 
   // Procesar customInfo si está disponible
   const processedCustomInfo = box.customInfo
@@ -146,39 +167,39 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
               <InfoRow
                 icon={<Calendar className="w-5 h-5" />}
                 label="Fecha de Registro"
-                value={formatDate(box.fecha_registro)}
+                value={box.fecha_registro ? formatDate(box.fecha_registro) : 'N/A'}
               />
               <InfoRow
                 icon={<User className="w-5 h-5" />}
                 label="Empacadora"
-                value={box.empacadora}
+                value={box.empacadora || formattedCode?.packerDisplay || 'N/A'}
               />
               <InfoRow
                 icon={<User className="w-5 h-5" />}
                 label="Operario"
-                value={box.operario}
+                value={box.operario || formattedCode?.operatorDisplay || 'N/A'}
               />
             </div>
             <div className="space-y-1">
               <InfoRow
                 icon={<Package className="w-5 h-5" />}
                 label="Calibre"
-                value={formatCalibreName(box.calibre.toString())}
+                value={box.calibre ? formatCalibreName(box.calibre.toString()) : (productInfo?.caliberDisplay || 'N/A')}
               />
               <InfoRow
                 icon={<Layers className="w-5 h-5" />}
                 label="Formato de Caja"
-                value={box.formato_caja}
+                value={box.formato_caja || productInfo?.formatDisplay || 'N/A'}
               />
               <InfoRow
                 icon={<Hash className="w-5 h-5" />}
                 label="Contador"
-                value={box.contador}
+                value={box.contador || productInfo?.counterDisplay || 'N/A'}
               />
               <InfoRow
                 icon={<Hash className="w-5 h-5" />}
                 label="Cantidad"
-                value={box.quantity}
+                value={box.quantity || 'N/A'}
               />
             </div>
           </div>
@@ -193,21 +214,27 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-macos-text-secondary">Semana</p>
-              <p className="font-medium text-macos-text">{box.semana}</p>
+              <p className="font-medium text-macos-text">
+                {box.semana || productionInfo?.weekOfYear || 'N/A'}
+              </p>
             </div>
             <div>
               <p className="text-macos-text-secondary">Año</p>
-              <p className="font-medium text-macos-text">{box.año}</p>
+              <p className="font-medium text-macos-text">
+                {box.año || productionInfo?.year || 'N/A'}
+              </p>
             </div>
             <div>
               <p className="text-macos-text-secondary">Día de la Semana</p>
-              <p className="font-medium text-macos-text">{box.dia_semana}</p>
+              <p className="font-medium text-macos-text">
+                {box.dia_semana || productionInfo?.dayOfWeekDisplay || 'N/A'}
+              </p>
             </div>
             <div>
               <p className="text-macos-text-secondary">Horario</p>
               <p className="font-medium text-macos-text flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                {box.horario_proceso}
+                {box.horario_proceso || productionInfo?.shiftDisplay || 'N/A'}
               </p>
             </div>
           </div>
