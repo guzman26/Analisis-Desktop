@@ -6,7 +6,10 @@
 
 export const isValidPalletCode = (code: string): boolean =>
   /^\d{12}$/.test(code);
-export const isValidBoxCode = (code: string): boolean => /^\d{17}$/.test(code);
+// NOTA: Esta función ha sido reemplazada por la versión en boxCodeParser.ts
+// que valida correctamente 16 dígitos. Se mantiene aquí por compatibilidad legacy.
+// Se recomienda usar isValidBoxCode de boxCodeParser.ts
+export const isValidBoxCode = (code: string): boolean => /^\d{16}$/.test(code);
 export const isValidBaseCode = (baseCode: string): boolean =>
   /^\d{9}$/.test(baseCode);
 

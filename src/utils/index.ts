@@ -2,10 +2,26 @@
 export * from './extractDataFromResponse';
 export * from './formatDate';
 export * from './getParamsFromCodigo';
-export * from './validators';
 export * from './company';
+
+// Export box code parser (priorizar la versión correcta)
 export * from './boxCodeParser';
 export * from './boxCodeFormatters';
+
+// Export validators pero sin isValidBoxCode (usamos la del parser que es correcta)
+export {
+  isValidPalletCode,
+  isValidBaseCode,
+  isValidCode,
+  isValidPalletState,
+  isValidLocation,
+  isValidRUT,
+  isValidEmail,
+  isValidPhone,
+  isValidStringArray,
+  isValidBoxCodeArray,
+} from './validators';
+
 import { EggInfo } from '@/types';
 
 /**
