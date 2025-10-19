@@ -8,6 +8,7 @@ const PalletsInBodega = lazy(() => import('../views/Bodega/Pallets'));
 const UnassignedBoxesBodega = lazy(
   () => import('../views/Bodega/UnassignedBoxes')
 );
+const PalletsInTransito = lazy(() => import('../views/Transito/Pallets'));
 const UnassignedBoxesPacking = lazy(
   () => import('../views/Packing/UnassignedBoxes')
 );
@@ -56,6 +57,10 @@ export const routes = [
   {
     path: '/bodega/unassignedBoxes',
     element: <UnassignedBoxesBodega />,
+  },
+  {
+    path: '/transito/pallets',
+    element: <PalletsInTransito />,
   },
   {
     path: '/packing/unassignedBoxes',

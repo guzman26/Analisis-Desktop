@@ -19,6 +19,7 @@ import {
   CircleCheck,
   Search,
   AlertTriangle,
+  Truck,
 } from 'lucide-react';
 import '../styles/designSystem.css';
 
@@ -57,6 +58,17 @@ const sidebarItems: SidebarItem[] = [
         path: '/packing/unassignedBoxes',
         label: 'Cajas sin Pallet',
         icon: <Box className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    label: 'Tránsito',
+    icon: <Truck className="w-5 h-5" />,
+    children: [
+      {
+        path: '/transito/pallets',
+        label: 'Pallets en Tránsito',
+        icon: <Tag className="w-4 h-4" />,
       },
     ],
   },
