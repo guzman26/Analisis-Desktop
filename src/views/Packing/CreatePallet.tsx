@@ -53,7 +53,7 @@ const CreatePallet: React.FC = () => {
   const { createPallet } = usePalletContext();
   const navigate = useNavigate();
 
-  const [turno, setTurno] = React.useState('');
+  const [turnos, setTurnos] = React.useState<string[]>([]);
   const [calibre, setCalibre] = React.useState('');
   const [formato, setFormato] = React.useState('');
   const [empresa, setEmpresa] = React.useState('');
@@ -61,7 +61,21 @@ const CreatePallet: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [maxBoxes, setMaxBoxes] = React.useState<number>(60);
 
-  const canSubmit = Boolean(turno && calibre && formato && empresa);
+  const canSubmit = Boolean(turnos.length > 0 && calibre && formato && empresa);
+  
+  const handleTurnoToggle = (turnoValue: string) => {
+    setTurnos((prev) => {
+      if (prev.includes(turnoValue)) {
+        return prev.filter((t) => t !== turnoValue);
+      } else {
+        // Limitar a máximo 3 turnos
+        if (prev.length >= 3) {
+          return prev;
+        }
+        return [...prev, turnoValue];
+      }
+    });
+  };
 
   const handleCreate = async () => {
     if (!canSubmit) return;
@@ -75,15 +89,16 @@ const CreatePallet: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
+      // Usar el primer turno seleccionado para el código base
       const baseCode = generatePalletCode(
         new Date(),
-        turno,
+        turnos[0],
         calibre,
         formato,
         empresa
       );
       if (baseCode.length !== 11) throw new Error('Código base inválido');
-      await createPallet({ baseCode, ubicacion: 'PACKING', maxBoxes } as any);
+      await createPallet({ baseCode, ubicacion: 'PACKING', maxBoxes, horarios: turnos } as any);
       navigate('/packing/openPallets');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al crear pallet');
@@ -113,23 +128,30 @@ const CreatePallet: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Turno */}
+          {/* Turnos (Múltiples) */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
-              Turno
+            <label className="text-sm text-macos-text-secondary block mb-2">
+              Turnos (máximo 3)
             </label>
-            <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
-              value={turno}
-              onChange={(e) => setTurno(e.target.value)}
-            >
-              <option value="">Seleccionar turno</option>
+            <div className="space-y-2">
               {TURNOS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+                <label key={t.value} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={turnos.includes(t.value)}
+                    onChange={() => handleTurnoToggle(t.value)}
+                    disabled={!turnos.includes(t.value) && turnos.length >= 3}
+                    className="w-4 h-4 text-macos-accent rounded border-macos-border focus:ring-2 focus:ring-macos-accent disabled:opacity-50"
+                  />
+                  <span className="text-sm text-macos-text">{t.label}</span>
+                </label>
               ))}
-            </select>
+            </div>
+            {turnos.length >= 3 && (
+              <p className="text-xs text-macos-text-secondary mt-1">
+                Máximo 3 turnos seleccionados
+              </p>
+            )}
           </div>
 
           {/* Calibre */}
