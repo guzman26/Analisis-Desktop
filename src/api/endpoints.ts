@@ -114,6 +114,7 @@ export const getUnassignedBoxesByLocation = (
   inventory<PaginatedResponse<Box>>('get', 'box', {
     ubicacion: params.ubicacion,
     filters: {
+      unassignedOnly: true, // Critical: filter only boxes without pallet assigned
       calibre: params.calibre,
       formato: params.formato,
       empresa: params.empresa,
