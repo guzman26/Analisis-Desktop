@@ -1,7 +1,12 @@
 import React from 'react';
 import { Box } from '@/types';
-import { formatDate } from '@/utils/formatDate';
-import { formatCalibreName } from '@/utils/getParamsFromCodigo';
+import { formatDate, calculateDateFromBoxCode } from '@/utils/formatDate';
+import {
+  formatCalibreName,
+  getDiaFromCodigo,
+  getSemanaFromCodigo,
+  getAnoFromCodigo,
+} from '@/utils/getParamsFromCodigo';
 import { Button } from '@/components/design-system';
 import { Calendar, MapPin, Check, Tag, Clipboard, Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
@@ -62,6 +67,25 @@ const BoxCard = ({
     }
   };
 
+  // Extract date from box code if fecha_registro is not available
+  const getDateFromBoxCode = (codigo: string): string => {
+    try {
+      const dia = getDiaFromCodigo(codigo);
+      const semana = getSemanaFromCodigo(codigo);
+      const ano = getAnoFromCodigo(codigo);
+
+      // Use the proper ISO week calculation
+      return calculateDateFromBoxCode(dia, semana, ano);
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const formattedDate = box.fecha_registro
+    ? formatDate(box.fecha_registro)
+    : getDateFromBoxCode(box.codigo);
+  const calibre = formatCalibreName(box.calibre.toString());
+
   // Determine color for status indicator based on location
   const getLocationColor = (location: string) => {
     switch (location.toLowerCase()) {
@@ -93,9 +117,6 @@ const BoxCard = ({
         return styles.locationDefault;
     }
   };
-
-  const formattedDate = formatDate(box.fecha_registro);
-  const calibre = formatCalibreName(box.calibre.toString());
 
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
