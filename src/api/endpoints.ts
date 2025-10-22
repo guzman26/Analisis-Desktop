@@ -212,6 +212,19 @@ export const assignBoxToCompatiblePallet = (
     },
   });
 
+/**
+ * Find compatible pallets for all unassigned boxes in a location
+ * Reduces the number of requests by batching all unassigned boxes
+ */
+export const getCompatiblePalletsForAllUnassignedBoxes = (params: {
+  ubicacion: string;
+  filters?: BoxFilterParams;
+}) =>
+  inventory<any>('compatible-pallets-batch', 'box', {
+    ubicacion: params.ubicacion,
+    filters: params.filters || {},
+  });
+
 // Customer operations - now using consolidated /sales endpoint
 export const getCustomers = (params?: GetCustomersParams) =>
   sales<{ items: Customer[] }>('get', 'customer', {

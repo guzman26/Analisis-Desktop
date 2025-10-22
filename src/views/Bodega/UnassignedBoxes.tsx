@@ -7,6 +7,7 @@ import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
+  getCompatiblePalletsForAllUnassignedBoxes,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 
@@ -23,6 +24,8 @@ const UnassignedBoxes = () => {
     useState<{
       [key: string]: boolean;
     }>({});
+  const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
+    useState(false);
   const { showSuccess, showError, showWarning } = useNotifications();
 
   // Data is automatically fetched by useUnassignedBoxes hook
@@ -104,11 +107,61 @@ const UnassignedBoxes = () => {
     }
   };
 
+  const handleSearchCompatiblePalletsForAll = async () => {
+    try {
+      setSearchingCompatiblePallets(true);
+
+      if (unassignedBoxesInBodega.length === 0) {
+        showWarning('No hay cajas sin asignar');
+        return;
+      }
+
+      const result = await getCompatiblePalletsForAllUnassignedBoxes({
+        ubicacion: 'BODEGA',
+      });
+
+      if (result && Object.keys(result).length > 0) {
+        const totalAssigned = Object.values(result).filter(
+          (r: any) => r.success
+        ).length;
+        showSuccess(
+          `Búsqueda completada: ${totalAssigned} cajas con pallets compatibles encontrados`
+        );
+        // Refrescar para ver los cambios
+        await refresh();
+      } else {
+        showWarning(
+          'No se encontraron pallets compatibles para las cajas sin asignar'
+        );
+      }
+    } catch (error) {
+      console.error('Error buscando pallets compatibles:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al buscar pallets compatibles'
+      );
+    } finally {
+      setSearchingCompatiblePallets(false);
+    }
+  };
+
   return (
     <div className="open-pallets">
       <div className="open-pallets-header">
         <h1 className="open-pallets-title">Cajas sin asignar</h1>
-        <button onClick={refresh}>Refrescar</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleSearchCompatiblePalletsForAll}
+            disabled={
+              searchingCompatiblePallets || unassignedBoxesInBodega.length === 0
+            }
+            title="Buscar pallets compatibles para todas las cajas sin asignar"
+          >
+            {searchingCompatiblePallets ? 'Buscando...' : 'Buscar Compatibles'}
+          </button>
+          <button onClick={refresh}>Refrescar</button>
+        </div>
         <div className="open-pallets-count">
           {filteredBoxes.length} de {unassignedBoxesInBodega.length} cajas
         </div>

@@ -7,6 +7,7 @@ import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
   assignBoxToCompatiblePallet,
+  getCompatiblePalletsForAllUnassignedBoxes,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import { RefreshCcw, Package } from 'lucide-react';
@@ -32,6 +33,8 @@ const UnassignedBoxes = () => {
     useState<{
       [key: string]: boolean;
     }>({});
+  const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
+    useState(false);
   const { showSuccess, showError, showWarning } = useNotifications();
 
   // Data is automatically fetched by useUnassignedBoxes hook
@@ -116,6 +119,45 @@ const UnassignedBoxes = () => {
     }
   };
 
+  const handleSearchCompatiblePalletsForAll = async () => {
+    try {
+      setSearchingCompatiblePallets(true);
+
+      if (unassignedBoxesInPacking.length === 0) {
+        showWarning('No hay cajas sin asignar');
+        return;
+      }
+
+      const result = await getCompatiblePalletsForAllUnassignedBoxes({
+        ubicacion: 'PACKING',
+      });
+
+      if (result && Object.keys(result).length > 0) {
+        const totalAssigned = Object.values(result).filter(
+          (r: any) => r.success
+        ).length;
+        showSuccess(
+          `Búsqueda completada: ${totalAssigned} cajas con pallets compatibles encontrados`
+        );
+        // Refrescar para ver los cambios
+        await refresh();
+      } else {
+        showWarning(
+          'No se encontraron pallets compatibles para las cajas sin asignar'
+        );
+      }
+    } catch (error) {
+      console.error('Error buscando pallets compatibles:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al buscar pallets compatibles'
+      );
+    } finally {
+      setSearchingCompatiblePallets(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <LoadingOverlay show={loading} text="Cargando cajas…" />
@@ -124,14 +166,25 @@ const UnassignedBoxes = () => {
           <h1 className={styles.title}>Cajas sin asignar</h1>
           <span className={styles.count}>{filteredBoxes.length} cajas</span>
         </div>
-        <button
-          className={styles.refreshButton}
-          onClick={refresh}
-          disabled={loading}
-        >
-          <RefreshCcw size={16} />
-          {loading ? 'Actualizando...' : 'Refrescar'}
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            className={styles.refreshButton}
+            onClick={handleSearchCompatiblePalletsForAll}
+            disabled={loading || searchingCompatiblePallets || unassignedBoxesInPacking.length === 0}
+            title="Buscar pallets compatibles para todas las cajas sin asignar"
+          >
+            <Package size={16} />
+            {searchingCompatiblePallets ? 'Buscando...' : 'Buscar Compatibles'}
+          </button>
+          <button
+            className={styles.refreshButton}
+            onClick={refresh}
+            disabled={loading}
+          >
+            <RefreshCcw size={16} />
+            {loading ? 'Actualizando...' : 'Refrescar'}
+          </button>
+        </div>
       </div>
 
       {/* Componente de filtros */}
