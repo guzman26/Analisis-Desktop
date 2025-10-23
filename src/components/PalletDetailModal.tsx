@@ -14,7 +14,6 @@ import {
   auditPallet,
   moveBoxBetweenPallets,
 } from '@/api/endpoints';
-import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 import { getPalletBoxes } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
@@ -107,10 +106,9 @@ const PalletDetailModal = ({
       return;
     }
     try {
-      const response = await getBoxByCode(codigo);
-      const boxData = await extractDataFromResponse(response);
-      if (boxData && boxData.length > 0) {
-        setSelectedBox(boxData[0]);
+      const boxData = await getBoxByCode(codigo);
+      if (boxData) {
+        setSelectedBox(boxData);
         setShowBoxDetailModal(true);
       } else {
         console.warn('No box data found for codigo:', codigo);
