@@ -6,7 +6,6 @@ import BoxDetailModal from '@/components/BoxDetailModal';
 import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
-  assignBoxToCompatiblePallet,
   getCompatiblePalletsForAllUnassignedBoxes,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
@@ -29,10 +28,6 @@ const UnassignedBoxes = () => {
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
-  const [assigningToCompatibleStates, setAssigningToCompatibleStates] =
-    useState<{
-      [key: string]: boolean;
-    }>({});
   const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
     useState(false);
   const { showSuccess, showError, showWarning } = useNotifications();
@@ -42,9 +37,6 @@ const UnassignedBoxes = () => {
   React.useEffect(() => {
     setFilteredBoxes(unassignedBoxesInPacking);
   }, [unassignedBoxesInPacking]);
-
-  // Server-side filters state to pass to context
-  // No local server filters state needed; we forward filters to context
 
   const handleCreateSinglePallet = async (boxCode: string) => {
     try {
@@ -74,51 +66,6 @@ const UnassignedBoxes = () => {
     }
   };
 
-  const handleAssignToCompatiblePallet = async (boxCode: string) => {
-    try {
-      // Establecer el estado de carga para esta caja específica
-      setAssigningToCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
-
-      const result = await assignBoxToCompatiblePallet(boxCode);
-
-      if (result.success) {
-        // Refrescar la lista después de asignar a pallet compatible
-        await refresh();
-
-        if (result.created) {
-          showSuccess(`Pallet ${result.palletId} creado y caja asignada`);
-        } else if (result.alreadyAssigned) {
-          showWarning(`Caja ya estaba asignada a ${result.palletId}`);
-        } else {
-          showSuccess(
-            `Caja asignada a pallet ${result.palletId} (${result.boxCount}/${result.maxBoxes})`
-          );
-        }
-      } else {
-        // No se pudo asignar
-        if (result.full) {
-          showWarning(`El pallet ${result.palletId} está lleno`);
-        } else {
-          showWarning(result.message || 'No se pudo asignar la caja');
-        }
-      }
-    } catch (error) {
-      console.error('Error al asignar caja a pallet compatible:', error);
-      showError(
-        error instanceof Error
-          ? error.message
-          : 'Error al asignar caja a pallet compatible'
-      );
-    } finally {
-      // Remover el estado de carga
-      setAssigningToCompatibleStates((prev) => {
-        const newStates = { ...prev };
-        delete newStates[boxCode];
-        return newStates;
-      });
-    }
-  };
-
   const handleSearchCompatiblePalletsForAll = async () => {
     try {
       setSearchingCompatiblePallets(true);
@@ -133,11 +80,11 @@ const UnassignedBoxes = () => {
       });
 
       if (result && Object.keys(result).length > 0) {
-        const totalAssigned = Object.values(result).filter(
-          (r: any) => r.success
+        const totalWithCompatibles = Object.values(result).filter(
+          (r: any) => r.pallets && r.pallets.length > 0
         ).length;
         showSuccess(
-          `Búsqueda completada: ${totalAssigned} cajas con pallets compatibles encontrados`
+          `Búsqueda completada: ${totalWithCompatibles} cajas con pallets compatibles encontrados`
         );
         // Refrescar para ver los cambios
         await refresh();
@@ -219,20 +166,12 @@ const UnassignedBoxes = () => {
                 setSelectedBox={setSelectedBox}
                 setIsModalOpen={setIsModalOpen}
                 showCreatePalletButton={true}
-                showAssignToCompatibleButton={true}
+                showAssignToCompatibleButton={false}
                 isCreatingPallet={creatingPalletStates[box.codigo] || false}
-                isAssigningToCompatible={
-                  assigningToCompatibleStates[box.codigo] || false
-                }
                 onCreateSinglePallet={
                   creatingPalletStates[box.codigo]
                     ? undefined
                     : handleCreateSinglePallet
-                }
-                onAssignToCompatiblePallet={
-                  assigningToCompatibleStates[box.codigo]
-                    ? undefined
-                    : handleAssignToCompatiblePallet
                 }
                 onDeleted={refresh}
               />

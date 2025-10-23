@@ -6,10 +6,11 @@ import BoxDetailModal from '@/components/BoxDetailModal';
 import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
-  assignBoxToCompatiblePallet,
   getCompatiblePalletsForAllUnassignedBoxes,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
+import { RefreshCcw, Package } from 'lucide-react';
+import { LoadingOverlay } from '@/components/design-system';
 
 const UnassignedBoxes = () => {
   const { unassignedBoxes: unassignedBoxesInBodega, refresh } =
@@ -20,10 +21,6 @@ const UnassignedBoxes = () => {
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
     [key: string]: boolean;
   }>({});
-  const [assigningToCompatibleStates, setAssigningToCompatibleStates] =
-    useState<{
-      [key: string]: boolean;
-    }>({});
   const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
     useState(false);
   const { showSuccess, showError, showWarning } = useNotifications();
@@ -62,51 +59,6 @@ const UnassignedBoxes = () => {
     }
   };
 
-  const handleAssignToCompatiblePallet = async (boxCode: string) => {
-    try {
-      // Establecer el estado de carga para esta caja específica
-      setAssigningToCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
-
-      const result = await assignBoxToCompatiblePallet(boxCode);
-
-      if (result.success) {
-        // Refrescar la lista después de asignar a pallet compatible
-        await refresh();
-
-        if (result.created) {
-          showSuccess(`Pallet ${result.palletId} creado y caja asignada`);
-        } else if (result.alreadyAssigned) {
-          showWarning(`Caja ya estaba asignada a ${result.palletId}`);
-        } else {
-          showSuccess(
-            `Caja asignada a pallet ${result.palletId} (${result.boxCount}/${result.maxBoxes})`
-          );
-        }
-      } else {
-        // No se pudo asignar
-        if (result.full) {
-          showWarning(`El pallet ${result.palletId} está lleno`);
-        } else {
-          showWarning(result.message || 'No se pudo asignar la caja');
-        }
-      }
-    } catch (error) {
-      console.error('Error al asignar caja a pallet compatible:', error);
-      showError(
-        error instanceof Error
-          ? error.message
-          : 'Error al asignar caja a pallet compatible'
-      );
-    } finally {
-      // Remover el estado de carga
-      setAssigningToCompatibleStates((prev) => {
-        const newStates = { ...prev };
-        delete newStates[boxCode];
-        return newStates;
-      });
-    }
-  };
-
   const handleSearchCompatiblePalletsForAll = async () => {
     try {
       setSearchingCompatiblePallets(true);
@@ -121,11 +73,11 @@ const UnassignedBoxes = () => {
       });
 
       if (result && Object.keys(result).length > 0) {
-        const totalAssigned = Object.values(result).filter(
-          (r: any) => r.success
+        const totalWithCompatibles = Object.values(result).filter(
+          (r: any) => r.pallets && r.pallets.length > 0
         ).length;
         showSuccess(
-          `Búsqueda completada: ${totalAssigned} cajas con pallets compatibles encontrados`
+          `Búsqueda completada: ${totalWithCompatibles} cajas con pallets compatibles encontrados`
         );
         // Refrescar para ver los cambios
         await refresh();
@@ -147,23 +99,44 @@ const UnassignedBoxes = () => {
   };
 
   return (
-    <div className="open-pallets">
-      <div className="open-pallets-header">
-        <h1 className="open-pallets-title">Cajas sin asignar</h1>
+    <div style={{ padding: '20px' }}>
+      <LoadingOverlay show={false} text="Cargando cajas…" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <h1>Cajas sin asignar</h1>
+          <span style={{ fontSize: '14px', color: '#666' }}>{filteredBoxes.length} cajas</span>
+        </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={handleSearchCompatiblePalletsForAll}
-            disabled={
-              searchingCompatiblePallets || unassignedBoxesInBodega.length === 0
-            }
+            disabled={searchingCompatiblePallets || unassignedBoxesInBodega.length === 0}
             title="Buscar pallets compatibles para todas las cajas sin asignar"
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
           >
+            <Package size={16} style={{ marginRight: '4px' }} />
             {searchingCompatiblePallets ? 'Buscando...' : 'Buscar Compatibles'}
           </button>
-          <button onClick={refresh}>Refrescar</button>
-        </div>
-        <div className="open-pallets-count">
-          {filteredBoxes.length} de {unassignedBoxesInBodega.length} cajas
+          <button
+            onClick={refresh}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            <RefreshCcw size={16} style={{ marginRight: '4px' }} />
+            Refrescar
+          </button>
         </div>
       </div>
 
@@ -171,11 +144,13 @@ const UnassignedBoxes = () => {
       <BoxFilters
         boxes={unassignedBoxesInBodega}
         onFiltersChange={setFilteredBoxes}
+        disabled={false}
       />
 
       {/* Empty State */}
       {filteredBoxes.length === 0 ? (
-        <div className="open-pallets-empty">
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Package size={48} style={{ marginBottom: '10px', color: '#999' }} />
           <p>
             {unassignedBoxesInBodega.length === 0
               ? 'No hay cajas sin asignar'
@@ -183,32 +158,28 @@ const UnassignedBoxes = () => {
           </p>
         </div>
       ) : (
-        /* Pallets Grid */
-        <div className="open-pallets-grid">
-          {filteredBoxes.map((box: any) => (
-            <BoxCard
-              key={box.codigo}
-              box={box}
-              setSelectedBox={setSelectedBox}
-              setIsModalOpen={setIsModalOpen}
-              showCreatePalletButton={true}
-              showAssignToCompatibleButton={true}
-              onCreateSinglePallet={
-                creatingPalletStates[box.codigo]
-                  ? undefined
-                  : handleCreateSinglePallet
-              }
-              onAssignToCompatiblePallet={
-                assigningToCompatibleStates[box.codigo]
-                  ? undefined
-                  : handleAssignToCompatiblePallet
-              }
-              isCreatingPallet={creatingPalletStates[box.codigo]}
-              isAssigningToCompatible={assigningToCompatibleStates[box.codigo]}
-              onDeleted={refresh}
-            />
-          ))}
-        </div>
+        /* Boxes Grid */
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+            {filteredBoxes.map((box: any) => (
+              <BoxCard
+                key={box.codigo}
+                box={box}
+                setSelectedBox={setSelectedBox}
+                setIsModalOpen={setIsModalOpen}
+                showCreatePalletButton={true}
+                showAssignToCompatibleButton={false}
+                isCreatingPallet={creatingPalletStates[box.codigo] || false}
+                onCreateSinglePallet={
+                  creatingPalletStates[box.codigo]
+                    ? undefined
+                    : handleCreateSinglePallet
+                }
+                onDeleted={refresh}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <BoxDetailModal

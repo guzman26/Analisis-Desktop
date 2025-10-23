@@ -122,41 +122,43 @@ export const getUnassignedBoxesByLocation = (
     pagination: { limit: params.limit, lastKey: params.lastKey },
   });
 
-// Assign box to pallet - use consolidated assign action
-export const addBoxToPallet = (palletCode: string, boxCode: string) =>
-  inventory<any>('assign', 'box', { boxCode, palletCode });
+// Assign box to pallet - DEPRECATED - use createSingleBoxPallet or compatible-pallets-batch instead
+// export const addBoxToPallet = (palletCode: string, boxCode: string) =>
+//   inventory<any>('assign', 'box', { boxCode, palletCode });
 
 export const unassignBox = (codigo: string) =>
   inventory<any>('unassign', 'box', { codigo });
 
-export const assignBox = (boxCode: string, palletCode: string) =>
-  inventory<any>('assign', 'box', { boxCode, palletCode });
+// DEPRECATED - use createSingleBoxPallet or compatible-pallets-batch instead
+// export const assignBox = (boxCode: string, palletCode: string) =>
+//   inventory<any>('assign', 'box', { boxCode, palletCode });
 
 /**
+ * DEPRECATED - use getCompatiblePalletsForAllUnassignedBoxes instead
  * Asignar automáticamente una caja al pallet correspondiente
  * Busca el pallet basándose en el baseCode de la caja
  * Puede crear pallet automáticamente si se especifica
  */
-export const assignBoxToCorrespondingPallet = (
-  boxCode: string,
-  options?: {
-    ubicacion?: Location;
-    createIfNotExists?: boolean;
-  }
-) =>
-  inventory<{
-    success: boolean;
-    palletId?: string;
-    message: string;
-    boxCount?: number;
-    maxBoxes?: number;
-    created?: boolean;
-    alreadyAssigned?: boolean;
-    full?: boolean;
-  }>('assign-to-corresponding-pallet', 'box', {
-    boxCode,
-    options,
-  });
+// export const assignBoxToCorrespondingPallet = (
+//   boxCode: string,
+//   options?: {
+//     ubicacion?: Location;
+//     createIfNotExists?: boolean;
+//   }
+// ) =>
+//   inventory<{
+//     success: boolean;
+//     palletId?: string;
+//     message: string;
+//     boxCount?: number;
+//     maxBoxes?: number;
+//     created?: boolean;
+//     alreadyAssigned?: boolean;
+//     full?: boolean;
+//   }>('assign-to-corresponding-pallet', 'box', {
+//     boxCode,
+//     options,
+//   });
 
 export const moveBoxBetweenPallets = (
   boxCode: string,
@@ -186,31 +188,32 @@ export const createSingleBoxPallet = (
   }>('create-single-box-pallet', 'pallet', { boxCode, ubicacion });
 
 /**
+ * DEPRECATED - use getCompatiblePalletsForAllUnassignedBoxes instead
  * Asignar una caja al pallet compatible automáticamente
  * Usa la nueva función centralizada assignBoxToCorrespondingPallet del backend
  * Busca el pallet con el baseCode correspondiente y lo asigna
  */
-export const assignBoxToCompatiblePallet = (
-  boxCode: string,
-  options?: {
-    createIfNotExists?: boolean;
-  }
-) =>
-  inventory<{
-    success: boolean;
-    palletId?: string;
-    message: string;
-    boxCount?: number;
-    maxBoxes?: number;
-    created?: boolean;
-    alreadyAssigned?: boolean;
-    full?: boolean;
-  }>('assign-to-corresponding-pallet', 'box', {
-    boxCode,
-    options: {
-      createIfNotExists: options?.createIfNotExists || false,
-    },
-  });
+// export const assignBoxToCompatiblePallet = (
+//   boxCode: string,
+//   options?: {
+//     createIfNotExists?: boolean;
+//   }
+// ) =>
+//   inventory<{
+//     success: boolean;
+//     palletId?: string;
+//     message: string;
+//     boxCount?: number;
+//     maxBoxes?: number;
+//     created?: boolean;
+//     alreadyAssigned?: boolean;
+//     full?: boolean;
+//   }>('assign-to-corresponding-pallet', 'box', {
+//     boxCode,
+//     options: {
+//       createIfNotExists: options?.createIfNotExists || false,
+//     },
+//   });
 
 /**
  * Find compatible pallets for all unassigned boxes in a location
