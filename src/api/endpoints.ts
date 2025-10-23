@@ -101,11 +101,9 @@ export const updatePalletStatus = (codigo: string, status: string) =>
   inventory<Pallet>('update', 'pallet', { codigo, estado: status });
 
 // Box operations - now using consolidated /inventory endpoint
-// Get single box by code - use GET with codigo param
+// Get single box by code - uses get action with codigo in filters (no location required)
 export const getBoxByCode = (codigo: string) =>
-  inventory<PaginatedResponse<Box>>('get', 'box', { codigo }).then(
-    (res) => res.items?.[0]
-  );
+  inventory<Box>('get', 'box', { filters: { codigo } });
 
 // Unassigned boxes (supports pagination per new API)
 export const getUnassignedBoxesByLocation = (

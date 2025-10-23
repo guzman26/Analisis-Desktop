@@ -133,7 +133,7 @@ const Modal: React.FC<ModalProps> = ({
             {/* Backdrop */}
             <Dialog.Overlay asChild>
               <motion.div
-                className="fixed inset-0 z-50 bg-black/60"
+                className="fixed inset-0 z-50 bg-black/60 pointer-events-none"
                 style={{
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
@@ -157,7 +157,7 @@ const Modal: React.FC<ModalProps> = ({
               <motion.div
                 className={twMerge(
                   clsx(
-                    'fixed left-[25%] top-[12%] -translate-x-0 translate-y-0 z-[51] overflow-hidden max-w-[75vw] max-h-[88vh]',
+                    'fixed left-[25%] top-[12%] -translate-x-0 translate-y-0 z-[51] overflow-hidden max-w-[75vw] max-h-[88vh] pointer-events-auto',
                     'bg-white/95 rounded-lg border border-white/20',
                     'shadow-[0_0_0_0.5px_rgba(0,0,0,0.1),0_4px_20px_rgba(0,0,0,0.15),0_25px_50px_rgba(0,0,0,0.25)]',
                     !resizable && sizes[size],
