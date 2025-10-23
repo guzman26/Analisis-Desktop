@@ -23,10 +23,13 @@ interface BoxCardProps {
   onSelectionToggle?: (boxCode: string) => void;
   onCreateSinglePallet?: (boxCode: string) => void;
   onAssignToCompatiblePallet?: (boxCode: string) => void;
+  onSearchCompatible?: (boxCode: string) => void;
   showCreatePalletButton?: boolean;
   showAssignToCompatibleButton?: boolean;
+  showSearchCompatibleButton?: boolean;
   isCreatingPallet?: boolean;
   isAssigningToCompatible?: boolean;
+  isSearchingCompatible?: boolean;
   onDeleted?: () => void | Promise<void>;
 }
 
@@ -39,10 +42,13 @@ const BoxCard = ({
   onSelectionToggle,
   onCreateSinglePallet,
   onAssignToCompatiblePallet,
+  onSearchCompatible,
   showCreatePalletButton = false,
   showAssignToCompatibleButton = false,
+  showSearchCompatibleButton = false,
   isCreatingPallet = false,
   isAssigningToCompatible = false,
+  isSearchingCompatible = false,
   onDeleted,
 }: BoxCardProps) => {
   const handleCardClick = (e: React.MouseEvent) => {
@@ -225,10 +231,34 @@ const BoxCard = ({
               e.stopPropagation();
               onCreateSinglePallet(box.codigo);
             }}
-            disabled={isCreatingPallet || isAssigningToCompatible}
+            disabled={
+              isCreatingPallet ||
+              isAssigningToCompatible ||
+              isSearchingCompatible
+            }
             isLoading={isCreatingPallet}
           >
             {!isCreatingPallet && 'Crear Pallet Individual'}
+          </Button>
+        )}
+
+        {showSearchCompatibleButton && onSearchCompatible && (
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSearchCompatible(box.codigo);
+            }}
+            disabled={
+              isCreatingPallet ||
+              isAssigningToCompatible ||
+              isSearchingCompatible
+            }
+            isLoading={isSearchingCompatible}
+            className="!bg-macos-blue-transparentize-6 !text-macos-blue hover:!bg-macos-blue-transparentize-5"
+          >
+            {!isSearchingCompatible && 'Buscar Compatible'}
           </Button>
         )}
 
@@ -240,7 +270,11 @@ const BoxCard = ({
               e.stopPropagation();
               onAssignToCompatiblePallet(box.codigo);
             }}
-            disabled={isCreatingPallet || isAssigningToCompatible}
+            disabled={
+              isCreatingPallet ||
+              isAssigningToCompatible ||
+              isSearchingCompatible
+            }
             isLoading={isAssigningToCompatible}
             className="!bg-macos-green-transparentize-6 !text-macos-green hover:!bg-macos-green-transparentize-5"
           >

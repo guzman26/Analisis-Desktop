@@ -6,6 +6,7 @@ import BoxDetailModal from '@/components/BoxDetailModal';
 import BoxFilters from '@/components/BoxFilters';
 import {
   createSingleBoxPallet,
+  getCompatiblePalletsForSingleBox,
   getCompatiblePalletsForAllUnassignedBoxes,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
@@ -26,6 +27,9 @@ const UnassignedBoxes = () => {
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
   const [creatingPalletStates, setCreatingPalletStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [searchingCompatibleStates, setSearchingCompatibleStates] = useState<{
     [key: string]: boolean;
   }>({});
   const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
@@ -66,6 +70,35 @@ const UnassignedBoxes = () => {
     }
   };
 
+  const handleSearchCompatibleForSingleBox = async (boxCode: string) => {
+    try {
+      setSearchingCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
+
+      const result = await getCompatiblePalletsForSingleBox(boxCode, 'PACKING');
+
+      if (result.pallets && result.pallets.length > 0) {
+        showSuccess(
+          `Se encontraron ${result.pallets.length} pallet(s) compatible(s)`
+        );
+      } else {
+        showWarning('No hay pallets compatibles para esta caja');
+      }
+    } catch (error) {
+      console.error('Error buscando pallets compatibles:', error);
+      showError(
+        error instanceof Error
+          ? error.message
+          : 'Error al buscar pallets compatibles'
+      );
+    } finally {
+      setSearchingCompatibleStates((prev) => {
+        const newStates = { ...prev };
+        delete newStates[boxCode];
+        return newStates;
+      });
+    }
+  };
+
   const handleSearchCompatiblePalletsForAll = async () => {
     try {
       setSearchingCompatiblePallets(true);
@@ -81,7 +114,7 @@ const UnassignedBoxes = () => {
 
       if (result && Object.keys(result).length > 0) {
         const totalWithCompatibles = Object.values(result).filter(
-          (r: any) => r.pallets && r.pallets.length > 0
+          (r: any) => r.compatible && r.compatible.totalCompatible > 0
         ).length;
         showSuccess(
           `Búsqueda completada: ${totalWithCompatibles} cajas con pallets compatibles encontrados`
@@ -166,12 +199,18 @@ const UnassignedBoxes = () => {
                 setSelectedBox={setSelectedBox}
                 setIsModalOpen={setIsModalOpen}
                 showCreatePalletButton={true}
-                showAssignToCompatibleButton={false}
+                showSearchCompatibleButton={true}
                 isCreatingPallet={creatingPalletStates[box.codigo] || false}
+                isSearchingCompatible={searchingCompatibleStates[box.codigo] || false}
                 onCreateSinglePallet={
                   creatingPalletStates[box.codigo]
                     ? undefined
                     : handleCreateSinglePallet
+                }
+                onSearchCompatible={
+                  searchingCompatibleStates[box.codigo]
+                    ? undefined
+                    : handleSearchCompatibleForSingleBox
                 }
                 onDeleted={refresh}
               />

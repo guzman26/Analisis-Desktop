@@ -214,6 +214,18 @@ export const createSingleBoxPallet = (
 //   });
 
 /**
+ * Find compatible pallets for a single box
+ */
+export const getCompatiblePalletsForSingleBox = (
+  boxCode: string,
+  ubicacion?: string
+) =>
+  inventory<any>('compatible-pallets', 'box', {
+    codigo: boxCode,
+    ubicacion,
+  });
+
+/**
  * Find compatible pallets for all unassigned boxes in a location
  * Reduces the number of requests by batching all unassigned boxes
  */
