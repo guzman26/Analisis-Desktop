@@ -62,19 +62,16 @@ const CreatePallet: React.FC = () => {
   const [maxBoxes, setMaxBoxes] = React.useState<number>(60);
 
   const canSubmit = Boolean(turnos.length > 0 && calibre && formato && empresa);
-  
-  const handleTurnoToggle = (turnoValue: string) => {
-    setTurnos((prev) => {
-      if (prev.includes(turnoValue)) {
-        return prev.filter((t) => t !== turnoValue);
-      } else {
-        // Limitar a máximo 3 turnos
-        if (prev.length >= 3) {
-          return prev;
-        }
-        return [...prev, turnoValue];
-      }
-    });
+
+  const handleTurnoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    // Limitar a máximo 3 turnos
+    if (selectedOptions.length <= 3) {
+      setTurnos(selectedOptions);
+    }
   };
 
   const handleCreate = async () => {
@@ -98,7 +95,12 @@ const CreatePallet: React.FC = () => {
         empresa
       );
       if (baseCode.length !== 11) throw new Error('Código base inválido');
-      await createPallet({ baseCode, ubicacion: 'PACKING', maxBoxes, horarios: turnos } as any);
+      await createPallet({
+        baseCode,
+        ubicacion: 'PACKING',
+        maxBoxes,
+        horarios: turnos,
+      } as any);
       navigate('/packing/openPallets');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al crear pallet');
@@ -130,28 +132,22 @@ const CreatePallet: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Turnos (Múltiples) */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-2">
+            <label className="text-sm text-macos-text-secondary block mb-1">
               Turnos (máximo 3)
             </label>
-            <div className="space-y-2">
+            <select
+              multiple
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              value={turnos}
+              onChange={handleTurnoChange}
+              size={3}
+            >
               {TURNOS.map((t) => (
-                <label key={t.value} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={turnos.includes(t.value)}
-                    onChange={() => handleTurnoToggle(t.value)}
-                    disabled={!turnos.includes(t.value) && turnos.length >= 3}
-                    className="w-4 h-4 text-macos-accent rounded border-macos-border focus:ring-2 focus:ring-macos-accent disabled:opacity-50"
-                  />
-                  <span className="text-sm text-macos-text">{t.label}</span>
-                </label>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
-            </div>
-            {turnos.length >= 3 && (
-              <p className="text-xs text-macos-text-secondary mt-1">
-                Máximo 3 turnos seleccionados
-              </p>
-            )}
+            </select>
           </div>
 
           {/* Calibre */}
@@ -210,6 +206,7 @@ const CreatePallet: React.FC = () => {
               ))}
             </select>
           </div>
+
           {/* Capacidad de cajas */}
           <div>
             <label className="text-sm text-macos-text-secondary block mb-1">
