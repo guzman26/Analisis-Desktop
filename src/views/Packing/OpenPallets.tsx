@@ -33,7 +33,12 @@ const OpenPallets = () => {
 
   // Keep local state in sync when the paginated pallets change
   useEffect(() => {
-    setFilteredPallets(activePalletsPaginated);
+    const sorted = [...activePalletsPaginated].sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion).getTime();
+      const dateB = new Date(b.fechaCreacion).getTime();
+      return dateB - dateA; // Newest first (descending)
+    });
+    setFilteredPallets(sorted);
   }, [activePalletsPaginated]);
 
   const handleSearch = (value: string) => {
@@ -41,7 +46,13 @@ const OpenPallets = () => {
     const filtered = activePalletsPaginated.filter((pallet) =>
       pallet.codigo.toLowerCase().includes(value.toLowerCase())
     );
-    setFilteredPallets(filtered);
+    // Sort filtered pallets by fechaCreacion (newest first)
+    const sorted = filtered.sort((a, b) => {
+      const dateA = new Date(a.fechaCreacion).getTime();
+      const dateB = new Date(b.fechaCreacion).getTime();
+      return dateB - dateA; // Newest first (descending)
+    });
+    setFilteredPallets(sorted);
   };
 
   return (
