@@ -63,15 +63,22 @@ const CreatePallet: React.FC = () => {
 
   const canSubmit = Boolean(turnos.length > 0 && calibre && formato && empresa);
 
-  const handleTurnoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(
-      e.target.selectedOptions,
-      (option) => option.value
-    );
-    // Limitar a máximo 3 turnos
-    if (selectedOptions.length <= 3) {
-      setTurnos(selectedOptions);
-    }
+  const handleTurnoToggle = (turnoValue: string) => {
+    setTurnos((prev) => {
+      if (prev.includes(turnoValue)) {
+        return prev.filter((t) => t !== turnoValue);
+      }
+      if (prev.length >= 3) return prev;
+      return [...prev, turnoValue];
+    });
+  };
+
+  const handleTurnosSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (!value) return;
+    handleTurnoToggle(value);
+    // Keep placeholder selected to mimic single-select UI
+    e.currentTarget.selectedIndex = 0;
   };
 
   const handleCreate = async () => {
@@ -136,18 +143,27 @@ const CreatePallet: React.FC = () => {
               Turnos (máximo 3)
             </label>
             <select
-              multiple
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
-              value={turnos}
-              onChange={handleTurnoChange}
-              size={3}
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              style={{
+                minHeight: '40px',
+                cursor: 'pointer',
+                backgroundColor: turnos.length > 0 ? 'white' : '#f5f5f5',
+              }}
+              onChange={handleTurnosSelect}
+              value=""
             >
+              <option value="">Seleccionar turnos</option>
               {TURNOS.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
               ))}
             </select>
+            <p className="text-xs text-macos-text-secondary mt-1">
+              {turnos.length === 0
+                ? 'Ningún turno seleccionado'
+                : `${turnos.length} turno${turnos.length !== 1 ? 's' : ''} seleccionado${turnos.length !== 1 ? 's' : ''}`}
+            </p>
           </div>
 
           {/* Calibre */}
@@ -156,9 +172,14 @@ const CreatePallet: React.FC = () => {
               Calibre
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
               value={calibre}
               onChange={(e) => setCalibre(e.target.value)}
+              style={{
+                minHeight: '40px',
+                cursor: 'pointer',
+                backgroundColor: calibre ? 'white' : '#f5f5f5',
+              }}
             >
               <option value="">Seleccionar calibre</option>
               {CALIBRE_CODES.map((code) => (
@@ -175,9 +196,14 @@ const CreatePallet: React.FC = () => {
               Formato
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
               value={formato}
               onChange={(e) => setFormato(e.target.value)}
+              style={{
+                minHeight: '40px',
+                cursor: 'pointer',
+                backgroundColor: formato ? 'white' : '#f5f5f5',
+              }}
             >
               <option value="">Seleccionar un formato</option>
               {FORMATOS.map((f) => (
@@ -194,9 +220,14 @@ const CreatePallet: React.FC = () => {
               Empresa
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
               value={empresa}
               onChange={(e) => setEmpresa(e.target.value)}
+              style={{
+                minHeight: '40px',
+                cursor: 'pointer',
+                backgroundColor: empresa ? 'white' : '#f5f5f5',
+              }}
             >
               <option value="">Seleccionar una empresa</option>
               {EMPRESAS.map((e) => (
@@ -216,7 +247,8 @@ const CreatePallet: React.FC = () => {
               type="number"
               min={1}
               max={60}
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
+              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              style={{ minHeight: '40px' }}
               value={maxBoxes}
               onChange={(e) => {
                 const value = Number(e.target.value);
