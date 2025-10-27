@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pallet, PalletAuditResult } from '@/types';
-import { Card, Button } from '@/components/design-system';
+import { Card, Button, Modal } from '@/components/design-system';
 import { translateStatus } from '@/utils/translations';
 import {
   Eye,
@@ -9,6 +9,7 @@ import {
   Layers,
   CalendarIcon,
   MapPin,
+  Trash2,
 } from 'lucide-react';
 import { auditPallet } from '@/api/endpoints';
 import PalletAuditModal from './PalletAuditModal';
@@ -23,6 +24,7 @@ interface PalletCardProps {
   setIsModalOpen: (isOpen: boolean) => void;
   closePallet: (codigo: string) => void;
   fetchActivePallets: () => void;
+  onDelete?: (codigo: string) => Promise<void>;
 }
 
 const PalletCard = ({
@@ -31,6 +33,7 @@ const PalletCard = ({
   setIsModalOpen,
   closePallet,
   fetchActivePallets,
+  onDelete,
 }: PalletCardProps) => {
   // Estados para auditoría
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -38,6 +41,8 @@ const PalletCard = ({
     null
   );
   const [isAuditing, setIsAuditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleDetails = () => {
     setSelectedPallet(pallet);
@@ -101,6 +106,21 @@ const PalletCard = ({
     setShowAuditModal(false);
     setAuditResult(null);
     setIsAuditing(false);
+  };
+
+  // Función para eliminar el pallet
+  const handleDelete = async () => {
+    if (!onDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await onDelete(pallet.codigo);
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      console.error('Error al eliminar pallet:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Determine status color for improved visual hierarchy
@@ -264,6 +284,20 @@ const PalletCard = ({
                 Cerrar
               </Button>
             )}
+            {onDelete && (
+              <Button
+                variant="secondary"
+                size="small"
+                leftIcon={<Trash2 style={{ width: 14, height: 14 }} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteConfirm(true);
+                }}
+                disabled={isDeleting}
+              >
+                Eliminar
+              </Button>
+            )}
           </div>
         </div>
       </Card>
@@ -277,6 +311,55 @@ const PalletCard = ({
         isLoading={isAuditing}
         palletCode={pallet.codigo}
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+        title="Confirmar Eliminación"
+        size="small"
+      >
+        <div style={{ paddingBottom: 'var(--macos-space-5)' }}>
+          <p
+            className="macos-text-body"
+            style={{ marginBottom: 'var(--macos-space-3)' }}
+          >
+            ¿Estás seguro de que deseas eliminar el pallet{' '}
+            <strong>{pallet.codigo}</strong>?
+          </p>
+          <p
+            className="macos-text-footnote"
+            style={{ color: 'var(--macos-text-secondary)' }}
+          >
+            Esta acción no se puede deshacer.
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--macos-space-3)',
+              marginTop: 'var(--macos-space-5)',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };

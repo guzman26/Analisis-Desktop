@@ -7,7 +7,7 @@ import { Card, Button, Input } from '@/components/design-system';
 import { Search, Plus, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
-import { closePallet, movePallet } from '@/api/endpoints';
+import { closePallet, movePallet, deletePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 
 const OpenPallets = () => {
@@ -246,6 +246,14 @@ const OpenPallets = () => {
                   }
                 }}
                 fetchActivePallets={refresh}
+                onDelete={async (codigo) => {
+                  try {
+                    await deletePallet(codigo);
+                    refresh();
+                  } catch (error) {
+                    console.error('Error al eliminar pallet:', error);
+                  }
+                }}
               />
             ))}
           </div>
