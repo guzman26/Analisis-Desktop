@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import { closePallet, movePallet } from '@/api/endpoints';
+import { closePallet, movePallet, deletePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
@@ -158,6 +158,14 @@ const ClosedPallets = () => {
               setIsModalOpen={setIsModalOpen}
               closePallet={closePallet}
               fetchActivePallets={refresh}
+              onDelete={async (codigo) => {
+                try {
+                  await deletePallet(codigo);
+                  refresh();
+                } catch (error) {
+                  console.error('Error al eliminar pallet:', error);
+                }
+              }}
             />
           ))}
         </div>
