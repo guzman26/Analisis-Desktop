@@ -183,29 +183,30 @@ const PalletAuditModal = ({
             <TrendingUp size={20} />
             Resumen de Verificación
           </h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <div
-                className={clsx(
-                  'flex items-center justify-center mx-auto mb-2 w-8 h-8 rounded-full',
-                  auditResult.summary.capacityPassed
-                    ? 'bg-green-100'
-                    : 'bg-red-100'
-                )}
-              >
-                {auditResult.summary.capacityPassed ? (
-                  <CheckCircle size={16} className="text-green-600" />
-                ) : (
-                  <XCircle size={16} className="text-red-600" />
-                )}
+          {auditResult.summary ? (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center">
+                <div
+                  className={clsx(
+                    'flex items-center justify-center mx-auto mb-2 w-8 h-8 rounded-full',
+                    auditResult.summary.capacityPassed
+                      ? 'bg-green-100'
+                      : 'bg-red-100'
+                  )}
+                >
+                  {auditResult.summary.capacityPassed ? (
+                    <CheckCircle size={16} className="text-green-600" />
+                  ) : (
+                    <XCircle size={16} className="text-red-600" />
+                  )}
+                </div>
+                <div className="text-sm font-medium">Capacidad</div>
+                <div className="text-xs text-gray-600">
+                  {auditResult.summary.capacityPassed
+                    ? 'Correcta'
+                    : 'Con problemas'}
+                </div>
               </div>
-              <div className="text-sm font-medium">Capacidad</div>
-              <div className="text-xs text-gray-600">
-                {auditResult.summary.capacityPassed
-                  ? 'Correcta'
-                  : 'Con problemas'}
-              </div>
-            </div>
             <div className="text-center">
               <div
                 className={clsx(
@@ -249,6 +250,9 @@ const PalletAuditModal = ({
               </div>
             </div>
           </div>
+          ) : (
+            <p className="text-gray-600 text-center">No hay información de resumen disponible.</p>
+          )}
         </Card>
 
         {/* Issues */}
