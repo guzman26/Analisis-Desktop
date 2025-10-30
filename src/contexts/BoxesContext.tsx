@@ -277,9 +277,9 @@ export const useUnassignedBoxes = (location: Location) => {
     if (location) {
       api.fetchUnassignedBoxes(location, { limit: state.limit, reset: true });
     }
-  }, [location]);
+  }, [location, api, state.limit]);
 
-  const loadMore = React.useCallback(async () => {
+  const loadMore = async () => {
     if (state.nextKey) {
       await api.fetchUnassignedBoxes(location, {
         limit: state.limit,
@@ -287,26 +287,23 @@ export const useUnassignedBoxes = (location: Location) => {
         ...state.filterParams,
       });
     }
-  }, [api, location, state.nextKey, state.limit]);
+  };
 
-  const refresh = React.useCallback(async () => {
+  const refresh = async () => {
     await api.fetchUnassignedBoxes(location, {
       limit: state.limit,
       reset: true,
       ...state.filterParams,
     });
-  }, [api, location, state.limit]);
+  };
 
-  const setServerFilters = React.useCallback(
-    async (filters: BoxFilterParams) => {
-      await api.fetchUnassignedBoxes(location, {
-        limit: state.limit,
-        reset: true,
-        ...filters,
-      });
-    },
-    [api, location, state.limit]
-  );
+  const setServerFilters = async (filters: BoxFilterParams) => {
+    await api.fetchUnassignedBoxes(location, {
+      limit: state.limit,
+      reset: true,
+      ...filters,
+    });
+  };
 
   return {
     unassignedBoxes: state.unassignedBoxes,
