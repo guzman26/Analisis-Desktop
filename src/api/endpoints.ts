@@ -92,9 +92,25 @@ export const deletePallet = (codigo: string) =>
 
 // Get single pallet by code - use GET with codigo param
 export const getPalletByCode = (codigo: string) =>
-  inventory<PaginatedResponse<Pallet>>('get', 'pallet', { codigo }).then(
-    (res) => res.items?.[0]
-  );
+  inventory<any>('get', 'pallet', { codigo }).then((res) => {
+    let pallet = null;
+    
+    // La API devuelve { pallet: {...} } cuando se busca por código específico
+    if (res.pallet) {
+      pallet = res.pallet;
+    }
+    // Si devuelve formato paginado, tomar el primer item
+    else if (res.items && res.items.length > 0) {
+      pallet = res.items[0];
+    }
+    
+    // Asegurar que cantidadCajas esté disponible
+    if (pallet && !pallet.cantidadCajas && pallet.boxes) {
+      pallet.cantidadCajas = pallet.boxes.length;
+    }
+    
+    return pallet;
+  });
 
 // Update pallet status - use specialized actions (close, move, etc.)
 export const updatePalletStatus = (codigo: string, status: string) =>
