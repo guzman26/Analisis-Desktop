@@ -50,6 +50,55 @@ const PalletCard = ({
   };
   const calibre = getCalibreFromCodigo(pallet.codigo);
 
+  // Función para transformar respuesta de API al formato esperado
+  const transformAuditResponse = (apiResponse: any): PalletAuditResult => {
+    const accuracy = apiResponse.accuracy * 100;
+    const passed = apiResponse.isAccurate;
+    const missingCount = apiResponse.missing?.count || 0;
+    const extraCount = apiResponse.extra?.count || 0;
+    
+    // Calcular grade basado en accuracy
+    let grade: 'EXCELLENT' | 'GOOD' | 'WARNING' | 'CRITICAL';
+    if (accuracy >= 95) grade = 'EXCELLENT';
+    else if (accuracy >= 80) grade = 'GOOD';
+    else if (accuracy >= 60) grade = 'WARNING';
+    else grade = 'CRITICAL';
+
+    // Crear issues basado en lo que falta/sobra
+    const issues: any[] = [];
+    if (missingCount > 0) {
+      issues.push({
+        type: 'MISSING_BOXES',
+        severity: missingCount > 5 ? 'CRITICAL' : 'WARNING',
+        message: `Faltan ${missingCount} caja${missingCount !== 1 ? 's' : ''} en el pallet`,
+        details: { count: missingCount, boxes: apiResponse.missing.boxes },
+      });
+    }
+    if (extraCount > 0) {
+      issues.push({
+        type: 'EXTRA_BOXES',
+        severity: 'WARNING',
+        message: `Hay ${extraCount} caja${extraCount !== 1 ? 's' : ''} extra en el pallet`,
+        details: { count: extraCount, boxes: apiResponse.extra.boxes },
+      });
+    }
+
+    return {
+      passed,
+      grade,
+      score: Math.round(accuracy),
+      summary: {
+        capacityPassed: missingCount === 0 && extraCount === 0,
+        uniquenessPassed: extraCount === 0,
+        sequencePassed: true, // La API actual no valida secuencia
+        totalIssues: issues.length,
+        criticalIssues: issues.filter(i => i.severity === 'CRITICAL').length,
+        warningIssues: issues.filter(i => i.severity === 'WARNING').length,
+      },
+      issues,
+    };
+  };
+
   // Función para iniciar auditoría antes de cerrar pallet
   const handleCloseWithAudit = async () => {
     setIsAuditing(true);
@@ -57,7 +106,9 @@ const PalletCard = ({
 
     try {
       const auditData = await auditPallet(pallet.codigo);
-      setAuditResult(auditData);
+      // Transformar respuesta de API al formato esperado
+      const transformedResult = transformAuditResponse(auditData);
+      setAuditResult(transformedResult);
     } catch (error) {
       console.error('Error durante la auditoría:', error);
       // Crear un resultado de error para mostrar en el modal
