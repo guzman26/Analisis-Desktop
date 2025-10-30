@@ -27,7 +27,11 @@ const PalletLabelView: React.FC = () => {
       const fetchPallet = async () => {
         try {
           const response = await getPalletByCode(palletCode);
-          setPallet(response);
+          if (response) {
+            setPallet(response);
+          } else {
+            setError('Pallet no encontrado en el sistema');
+          }
           setLoading(false);
         } catch (err) {
           setError('Error al cargar la información del pallet');
