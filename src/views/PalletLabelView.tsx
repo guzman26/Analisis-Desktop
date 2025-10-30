@@ -8,6 +8,7 @@ import {
 import { formatDate } from '@/utils/formatDate';
 import { WindowContainer, Button } from '@/components/design-system';
 import JsBarcode from 'jsbarcode';
+import { getPalletByCode } from '@/api/endpoints';
 import '@/styles/PalletLabel.css';
 
 const PalletLabelView: React.FC = () => {
@@ -23,26 +24,17 @@ const PalletLabelView: React.FC = () => {
   // In a real implementation, you would fetch this from your API
   useEffect(() => {
     if (palletCode) {
-      // Mock pallet data - replace with actual API call
-      const mockPallet: Pallet = {
-        codigo: palletCode,
-        cantidadCajas: 24,
-        estado: 'closed' as const,
-        ubicacion: 'BODEGA',
-        fechaCreacion: '2025-01-08T10:30:00.000Z',
-        cajas: Array.from(
-          { length: 24 },
-          (_, i) => `${palletCode}-${String(i + 1).padStart(3, '0')}`
-        ),
-        baseCode: `BASE-${palletCode.slice(0, 6)}`,
-        suffix: 'A',
-        pkFecha: '2025-01-08T10:30:00.000Z',
-        fechaCalibreFormato: '2025-01-08T10:30:00.000Z',
-        calibre: '10',
+      const fetchPallet = async () => {
+        try {
+          const response = await getPalletByCode(palletCode);
+          setPallet(response);
+          setLoading(false);
+        } catch (err) {
+          setError('Error al cargar la información del pallet');
+          setLoading(false);
+        }
       };
-
-      setPallet(mockPallet);
-      setLoading(false);
+      fetchPallet();
     } else {
       setError('Código de pallet no proporcionado');
       setLoading(false);
