@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import { closePallet, movePallet, deletePallet } from '@/api/endpoints';
+import { closePallet, movePallet, deletePallet, getClosedPallets } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
@@ -11,22 +11,76 @@ import '../../styles/designSystem.css';
 const ClosedPallets = () => {
   const { closedPalletsInPacking, fetchClosedPalletsInPacking, loading } =
     usePalletContext();
-  // Create refresh function
-  const refresh = () => {
-    fetchClosedPalletsInPacking();
-  };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [filtered, setFiltered] = useState<Pallet[]>([]);
+  const [allPallets, setAllPallets] = useState<Pallet[]>([]);
+  const [nextKey, setNextKey] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Create refresh function
+  const refresh = () => {
+    setAllPallets([]);
+    setNextKey(null);
+    setHasMore(true);
+    fetchClosedPalletsInPacking();
+  };
 
   useEffect(() => {
-    fetchClosedPalletsInPacking();
+    const loadInitialPallets = async () => {
+      try {
+        const response = await getClosedPallets({
+          ubicacion: 'PACKING',
+          limit: 50,
+        });
+        
+        const pallets = response.items || [];
+        setAllPallets(pallets);
+        setFiltered(pallets);
+        setNextKey(response.nextKey || null);
+        setHasMore(!!response.nextKey);
+      } catch (error) {
+        console.error('Error al cargar pallets:', error);
+      }
+    };
+    
+    loadInitialPallets();
   }, []);
 
+  // Mantener sincronizado con el contexto cuando se refresca
   useEffect(() => {
-    setFiltered(closedPalletsInPacking);
-  }, [closedPalletsInPacking]);
+    if (closedPalletsInPacking.length > 0 && allPallets.length === 0) {
+      setAllPallets(closedPalletsInPacking);
+      setFiltered(closedPalletsInPacking);
+    }
+  }, [closedPalletsInPacking, allPallets.length]);
+
+  // Función para cargar más pallets
+  const loadMore = async () => {
+    if (!hasMore || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const response = await getClosedPallets({
+        ubicacion: 'PACKING',
+        limit: 50,
+        lastKey: nextKey || undefined,
+      });
+      
+      const newPallets = response.items || [];
+      const updatedPallets = [...allPallets, ...newPallets];
+      
+      setAllPallets(updatedPallets);
+      setFiltered(updatedPallets);
+      setNextKey(response.nextKey || null);
+      setHasMore(!!response.nextKey);
+    } catch (error) {
+      console.error('Error al cargar más pallets:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   return (
     <div className="macos-animate-fade-in">
@@ -168,6 +222,23 @@ const ClosedPallets = () => {
               }}
             />
           ))}
+        </div>
+      )}
+
+      {/* Botón Cargar Más */}
+      {hasMore && allPallets.length > 0 && (
+        <div style={{ marginTop: 'var(--macos-space-6)', textAlign: 'center' }}>
+          <Button
+            variant="secondary"
+            size="medium"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Cargando...' : 'Cargar más pallets'}
+          </Button>
+          <p className="macos-text-footnote" style={{ color: 'var(--macos-text-secondary)', marginTop: 'var(--macos-space-2)' }}>
+            Mostrando {allPallets.length} pallets
+          </p>
         </div>
       )}
 
