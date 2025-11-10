@@ -123,7 +123,7 @@ const extractField = (
 
 // Calibre formatting
 export const formatCalibreName = (calibre: string): string =>
-  CALIBRE_MAP[calibre] || calibre;
+  CALIBRE_MAP[calibre as CalibreCode] || calibre;
 
 // Main extraction functions
 export const getCalibreFromCodigo = (codigo: string): string => {

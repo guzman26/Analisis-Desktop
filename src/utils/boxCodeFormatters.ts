@@ -7,6 +7,7 @@
 
 import { ParsedBoxCode } from './boxCodeParser';
 import { CALIBRE_MAP } from './getParamsFromCodigo';
+import type { CalibreCode } from '@/types';
 
 /**
  * Mapeo de días de la semana
@@ -62,14 +63,14 @@ export function formatShift(shift: string): string {
  * Formatea el calibre usando el mapeo centralizado
  */
 export function formatCaliber(caliber: string): string {
-  return CALIBRE_MAP[caliber] || `Calibre ${caliber}`;
+  return CALIBRE_MAP[caliber as CalibreCode] || `Calibre ${caliber}`;
 }
 
 /**
  * Formatea el calibre (versión corta) - usa el mismo mapeo centralizado
  */
 export function formatCaliberShort(caliber: string): string {
-  return CALIBRE_MAP[caliber] || caliber;
+  return CALIBRE_MAP[caliber as CalibreCode] || caliber;
 }
 
 /**
