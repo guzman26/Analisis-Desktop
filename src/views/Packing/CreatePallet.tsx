@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card } from '@/components/design-system';
 import { usePalletContext } from '@/contexts/PalletContext';
-import { formatCalibreName } from '@/utils/getParamsFromCodigo';
+import { formatCalibreName, ALL_CALIBRE_CODES } from '@/utils/getParamsFromCodigo';
 import generatePalletCode from '@/utils/generatePalletCode';
 
 // Opciones UI
@@ -10,25 +10,6 @@ const TURNOS = [
   { label: 'Turno 1 (Mañana)', value: '1' },
   { label: 'Turno 2 (Tarde)', value: '2' },
   { label: 'Turno 3 (Noche)', value: '3' },
-];
-
-// Códigos de calibre válidos conocidos
-const CALIBRE_CODES = [
-  '01',
-  '02',
-  '04',
-  '07',
-  '09',
-  '15',
-  '12',
-  '03',
-  '05',
-  '06',
-  '13',
-  '11',
-  '16',
-  '14',
-  '08',
 ];
 
 // Formatos (mostrar nombres similares a las capturas)
@@ -182,7 +163,7 @@ const CreatePallet: React.FC = () => {
               }}
             >
               <option value="">Seleccionar calibre</option>
-              {CALIBRE_CODES.map((code) => (
+              {ALL_CALIBRE_CODES.map((code) => (
                 <option key={code} value={code}>
                   {formatCalibreName(code)}
                 </option>

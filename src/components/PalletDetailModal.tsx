@@ -410,11 +410,6 @@ const PalletDetailModal = ({
                   value={formatCalibreName(calibre)}
                 />
                 <InfoRow
-                  icon={<Hash className="w-5 h-5" />}
-                  label="Código Base"
-                  value={pallet.baseCode || 'N/A'}
-                />
-                <InfoRow
                   icon={<Calendar className="w-5 h-5" />}
                   label="Fecha de Creación"
                   value={formattedDate}

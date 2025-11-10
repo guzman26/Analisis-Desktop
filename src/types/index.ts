@@ -25,6 +25,24 @@ export type SaleState =
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
 
+// Códigos de calibre válidos (centralizados)
+export type CalibreCode = 
+  | '01' // ESPECIAL BCO
+  | '02' // EXTRA BCO
+  | '04' // GRANDE BCO
+  | '07' // MEDIANO BCO
+  | '09' // TERCERA BCO
+  | '15' // CUARTA BCO
+  | '12' // JUMBO BCO
+  | '03' // ESPECIAL COLOR
+  | '05' // EXTRA COLOR
+  | '06' // GRANDE COLOR
+  | '13' // MEDIANO COLOR
+  | '11' // TERCERA COLOR
+  | '16' // CUARTA COLOR
+  | '14' // JUMBO COLOR
+  | '08'; // SUCIO / TRIZADO
+
 // Pagination params (cursor-based). Support both keys during migration.
 export interface PaginationParams {
   limit?: number;
@@ -53,7 +71,7 @@ export interface Pallet {
   cantidadCajas?: number; // Optional: may be undefined for legacy data
   fechaCreacion: string;
   ubicacion: Location;
-  calibre: string;
+  calibre: string; // CalibreCode o nombre formateado
   // Capacidad máxima de cajas configurada para el pallet
   maxBoxes?: number;
   // Nuevo: tipo de contenido del pallet y cantidades de huevo suelto
@@ -90,7 +108,7 @@ export interface Box {
   id: string;
   codigo: string;
   empacadora: string;
-  calibre: number;
+  calibre: string; // CalibreCode - cambio de number a string para consistencia
   formato_caja: string;
   operario: string;
   estado: string;

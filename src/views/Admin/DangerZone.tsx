@@ -7,6 +7,7 @@ import {
   deletePalletsAndAssignedBoxesAsync,
   deleteUnassignedBoxesAsync,
   deleteBoxesByLocationAsync,
+  backfillMetrics,
 } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
@@ -16,6 +17,7 @@ import {
   CheckCircle,
   AlertCircle,
   MapPin,
+  Database,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './DangerZone.module.css';
@@ -81,6 +83,36 @@ const DangerZone: React.FC = () => {
   };
 
   const dangerActions: DangerAction[] = [
+    {
+      id: 'backfillMetrics',
+      title: 'Recalcular Métricas Históricas',
+      description:
+        'Recalcula y actualiza las métricas de producción para los últimos 30 días. Útil después de correcciones de datos.',
+      icon: <Database className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await backfillMetrics({
+            metricTypes: ['PRODUCTION_DAILY'],
+            forceRecalculate: true,
+            markAsFinal: true,
+          });
+          return {
+            success: true,
+            message: `Métricas recalculadas exitosamente. Procesados: ${result.processed}, Creados: ${result.created}, Actualizados: ${result.updated}, Omitidos: ${result.skipped}. Rango: ${result.summary.dateRange.start} a ${result.summary.dateRange.end}.`,
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al recalcular métricas: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas recalcular las métricas de producción para los últimos 30 días? Esto actualizará los datos existentes.',
+      dangerLevel: 'high',
+    },
     {
       id: 'deleteAllBoxes',
       title: 'Eliminar Todas las Cajas',

@@ -61,7 +61,7 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
     // Filtro por calibre
     if (filters.calibre) {
       filteredBoxes = filteredBoxes.filter(
-        (box) => box.calibre.toString() === filters.calibre
+        (box) => box.calibre === filters.calibre
       );
     }
 

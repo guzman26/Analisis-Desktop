@@ -184,7 +184,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
               <InfoRow
                 icon={<Package className="w-5 h-5" />}
                 label="Calibre"
-                value={box.calibre ? formatCalibreName(box.calibre.toString()) : (productInfo?.caliberDisplay || 'N/A')}
+                value={box.calibre ? formatCalibreName(box.calibre) : (productInfo?.caliberDisplay || 'N/A')}
               />
               <InfoRow
                 icon={<Layers className="w-5 h-5" />}

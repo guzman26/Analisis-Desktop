@@ -6,6 +6,7 @@
  */
 
 import { ParsedBoxCode } from './boxCodeParser';
+import { CALIBRE_MAP } from './getParamsFromCodigo';
 
 /**
  * Mapeo de días de la semana
@@ -26,30 +27,6 @@ const DAY_OF_WEEK_MAP: Record<string, string> = {
 const SHIFT_MAP: Record<string, string> = {
   '1': 'Mañana',
   '2': 'Tarde',
-};
-
-/**
- * Mapeo de calibres
- */
-const CALIBER_MAP: Record<string, string> = {
-  '01': 'Extra Grande (XL)',
-  '02': 'Grande (L)',
-  '03': 'Mediano (M)',
-  '04': 'Chico (S)',
-  '05': 'Extra Chico (XS)',
-  '06': 'Jumbo (XXL)',
-};
-
-/**
- * Mapeo de calibres (versión corta)
- */
-const CALIBER_SHORT_MAP: Record<string, string> = {
-  '01': 'XL',
-  '02': 'L',
-  '03': 'M',
-  '04': 'S',
-  '05': 'XS',
-  '06': 'XXL',
 };
 
 /**
@@ -82,17 +59,17 @@ export function formatShift(shift: string): string {
 }
 
 /**
- * Formatea el calibre (versión larga)
+ * Formatea el calibre usando el mapeo centralizado
  */
 export function formatCaliber(caliber: string): string {
-  return CALIBER_MAP[caliber] || `Calibre ${caliber}`;
+  return CALIBRE_MAP[caliber] || `Calibre ${caliber}`;
 }
 
 /**
- * Formatea el calibre (versión corta)
+ * Formatea el calibre (versión corta) - usa el mismo mapeo centralizado
  */
 export function formatCaliberShort(caliber: string): string {
-  return CALIBER_SHORT_MAP[caliber] || caliber;
+  return CALIBRE_MAP[caliber] || caliber;
 }
 
 /**

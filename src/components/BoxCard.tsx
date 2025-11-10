@@ -90,7 +90,7 @@ const BoxCard = ({
   const formattedDate = box.fecha_registro
     ? formatDate(box.fecha_registro)
     : getDateFromBoxCode(box.codigo);
-  const calibre = formatCalibreName(box.calibre.toString());
+  const calibre = formatCalibreName(box.calibre);
 
   // Determine color for status indicator based on location
   const getLocationColor = (location: string) => {

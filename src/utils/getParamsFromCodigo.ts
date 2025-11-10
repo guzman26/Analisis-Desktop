@@ -1,3 +1,5 @@
+import type { CalibreCode } from '@/types';
+
 /**
  * Esquemas de códigos
  *
@@ -64,8 +66,8 @@ const FORMATS = {
   },
 } as const;
 
-// Calibre mappings
-const CALIBRE_MAP: Record<string, string> = {
+// Calibre mappings - mapeo centralizado de códigos a nombres
+export const CALIBRE_MAP: Record<CalibreCode, string> = {
   '01': 'ESPECIAL BCO',
   '02': 'EXTRA BCO',
   '04': 'GRANDE BCO',
@@ -84,7 +86,7 @@ const CALIBRE_MAP: Record<string, string> = {
 };
 
 // Export canonical list of all calibre codes
-export const ALL_CALIBRE_CODES: string[] = Object.keys(CALIBRE_MAP);
+export const ALL_CALIBRE_CODES: CalibreCode[] = Object.keys(CALIBRE_MAP) as CalibreCode[];
 
 // Type detection
 export const detectCodigoType = (

@@ -393,6 +393,28 @@ export const deleteBoxesByLocationAsync = (ubicacion?: string) =>
     ...(ubicacion && { ubicacion }),
   });
 
+// Metrics operations
+export const backfillMetrics = (params?: {
+  startDate?: string;
+  endDate?: string;
+  metricTypes?: string[];
+  forceRecalculate?: boolean;
+  markAsFinal?: boolean;
+}) =>
+  admin<{
+    processed: number;
+    created: number;
+    skipped: number;
+    updated: number;
+    errors: Array<{ date: string; error: string }>;
+    summary: {
+      dateRange: { start: string; end: string };
+      metricTypes: string[];
+      totalDays: number;
+      duration: number;
+    };
+  }>('backfill', 'report', params || {});
+
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
   get(`/powerbi/export/${dataType}`);
