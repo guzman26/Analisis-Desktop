@@ -69,9 +69,20 @@ const UnassignedBoxes = () => {
 
       const result = await getCompatiblePalletsForSingleBox(boxCode, 'BODEGA', true);
 
-      if (result.pallets && result.pallets.length > 0) {
+      // Manejar respuesta con autoAssign
+      if (result.assigned && result.assignedToPallet) {
+        showSuccess(
+          result.message || `Caja asignada automáticamente a pallet ${result.assignedToPallet}`
+        );
+        // Refrescar la lista para que la caja desaparezca
+        await refresh();
+      } else if (result.pallets && result.pallets.length > 0) {
         showSuccess(
           `Se encontraron ${result.pallets.length} pallet(s) compatible(s)`
+        );
+      } else if (result.totalCompatible > 0) {
+        showSuccess(
+          `Se encontraron ${result.totalCompatible} pallet(s) compatible(s)`
         );
       } else {
         showWarning('No hay pallets compatibles para esta caja');
