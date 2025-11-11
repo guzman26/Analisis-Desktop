@@ -122,6 +122,15 @@ const boxesReducer = (
         for (const b of state.unassignedBoxes) map.set(b.codigo, b);
         for (const b of boxes) map.set(b.codigo, b);
         const merged = Array.from(map.values());
+        
+        // Sort by fechaCreacion in descending order (newest first)
+        // This ensures consistent ordering across pagination
+        merged.sort((a, b) => {
+          const dateA = a.fechaCreacion || '';
+          const dateB = b.fechaCreacion || '';
+          return dateB.localeCompare(dateA);
+        });
+        
         return {
           ...state,
           status: 'success',
@@ -141,6 +150,14 @@ const boxesReducer = (
     case ActionType.FETCH_SUCCESS: {
       // Ensure we're handling the payload correctly as an array
       const boxes = Array.isArray(action.payload) ? action.payload : [];
+      
+      // Sort by fechaCreacion in descending order (newest first)
+      boxes.sort((a, b) => {
+        const dateA = a.fechaCreacion || '';
+        const dateB = b.fechaCreacion || '';
+        return dateB.localeCompare(dateA);
+      });
+      
       return {
         ...state,
         status: 'success',
