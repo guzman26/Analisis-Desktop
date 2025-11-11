@@ -189,15 +189,20 @@ const PalletDetailModal = ({
       // Extraer el mensaje de error correctamente de la respuesta del API
       let errorMessage = 'Error al mover cajas';
       
-      if (error?.error?.message) {
+      // Intentar extraer el mensaje en el orden correcto de prioridad
+      if (error?.error?.message && typeof error.error.message === 'string') {
         // Estructura de error del API: { error: { message: "..." } }
         errorMessage = error.error.message;
-      } else if (error?.message) {
+      } else if (error?.message && typeof error.message === 'string') {
         // Error estándar de JavaScript
         errorMessage = error.message;
       } else if (typeof error === 'string') {
+        // Error es un string directamente
         errorMessage = error;
       }
+      
+      // Log para debugging en desarrollo
+      console.error('Error al mover cajas entre pallets:', error);
       
       setMoveFeedback({
         type: 'error',

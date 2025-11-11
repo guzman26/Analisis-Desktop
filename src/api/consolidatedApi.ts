@@ -25,7 +25,11 @@ export const inventory = async <T = any>(
   });
 
   if (!response.success) {
-    throw new Error(response.error?.message || 'API Error');
+    // Lanzar el error completo con toda la estructura para mejor manejo
+    const error = new Error(response.error?.message || 'API Error');
+    (error as any).error = response.error; // Preservar estructura completa del error
+    (error as any).code = response.error?.code;
+    throw error;
   }
 
   return response.data;
@@ -47,7 +51,11 @@ export const sales = async <T = any>(
   });
 
   if (!response.success) {
-    throw new Error(response.error?.message || 'API Error');
+    // Lanzar el error completo con toda la estructura para mejor manejo
+    const error = new Error(response.error?.message || 'API Error');
+    (error as any).error = response.error; // Preservar estructura completa del error
+    (error as any).code = response.error?.code;
+    throw error;
   }
 
   return response.data;
@@ -69,7 +77,11 @@ export const admin = async <T = any>(
   });
 
   if (!response.success) {
-    throw new Error(response.error?.message || 'API Error');
+    // Lanzar el error completo con toda la estructura para mejor manejo
+    const error = new Error(response.error?.message || 'API Error');
+    (error as any).error = response.error; // Preservar estructura completa del error
+    (error as any).code = response.error?.code;
+    throw error;
   }
 
   return response.data;

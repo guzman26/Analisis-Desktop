@@ -48,11 +48,21 @@ export const api = async <T = any>(
     }
 
     if (!response.ok) {
-      const message =
-        (rawData &&
-          typeof rawData === 'object' &&
-          (rawData.message || rawData.error)) ||
-        `HTTP ${response.status}`;
+      // Extraer mensaje correctamente, manejando cuando error es un objeto
+      let message = `HTTP ${response.status}`;
+      if (rawData && typeof rawData === 'object') {
+        if (rawData.message && typeof rawData.message === 'string') {
+          message = rawData.message;
+        } else if (rawData.error) {
+          // Si error es un objeto con message, extraer el message
+          if (typeof rawData.error === 'object' && rawData.error.message) {
+            message = rawData.error.message;
+          } else if (typeof rawData.error === 'string') {
+            message = rawData.error;
+          }
+        }
+      }
+      
       throw new ApiError({
         message,
         httpStatus: response.status,
