@@ -14,19 +14,19 @@ export type SaleType =
   | 'Donación'
   | 'Inutilizado'
   | 'Ración';
-export type SaleState = 
-  | 'DRAFT' 
-  | 'CONFIRMED' 
-  | 'DISPATCHED' 
-  | 'PARTIALLY_RETURNED' 
-  | 'FULLY_RETURNED' 
-  | 'COMPLETED' 
+export type SaleState =
+  | 'DRAFT'
+  | 'CONFIRMED'
+  | 'DISPATCHED'
+  | 'PARTIALLY_RETURNED'
+  | 'FULLY_RETURNED'
+  | 'COMPLETED'
   | 'CANCELLED';
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
 
 // Códigos de calibre válidos (centralizados)
-export type CalibreCode = 
+export type CalibreCode =
   | '01' // ESPECIAL BCO
   | '02' // EXTRA BCO
   | '04' // GRANDE BCO
@@ -330,12 +330,12 @@ export interface CustomerPreferences {
 }
 
 // Return and Exchange types
-export type ReturnReason = 
-  | 'damaged' 
-  | 'wrong_caliber' 
-  | 'customer_request' 
-  | 'quality_issue' 
-  | 'expired' 
+export type ReturnReason =
+  | 'damaged'
+  | 'wrong_caliber'
+  | 'customer_request'
+  | 'quality_issue'
+  | 'expired'
   | 'other';
 
 export interface ReturnRecord {

@@ -8,6 +8,7 @@ import {
   deleteUnassignedBoxesAsync,
   deleteBoxesByLocationAsync,
   backfillMetrics,
+  calculateMetricsForDate,
 } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
@@ -50,6 +51,10 @@ const DangerZone: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<Location | 'ALL'>(
     'ALL'
   );
+  const [metricsDate, setMetricsDate] = useState<string>('');
+  const [metricsStartDate, setMetricsStartDate] = useState<string>('');
+  const [metricsEndDate, setMetricsEndDate] = useState<string>('');
+  const [metricsMode, setMetricsMode] = useState<'single' | 'range'>('single');
 
   const locations: Array<{ value: Location | 'ALL'; label: string }> = [
     { value: 'ALL', label: 'Todas las ubicaciones' },
@@ -111,6 +116,64 @@ const DangerZone: React.FC = () => {
       },
       confirmationMessage:
         '¿Confirmas recalcular las métricas de producción para los últimos 30 días? Esto actualizará los datos existentes.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'calculateMetricsForDate',
+      title: 'Calcular Métricas para Fecha Específica',
+      description:
+        'Calcula métricas para una fecha específica o rango de fechas. Útil para recalcular días individuales o múltiples días.',
+      icon: <Database className="w-6 h-6" />,
+      action: async () => {
+        try {
+          let result;
+          if (metricsMode === 'single') {
+            if (!metricsDate) {
+              return {
+                success: false,
+                message: 'Por favor selecciona una fecha',
+              };
+            }
+            result = await calculateMetricsForDate({
+              date: metricsDate,
+              markAsFinal: true,
+            });
+          } else {
+            if (!metricsStartDate || !metricsEndDate) {
+              return {
+                success: false,
+                message: 'Por favor selecciona fecha de inicio y fin',
+              };
+            }
+            result = await calculateMetricsForDate({
+              startDate: metricsStartDate,
+              endDate: metricsEndDate,
+              markAsFinal: true,
+            });
+          }
+          
+          if (result.success) {
+            return {
+              success: true,
+              message: metricsMode === 'single'
+                ? `Métricas calculadas para ${result.date}. Tiempo: ${result.executionTime}`
+                : `Backfill completado: ${result.successCount} éxitos, ${result.failedCount} errores (${result.totalDays} días totales)`,
+            };
+          } else {
+            return {
+              success: false,
+              message: result.message || 'Error al calcular métricas',
+            };
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+          };
+        }
+      },
+      confirmationMessage:
+        'Esto recalculará las métricas para la fecha seleccionada, sobrescribiendo datos existentes.',
       dangerLevel: 'high',
     },
     {
@@ -308,6 +371,10 @@ const DangerZone: React.FC = () => {
     setSelectedAction(null);
     setExecutionResult(null);
     setSelectedLocation('ALL');
+    setMetricsDate('');
+    setMetricsStartDate('');
+    setMetricsEndDate('');
+    setMetricsMode('single');
   };
 
   const executeAction = async () => {
@@ -475,6 +542,90 @@ const DangerZone: React.FC = () => {
                         ⚠️ Esta acción afectará TODAS las ubicaciones del
                         sistema
                       </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Date Selection for Calculate Metrics */}
+              {selectedAction?.id === 'calculateMetricsForDate' && !executionResult && (
+                <div className={styles.locationSection}>
+                  <div className={styles.locationHeader}>
+                    <Database className="w-5 h-5" />
+                    <h4>Seleccionar Fecha(s)</h4>
+                  </div>
+                  
+                  {/* Mode Selection */}
+                  <div className={styles.locationGrid}>
+                    <button
+                      type="button"
+                      className={clsx(
+                        styles.locationButton,
+                        metricsMode === 'single' && styles.locationButtonActive
+                      )}
+                      onClick={() => setMetricsMode('single')}
+                      disabled={isExecuting}
+                    >
+                      <span>Fecha Única</span>
+                      {metricsMode === 'single' && <CheckCircle className="w-4 h-4" />}
+                    </button>
+                    <button
+                      type="button"
+                      className={clsx(
+                        styles.locationButton,
+                        metricsMode === 'range' && styles.locationButtonActive
+                      )}
+                      onClick={() => setMetricsMode('range')}
+                      disabled={isExecuting}
+                    >
+                      <span>Rango de Fechas</span>
+                      {metricsMode === 'range' && <CheckCircle className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {/* Date Input(s) */}
+                  {metricsMode === 'single' ? (
+                    <div className="mt-3">
+                      <label className="text-sm text-gray-600 mb-2 block">
+                        Fecha (YYYY-MM-DD):
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full border border-gray-300 rounded px-3 py-2"
+                        value={metricsDate}
+                        onChange={(e) => setMetricsDate(e.target.value)}
+                        disabled={isExecuting}
+                        max={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-3">
+                      <div>
+                        <label className="text-sm text-gray-600 mb-2 block">
+                          Fecha Inicio:
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          value={metricsStartDate}
+                          onChange={(e) => setMetricsStartDate(e.target.value)}
+                          disabled={isExecuting}
+                          max={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm text-gray-600 mb-2 block">
+                          Fecha Fin:
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          value={metricsEndDate}
+                          onChange={(e) => setMetricsEndDate(e.target.value)}
+                          disabled={isExecuting}
+                          max={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>

@@ -1,15 +1,19 @@
 export const formatDate = (input: string | Date): string => {
   const date = input instanceof Date ? input : new Date(input);
   if (isNaN(date.getTime())) return '';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = String(date.getFullYear());
+  
+  // Usar métodos UTC para evitar problemas de zona horaria
+  // Cuando el backend envía fechas ISO UTC (ej: "2025-11-11T00:00:00.000Z"),
+  // debemos usar UTC para que el día no cambie según la zona horaria local
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = String(date.getUTCFullYear());
   return `${day}/${month}/${year}`;
 };
 
 /**
  * Calcula la fecha real a partir de componentes del código de caja
- * @param dayOfWeek - Día de la semana (1-7)
+ * @param dayOfWeek - Día de la semana (1-7, donde 1=Lunes, 7=Domingo)
  * @param weekNumber - Número de semana ISO (1-52)
  * @param year - Año en formato YY
  * @returns Fecha en formato DD/MM/YYYY
@@ -25,22 +29,23 @@ export const calculateDateFromBoxCode = (
     const weekNum = parseInt(weekNumber);
     const day = parseInt(dayOfWeek);
 
-    // Calculate the date from ISO week number
-    // ISO week 1 is the first week with a Thursday
-    const jan4 = new Date(fullYear, 0, 4);
-    const dayOffset = jan4.getDay() - 1; // Monday = 0
+    // Calcular la fecha desde el número de semana ISO usando UTC
+    // La semana ISO 1 es la primera semana que contiene un jueves
+    // Usamos UTC para evitar problemas de zona horaria
+    const jan4 = new Date(Date.UTC(fullYear, 0, 4));
+    const dayOffset = (jan4.getUTCDay() + 6) % 7; // Lunes = 0, Domingo = 6
     const weekStart = new Date(jan4);
-    weekStart.setDate(jan4.getDate() - dayOffset + (weekNum - 1) * 7);
+    weekStart.setUTCDate(jan4.getUTCDate() - dayOffset + (weekNum - 1) * 7);
 
-    // Add days of week (Monday = 0, Sunday = 6)
-    // But our format uses Monday = 1, Sunday = 7
-    const adjustedDay = day === 7 ? 0 : day; // Convert 7 (Sunday) to 0
+    // Ajustar por día de la semana (nuestro formato: 1=Lunes, 7=Domingo)
+    // Convertir a formato JavaScript (0=Domingo, 1=Lunes, ..., 6=Sábado)
+    const adjustedDay = day % 7; // 1->1, 2->2, ..., 6->6, 7->0
     const resultDate = new Date(weekStart);
-    resultDate.setDate(weekStart.getDate() + adjustedDay);
+    resultDate.setUTCDate(weekStart.getUTCDate() + adjustedDay);
 
-    const dayFormatted = String(resultDate.getDate()).padStart(2, '0');
-    const monthFormatted = String(resultDate.getMonth() + 1).padStart(2, '0');
-    const yearFormatted = resultDate.getFullYear();
+    const dayFormatted = String(resultDate.getUTCDate()).padStart(2, '0');
+    const monthFormatted = String(resultDate.getUTCMonth() + 1).padStart(2, '0');
+    const yearFormatted = resultDate.getUTCFullYear();
 
     return `${dayFormatted}/${monthFormatted}/${yearFormatted}`;
   } catch {

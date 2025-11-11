@@ -415,6 +415,29 @@ export const backfillMetrics = (params?: {
     };
   }>('backfill', 'report', params || {});
 
+// Calculate metrics for specific date or date range
+export const calculateMetricsForDate = (params: {
+  date?: string;           // Single date (YYYY-MM-DD)
+  startDate?: string;      // Date range start
+  endDate?: string;        // Date range end
+  markAsFinal?: boolean;
+}) =>
+  admin<{
+    success: boolean;
+    message: string;
+    date?: string;
+    metrics?: any;
+    executionTime?: string;
+    timestamp: string;
+    // For date ranges:
+    startDate?: string;
+    endDate?: string;
+    totalDays?: number;
+    successCount?: number;
+    failedCount?: number;
+    details?: Array<{ date: string; status: string; metrics?: any; error?: string }>;
+  }>('calculateMetrics', 'report', params);
+
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
   get(`/powerbi/export/${dataType}`);
