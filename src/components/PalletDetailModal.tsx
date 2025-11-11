@@ -14,7 +14,7 @@ import {
   auditPallet,
   moveBoxBetweenPallets,
 } from '@/api/endpoints';
-import { getPalletBoxes } from '@/utils/palletHelpers';
+import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
@@ -355,11 +355,14 @@ const PalletDetailModal = ({
     statusColors[pallet.estado as keyof typeof statusColors] ||
     statusColors.default;
 
+  // Obtener cantidad real de cajas
+  const realBoxCount = getPalletBoxCount(pallet);
+  
   // Mostrar resumen de cajas como cantidad/capacidad (ej: 2/60)
   const boxesSummary =
     typeof pallet.maxBoxes === 'number' && !Number.isNaN(pallet.maxBoxes)
-      ? `${pallet.cantidadCajas}/${pallet.maxBoxes}`
-      : String(pallet.cantidadCajas);
+      ? `${realBoxCount}/${pallet.maxBoxes}`
+      : String(realBoxCount);
 
   return (
     <>
@@ -419,7 +422,7 @@ const PalletDetailModal = ({
                 <InfoRow
                   icon={<Layers className="w-5 h-5" />}
                   label="Total de Cajas"
-                  value={pallet.cantidadCajas}
+                  value={realBoxCount}
                 />
                 <InfoRow
                   icon={<Package className="w-5 h-5" />}

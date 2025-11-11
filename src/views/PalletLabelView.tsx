@@ -6,6 +6,7 @@ import {
   getCalibreFromCodigo,
 } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
+import { getPalletBoxCount } from '@/utils/palletHelpers';
 import { WindowContainer, Button } from '@/components/design-system';
 import JsBarcode from 'jsbarcode';
 import { getPalletByCode } from '@/api/endpoints';
@@ -111,6 +112,9 @@ const PalletLabelView: React.FC = () => {
   }
 
   const calibre = getCalibreFromCodigo(pallet.codigo);
+  
+  // Calcular cantidad real de cajas usando función centralizada
+  const realBoxCount = getPalletBoxCount(pallet);
 
   return (
     <WindowContainer title="Etiqueta de Pallet" showTrafficLights={false}>
@@ -162,7 +166,7 @@ const PalletLabelView: React.FC = () => {
 
               <div className="info-item">
                 <span className="info-label">CAJAS</span>
-                <span className="info-value">{pallet.cantidadCajas}</span>
+                <span className="info-value">{realBoxCount}</span>
               </div>
 
               <div className="info-item">

@@ -17,6 +17,7 @@ import '../styles/designSystem.css';
 import styles from './PalletCard.module.css';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
+import { getPalletBoxCount } from '@/utils/palletHelpers';
 
 interface PalletCardProps {
   pallet: Pallet;
@@ -35,6 +36,7 @@ const PalletCard = ({
   fetchActivePallets,
   onDelete,
 }: PalletCardProps) => {
+  const realBoxCount = getPalletBoxCount(pallet);
   // Estados para auditoría
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditResult, setAuditResult] = useState<PalletAuditResult | null>(
@@ -284,8 +286,8 @@ const PalletCard = ({
                 >
                   {typeof pallet.maxBoxes === 'number' &&
                   !Number.isNaN(pallet.maxBoxes)
-                    ? `${pallet.cantidadCajas ?? 0}/${pallet.maxBoxes}`
-                    : (pallet.cantidadCajas ?? 0)}
+                    ? `${realBoxCount}/${pallet.maxBoxes}`
+                    : realBoxCount}
                 </span>
               </div>
             </div>

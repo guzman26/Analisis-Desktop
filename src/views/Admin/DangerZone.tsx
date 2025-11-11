@@ -217,7 +217,7 @@ const DangerZone: React.FC = () => {
     },
     {
       id: 'deleteUnassignedBoxesAsync',
-      title: 'Eliminar cajas UNASSIGNED (asíncrono)',
+      title: 'Eliminar cajas sin asignar (asíncrono)',
       description:
         'Inicia un proceso asíncrono que borra todas las cajas no asignadas a ningún pallet.',
       icon: <Trash2 className="w-6 h-6" />,
@@ -227,7 +227,7 @@ const DangerZone: React.FC = () => {
           return {
             success: true,
             message:
-              'Se inició la eliminación asíncrona de cajas UNASSIGNED. Revisa los logs para el progreso.',
+              'Se inició la eliminación asíncrona de cajas sin asignar. Revisa los logs para el progreso.',
           };
         } catch (error) {
           return {
@@ -239,7 +239,7 @@ const DangerZone: React.FC = () => {
         }
       },
       confirmationMessage:
-        '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas UNASSIGNED? Esta acción no se puede deshacer.',
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de todas las cajas sin asignar? Esta acción no se puede deshacer.',
       dangerLevel: 'high',
     },
     {
