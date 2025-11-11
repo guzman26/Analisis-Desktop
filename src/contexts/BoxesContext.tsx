@@ -123,11 +123,12 @@ const boxesReducer = (
         for (const b of boxes) map.set(b.codigo, b);
         const merged = Array.from(map.values());
         
-        // Sort by fecha_registro in descending order (newest first)
+        // Sort by date in descending order (newest first)
+        // Try both field names since backend uses fechaCreacion but frontend type uses fecha_registro
         // This ensures consistent ordering across pagination
         merged.sort((a, b) => {
-          const dateA = a.fecha_registro || '';
-          const dateB = b.fecha_registro || '';
+          const dateA = (a as any).fecha_registro || (a as any).fechaCreacion || '';
+          const dateB = (b as any).fecha_registro || (b as any).fechaCreacion || '';
           return dateB.localeCompare(dateA);
         });
         
@@ -151,10 +152,11 @@ const boxesReducer = (
       // Ensure we're handling the payload correctly as an array
       const boxes = Array.isArray(action.payload) ? action.payload : [];
       
-      // Sort by fechaCreacion in descending order (newest first)
+      // Sort by date in descending order (newest first)
+      // Try both field names since backend uses fechaCreacion but frontend type uses fecha_registro
       boxes.sort((a, b) => {
-        const dateA = a.fechaCreacion || '';
-        const dateB = b.fechaCreacion || '';
+        const dateA = (a as any).fecha_registro || (a as any).fechaCreacion || '';
+        const dateB = (b as any).fecha_registro || (b as any).fechaCreacion || '';
         return dateB.localeCompare(dateA);
       });
       
