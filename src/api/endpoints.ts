@@ -174,13 +174,28 @@ export const unassignBox = (codigo: string) =>
 //     options,
 //   });
 
+/**
+ * Mover una sola caja entre pallets
+ */
 export const moveBoxBetweenPallets = (
   boxCode: string,
-  destinationPalletCode: string
+  palletCode: string
 ) =>
-  inventory<any>('assign', 'box', {
+  inventory<any>('move-between-pallets', 'box', {
     boxCode,
-    palletCode: destinationPalletCode,
+    palletCode,
+  });
+
+/**
+ * Mover múltiples cajas entre pallets (batch)
+ */
+export const moveMultipleBoxesBetweenPallets = (
+  boxCodes: string[],
+  palletCode: string
+) =>
+  inventory<any>('move-between-pallets', 'box', {
+    boxCodes,
+    palletCode,
   });
 
 // Admin – delete a box by codigo (16 dígitos). Requiere permisos de admin.

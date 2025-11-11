@@ -111,7 +111,7 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
                             {formatCalibreName(calibre)}
                           </span>
                           <span>Cajas: {capacityInfo}</span>
-                          <span>Turno: {getTurnoNombre(p.baseCode)}</span>
+                          <span>Turno: {getTurnoNombre(p.codigo)}</span>
                         </div>
                       </div>
                       {isSelected && (

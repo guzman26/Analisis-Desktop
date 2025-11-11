@@ -13,6 +13,7 @@ import {
   getBoxByCode,
   auditPallet,
   moveBoxBetweenPallets,
+  moveMultipleBoxesBetweenPallets,
 } from '@/api/endpoints';
 import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
@@ -138,14 +139,12 @@ const PalletDetailModal = ({
 
     try {
       const codes = Array.from(selectedBoxCodes);
-      const results = await Promise.allSettled(
-        codes.map((code) => moveBoxBetweenPallets(code, targetPalletCode))
-      );
-      const fulfilled = results.filter((r) => r.status === 'fulfilled').length;
-      const rejected = results.length - fulfilled;
-
-      // Optimistic local update: remover cajas movidas de la lista visible
-      if (fulfilled > 0) {
+      
+      // Usar endpoint batch si hay múltiples cajas, o individual si es una sola
+      if (codes.length > 1) {
+        await moveMultipleBoxesBetweenPallets(codes, targetPalletCode);
+        
+        // Optimistic local update: remover todas las cajas movidas
         const boxes = getPalletBoxes(pallet);
         const filteredBoxes = boxes.filter(
           (c: string) => !selectedBoxCodes.has(c)
@@ -158,23 +157,32 @@ const PalletDetailModal = ({
         }
         setSelectedBoxCodes(new Set());
         setSelectionMode(false);
-      }
-
-      if (rejected === 0) {
+        
         setMoveFeedback({
           type: 'success',
-          message: `✓ Se movieron ${fulfilled} caja(s) correctamente al pallet ${targetPalletCode}.`,
-        });
-      } else if (fulfilled > 0) {
-        setMoveFeedback({
-          type: 'error',
-          message: `Se movieron ${fulfilled} caja(s), pero ${rejected} fallaron. Intente nuevamente con las restantes.`,
+          message: `✓ Se movieron ${codes.length} caja(s) correctamente al pallet ${targetPalletCode}.`,
         });
       } else {
+        // Una sola caja - usar endpoint individual
+        await moveBoxBetweenPallets(codes[0], targetPalletCode);
+        
+        // Optimistic local update
+        const boxes = getPalletBoxes(pallet);
+        const filteredBoxes = boxes.filter(
+          (c: string) => !selectedBoxCodes.has(c)
+        );
+        if (pallet.boxes) {
+          (pallet as any).boxes = filteredBoxes;
+        }
+        if (pallet.cajas) {
+          (pallet as any).cajas = filteredBoxes;
+        }
+        setSelectedBoxCodes(new Set());
+        setSelectionMode(false);
+        
         setMoveFeedback({
-          type: 'error',
-          message:
-            'No se pudo mover ninguna caja. Verifique que el pallet destino esté disponible e intente nuevamente.',
+          type: 'success',
+          message: `✓ Se movió 1 caja correctamente al pallet ${targetPalletCode}.`,
         });
       }
     } catch (error) {
