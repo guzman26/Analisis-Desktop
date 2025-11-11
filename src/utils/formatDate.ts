@@ -38,8 +38,9 @@ export const calculateDateFromBoxCode = (
     weekStart.setUTCDate(jan4.getUTCDate() - dayOffset + (weekNum - 1) * 7);
 
     // Ajustar por día de la semana (nuestro formato: 1=Lunes, 7=Domingo)
-    // Convertir a formato JavaScript (0=Domingo, 1=Lunes, ..., 6=Sábado)
-    const adjustedDay = day % 7; // 1->1, 2->2, ..., 6->6, 7->0
+    // weekStart ya apunta al Lunes, entonces:
+    // 1 (Lunes) = +0 días, 2 (Martes) = +1 día, ... 7 (Domingo) = +6 días
+    const adjustedDay = day - 1;
     const resultDate = new Date(weekStart);
     resultDate.setUTCDate(weekStart.getUTCDate() + adjustedDay);
 

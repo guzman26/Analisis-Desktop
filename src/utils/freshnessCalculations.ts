@@ -47,24 +47,24 @@ export function parseProductionDateFromPalletCode(palletCode: string): Productio
 
 /**
  * Calculate actual date from week number and day of week
- * ISO 8601 week date system
+ * ISO 8601 week date system - using UTC to avoid timezone issues
  */
 export function calculateDateFromWeek(
   year: number,
   weekOfYear: number,
   dayOfWeek: number
 ): Date {
-  // January 4th is always in week 1 (ISO 8601)
-  const jan4 = new Date(year, 0, 4);
+  // Calcular usando UTC para evitar problemas de zona horaria
+  // La semana ISO 1 es la primera semana que contiene un jueves
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const dayOffset = (jan4.getUTCDay() + 6) % 7; // Lunes = 0, Domingo = 6
+  const weekStart = new Date(jan4);
+  weekStart.setUTCDate(jan4.getUTCDate() - dayOffset + (weekOfYear - 1) * 7);
   
-  // Find Monday of week 1
-  const jan4DayOfWeek = jan4.getDay() || 7; // Convert Sunday from 0 to 7
-  const week1Monday = new Date(jan4);
-  week1Monday.setDate(jan4.getDate() - jan4DayOfWeek + 1);
-  
-  // Calculate target date
-  const targetDate = new Date(week1Monday);
-  targetDate.setDate(week1Monday.getDate() + (weekOfYear - 1) * 7 + (dayOfWeek - 1));
+  // Ajustar por día de la semana (1=Lunes, 7=Domingo)
+  const adjustedDay = dayOfWeek - 1;
+  const targetDate = new Date(weekStart);
+  targetDate.setUTCDate(weekStart.getUTCDate() + adjustedDay);
   
   return targetDate;
 }

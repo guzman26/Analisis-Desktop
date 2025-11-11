@@ -1,4 +1,5 @@
 import type { CalibreCode } from '@/types';
+import { calculateDateFromBoxCode } from '@/utils/formatDate';
 
 /**
  * Esquemas de códigos
@@ -131,6 +132,23 @@ export const getCalibreFromCodigo = (codigo: string): string => {
   if (type === 'unknown') return '';
   const calibreNum = extractField(codigo, type, 'calibre');
   return formatCalibreName(calibreNum);
+};
+
+/**
+ * Obtiene la fecha formateada desde un código de caja o pallet
+ * @param codigo - Código de 16 dígitos (caja) o 14 dígitos (pallet)
+ * @returns Fecha en formato DD/MM/YYYY o 'N/A' si no se puede calcular
+ */
+export const getDateFromCodigo = (codigo: string): string => {
+  try {
+    const dia = getDiaFromCodigo(codigo);
+    const semana = getSemanaFromCodigo(codigo);
+    const ano = getAnoFromCodigo(codigo);
+    
+    return calculateDateFromBoxCode(dia, semana, ano);
+  } catch {
+    return 'N/A';
+  }
 };
 
 export const getBaseCodeFromCodigo = (codigo: string): string => {

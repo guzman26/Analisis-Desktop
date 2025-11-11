@@ -1,11 +1,9 @@
 import React from 'react';
 import { Box } from '@/types';
-import { formatDate, calculateDateFromBoxCode } from '@/utils/formatDate';
+import { formatDate } from '@/utils/formatDate';
 import {
   formatCalibreName,
-  getDiaFromCodigo,
-  getSemanaFromCodigo,
-  getAnoFromCodigo,
+  getDateFromCodigo,
 } from '@/utils/getParamsFromCodigo';
 import { Button } from '@/components/design-system';
 import { Calendar, MapPin, Check, Tag, Clipboard, Trash2 } from 'lucide-react';
@@ -73,23 +71,10 @@ const BoxCard = ({
     }
   };
 
-  // Extract date from box code if fecha_registro is not available
-  const getDateFromBoxCode = (codigo: string): string => {
-    try {
-      const dia = getDiaFromCodigo(codigo);
-      const semana = getSemanaFromCodigo(codigo);
-      const ano = getAnoFromCodigo(codigo);
-
-      // Use the proper ISO week calculation
-      return calculateDateFromBoxCode(dia, semana, ano);
-    } catch {
-      return 'N/A';
-    }
-  };
-
+  // Usar función centralizada para obtener fecha desde código
   const formattedDate = box.fecha_registro
     ? formatDate(box.fecha_registro)
-    : getDateFromBoxCode(box.codigo);
+    : getDateFromCodigo(box.codigo);
   const calibre = formatCalibreName(box.calibre);
 
   // Determine color for status indicator based on location
