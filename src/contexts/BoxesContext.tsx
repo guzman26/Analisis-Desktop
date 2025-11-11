@@ -123,11 +123,11 @@ const boxesReducer = (
         for (const b of boxes) map.set(b.codigo, b);
         const merged = Array.from(map.values());
         
-        // Sort by fechaCreacion in descending order (newest first)
+        // Sort by fecha_registro in descending order (newest first)
         // This ensures consistent ordering across pagination
         merged.sort((a, b) => {
-          const dateA = a.fechaCreacion || '';
-          const dateB = b.fechaCreacion || '';
+          const dateA = a.fecha_registro || '';
+          const dateB = b.fecha_registro || '';
           return dateB.localeCompare(dateA);
         });
         
