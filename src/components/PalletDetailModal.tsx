@@ -454,10 +454,10 @@ const PalletDetailModal = ({
               <Layers className="w-4 h-4" />
               Historial reciente
               <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
-                {getPalletBoxes(pallet).length}
+                {realBoxCount}
               </span>
             </h3>
-            {getPalletBoxes(pallet).length === 0 ? (
+            {realBoxCount === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
                 <PackageX className="w-8 h-8 mb-3 opacity-60" />
                 No hay cajas registradas en este pallet
@@ -631,7 +631,7 @@ const PalletDetailModal = ({
                       className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent transition-colors"
                       onClick={toggleSelectAll}
                     >
-                      {selectedBoxCodes.size === getPalletBoxes(pallet).length
+                      {selectedBoxCodes.size === realBoxCount
                         ? 'Deseleccionar todo'
                         : 'Seleccionar todo'}
                     </button>
