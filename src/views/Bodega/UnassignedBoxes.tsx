@@ -67,7 +67,7 @@ const UnassignedBoxes = () => {
     try {
       setSearchingCompatibleStates((prev) => ({ ...prev, [boxCode]: true }));
 
-      const result = await getCompatiblePalletsForSingleBox(boxCode, 'BODEGA');
+      const result = await getCompatiblePalletsForSingleBox(boxCode, 'BODEGA', true);
 
       if (result.pallets && result.pallets.length > 0) {
         showSuccess(

@@ -234,11 +234,13 @@ export const createSingleBoxPallet = (
  */
 export const getCompatiblePalletsForSingleBox = (
   boxCode: string,
-  ubicacion?: string
+  ubicacion?: string,
+  autoAssign?: boolean
 ) =>
   inventory<any>('compatible-pallets', 'box', {
     codigo: boxCode,
     ubicacion,
+    autoAssign,
   });
 
 /**
