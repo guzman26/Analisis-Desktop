@@ -185,11 +185,23 @@ const PalletDetailModal = ({
           message: `✓ Se movió 1 caja correctamente al pallet ${targetPalletCode}.`,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Extraer el mensaje de error correctamente de la respuesta del API
+      let errorMessage = 'Error al mover cajas';
+      
+      if (error?.error?.message) {
+        // Estructura de error del API: { error: { message: "..." } }
+        errorMessage = error.error.message;
+      } else if (error?.message) {
+        // Error estándar de JavaScript
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       setMoveFeedback({
         type: 'error',
-        message:
-          error instanceof Error ? error.message : 'Error al mover cajas',
+        message: errorMessage,
       });
     } finally {
       setIsMovingBoxes(false);
