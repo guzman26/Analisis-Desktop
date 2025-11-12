@@ -131,7 +131,15 @@ const DangerZone: React.FC = () => {
             if (!metricsDate) {
               return {
                 success: false,
-                message: 'Por favor selecciona una fecha',
+                message: 'Por favor selecciona una fecha válida en formato YYYY-MM-DD (ej: 2025-11-12)',
+              };
+            }
+            // Validar formato de fecha
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(metricsDate)) {
+              return {
+                success: false,
+                message: `Formato de fecha inválido. Usa YYYY-MM-DD (ej: 2025-11-12). Recibido: ${metricsDate}`,
               };
             }
             result = await calculateMetricsForDate({
@@ -142,7 +150,15 @@ const DangerZone: React.FC = () => {
             if (!metricsStartDate || !metricsEndDate) {
               return {
                 success: false,
-                message: 'Por favor selecciona fecha de inicio y fin',
+                message: 'Por favor selecciona fecha de inicio y fin válidas',
+              };
+            }
+            // Validar formato de fechas
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(metricsStartDate) || !dateRegex.test(metricsEndDate)) {
+              return {
+                success: false,
+                message: 'Formato de fecha inválido. Usa YYYY-MM-DD (ej: 2025-11-12)',
               };
             }
             result = await calculateMetricsForDate({
@@ -596,7 +612,11 @@ const DangerZone: React.FC = () => {
                         onChange={(e) => setMetricsDate(e.target.value)}
                         disabled={isExecuting}
                         max={new Date().toISOString().split('T')[0]}
+                        placeholder="2025-11-12"
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Usa el selector de fecha o escribe en formato YYYY-MM-DD (ej: 2025-11-12)
+                      </p>
                     </div>
                   ) : (
                     <div className="mt-3 space-y-3">
@@ -611,6 +631,7 @@ const DangerZone: React.FC = () => {
                           onChange={(e) => setMetricsStartDate(e.target.value)}
                           disabled={isExecuting}
                           max={new Date().toISOString().split('T')[0]}
+                          placeholder="2025-11-01"
                         />
                       </div>
                       <div>
@@ -624,8 +645,12 @@ const DangerZone: React.FC = () => {
                           onChange={(e) => setMetricsEndDate(e.target.value)}
                           disabled={isExecuting}
                           max={new Date().toISOString().split('T')[0]}
+                          placeholder="2025-11-12"
                         />
                       </div>
+                      <p className="text-xs text-gray-500">
+                        Usa el selector de fecha o escribe en formato YYYY-MM-DD
+                      </p>
                     </div>
                   )}
                 </div>
