@@ -9,13 +9,13 @@ import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
 import { closePallet, movePallet, deletePallet, closeAllOpenPallets } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import { useNotification } from '@/contexts/core/NotificationContext';
+import { useNotifications } from '@/components/Notification/Notification';
 
 const OpenPallets = () => {
   const { openPallets: activePalletsPaginated, fetchActivePallets } =
     usePalletContext();
   const navigate = useNavigate();
-  const { showNotification } = useNotification();
+  const { showSuccess, showError } = useNotifications();
 
   // Create refresh function
   const refresh = () => {
@@ -71,18 +71,14 @@ const OpenPallets = () => {
     try {
       const result = await closeAllOpenPallets('PACKING');
       
-      showNotification({
-        type: 'success',
-        message: `Se cerraron exitosamente ${result.closedPallets} pallets en ${result.executionTime}s`,
-      });
+      showSuccess(
+        `Se cerraron exitosamente ${result.closedPallets} pallets en ${result.executionTime}s`
+      );
 
       // Refresh the list
       refresh();
     } catch (error: any) {
-      showNotification({
-        type: 'error',
-        message: error.message || 'Error al cerrar los pallets',
-      });
+      showError(error.message || 'Error al cerrar los pallets');
     } finally {
       setIsClosingAll(false);
     }
@@ -108,7 +104,7 @@ const OpenPallets = () => {
           <div className="macos-hstack">
             <Button
               leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
-              variant="destructive"
+              variant="danger"
               size="medium"
               onClick={handleCloseAllPallets}
               disabled={isClosingAll || filteredPallets.length === 0}
