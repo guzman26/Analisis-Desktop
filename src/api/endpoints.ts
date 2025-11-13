@@ -410,6 +410,18 @@ export const deleteBoxesByLocationAsync = (ubicacion?: string) =>
     ...(ubicacion && { ubicacion }),
   });
 
+export const closeAllOpenPallets = (ubicacion?: string | string[]) =>
+  admin<{
+    success: boolean;
+    closedPallets: number;
+    totalProcessed: number;
+    errors?: Array<{ type: string; codigo?: string; location?: string; error: string }>;
+    executionTime: string;
+    timestamp: string;
+  }>('close-all-pallets', 'bulk', {
+    ...(ubicacion && { ubicacion }),
+  });
+
 // Metrics operations
 export const backfillMetrics = (params?: {
   startDate?: string;

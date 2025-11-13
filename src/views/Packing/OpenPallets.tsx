@@ -4,16 +4,18 @@ import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import PalletLooseEggsModal from '@/components/PalletLooseEggsModal';
 import { Card, Button, Input } from '@/components/design-system';
-import { Search, Plus, Filter } from 'lucide-react';
+import { Search, Plus, Filter, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
-import { closePallet, movePallet, deletePallet } from '@/api/endpoints';
+import { closePallet, movePallet, deletePallet, closeAllOpenPallets } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
+import { useNotification } from '@/contexts/core/NotificationContext';
 
 const OpenPallets = () => {
   const { openPallets: activePalletsPaginated, fetchActivePallets } =
     usePalletContext();
   const navigate = useNavigate();
+  const { showNotification } = useNotification();
 
   // Create refresh function
   const refresh = () => {
@@ -26,6 +28,7 @@ const OpenPallets = () => {
   const [filteredPallets, setFilteredPallets] = useState(
     activePalletsPaginated
   );
+  const [isClosingAll, setIsClosingAll] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -55,6 +58,36 @@ const OpenPallets = () => {
     setFilteredPallets(sorted);
   };
 
+  const handleCloseAllPallets = async () => {
+    const confirmed = window.confirm(
+      `¿Estás seguro que deseas cerrar TODOS los pallets abiertos en PACKING?\n\n` +
+      `Total de pallets a cerrar: ${filteredPallets.length}\n\n` +
+      `Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    setIsClosingAll(true);
+    try {
+      const result = await closeAllOpenPallets('PACKING');
+      
+      showNotification({
+        type: 'success',
+        message: `Se cerraron exitosamente ${result.closedPallets} pallets en ${result.executionTime}s`,
+      });
+
+      // Refresh the list
+      refresh();
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        message: error.message || 'Error al cerrar los pallets',
+      });
+    } finally {
+      setIsClosingAll(false);
+    }
+  };
+
   return (
     <div className="macos-animate-fade-in">
       {/* Header */}
@@ -73,6 +106,15 @@ const OpenPallets = () => {
             Pallets Abiertos
           </h1>
           <div className="macos-hstack">
+            <Button
+              leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
+              variant="destructive"
+              size="medium"
+              onClick={handleCloseAllPallets}
+              disabled={isClosingAll || filteredPallets.length === 0}
+            >
+              {isClosingAll ? 'Cerrando...' : 'Cerrar Todos'}
+            </Button>
             <Button
               leftIcon={<Filter style={{ width: '16px', height: '16px' }} />}
               variant="secondary"
