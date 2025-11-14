@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Input } from '@/components/design-system';
-import { RefreshCw, Download, TrendingUp, Package, Palette, BarChart3, Calendar } from 'lucide-react';
+import { RefreshCw, TrendingUp, Package, Palette, BarChart3, Calendar } from 'lucide-react';
 import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import '../../styles/designSystem.css';
@@ -104,14 +104,6 @@ const Metrics: React.FC = () => {
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('es-ES').format(num);
-  };
-
-  const getProductionMetrics = () => {
-    return data?.metrics.filter(m => m.metricType === 'PRODUCTION_DAILY') || [];
-  };
-
-  const getInventoryMetrics = () => {
-    return data?.metrics.filter(m => m.metricType === 'INVENTORY_SNAPSHOT') || [];
   };
 
   return (
