@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Button, Input } from '@/components/design-system';
-import { RefreshCw, TrendingUp, Package, Palette, BarChart3, Calendar } from 'lucide-react';
+import {
+  RefreshCw,
+  TrendingUp,
+  Package,
+  Palette,
+  BarChart3,
+  Calendar,
+} from 'lucide-react';
 import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import '../../styles/designSystem.css';
@@ -34,13 +41,15 @@ interface MetricsResponse {
 
 const Metrics: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
-  
+
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filters
-  const [metricType, setMetricType] = useState<'all' | 'PRODUCTION_DAILY' | 'INVENTORY_SNAPSHOT'>('all');
+  const [metricType, setMetricType] = useState<
+    'all' | 'PRODUCTION_DAILY' | 'INVENTORY_SNAPSHOT'
+  >('all');
   const [startDate, setStartDate] = useState<string>(() => {
     const date = new Date();
     date.setDate(date.getDate() - 30);
@@ -49,21 +58,28 @@ const Metrics: React.FC = () => {
   const [endDate, setEndDate] = useState<string>(() => {
     return new Date().toISOString().split('T')[0];
   });
-  
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const fetchMetrics = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const params: any = {
         metricType: metricType === 'all' ? 'all' : metricType,
         startDate,
         endDate,
       };
-      
+
       const response = await getMetrics(params);
+
+      // Debug: Log response structure
+      console.log('📊 Metrics response:', {
+        count: response.count,
+        metricsLength: response.metrics?.length,
+        firstMetric: response.metrics?.[0],
+        sampleData: response.metrics?.[0]?.data,
+      });
+
       setData(response);
       showSuccess(`Métricas cargadas: ${response.count} registros encontrados`);
     } catch (err: any) {
@@ -83,22 +99,12 @@ const Metrics: React.FC = () => {
     fetchMetrics();
   };
 
-  const toggleRowExpansion = (dateKey: string) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(dateKey)) {
-      newExpanded.delete(dateKey);
-    } else {
-      newExpanded.add(dateKey);
-    }
-    setExpandedRows(newExpanded);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -107,7 +113,10 @@ const Metrics: React.FC = () => {
   };
 
   return (
-    <div className="macos-animate-fade-in" style={{ padding: 'var(--macos-space-7)' }}>
+    <div
+      className="macos-animate-fade-in"
+      style={{ padding: 'var(--macos-space-7)' }}
+    >
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
         <div
@@ -235,7 +244,13 @@ const Metrics: React.FC = () => {
           }}
         >
           <Card variant="flat" padding="medium">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--macos-space-3)',
+              }}
+            >
               <div
                 style={{
                   width: '48px',
@@ -247,7 +262,9 @@ const Metrics: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Package style={{ width: '24px', height: '24px', color: 'white' }} />
+                <Package
+                  style={{ width: '24px', height: '24px', color: 'white' }}
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <p
@@ -274,7 +291,13 @@ const Metrics: React.FC = () => {
           </Card>
 
           <Card variant="flat" padding="medium">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--macos-space-3)',
+              }}
+            >
               <div
                 style={{
                   width: '48px',
@@ -286,7 +309,9 @@ const Metrics: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Palette style={{ width: '24px', height: '24px', color: 'white' }} />
+                <Palette
+                  style={{ width: '24px', height: '24px', color: 'white' }}
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <p
@@ -313,7 +338,13 @@ const Metrics: React.FC = () => {
           </Card>
 
           <Card variant="flat" padding="medium">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--macos-space-3)',
+              }}
+            >
               <div
                 style={{
                   width: '48px',
@@ -325,7 +356,9 @@ const Metrics: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <TrendingUp style={{ width: '24px', height: '24px', color: 'white' }} />
+                <TrendingUp
+                  style={{ width: '24px', height: '24px', color: 'white' }}
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <p
@@ -352,7 +385,13 @@ const Metrics: React.FC = () => {
           </Card>
 
           <Card variant="flat" padding="medium">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--macos-space-3)',
+              }}
+            >
               <div
                 style={{
                   width: '48px',
@@ -364,7 +403,9 @@ const Metrics: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Calendar style={{ width: '24px', height: '24px', color: 'white' }} />
+                <Calendar
+                  style={{ width: '24px', height: '24px', color: 'white' }}
+                />
               </div>
               <div style={{ flex: 1 }}>
                 <p
@@ -394,7 +435,11 @@ const Metrics: React.FC = () => {
 
       {/* Error State */}
       {error && (
-        <Card variant="flat" padding="medium" style={{ marginBottom: 'var(--macos-space-5)' }}>
+        <Card
+          variant="flat"
+          padding="medium"
+          style={{ marginBottom: 'var(--macos-space-5)' }}
+        >
           <p style={{ color: 'var(--macos-red)', margin: 0 }}>❌ {error}</p>
         </Card>
       )}
@@ -410,7 +455,12 @@ const Metrics: React.FC = () => {
               animation: 'spin 1s linear infinite',
             }}
           />
-          <p style={{ marginTop: 'var(--macos-space-3)', color: 'var(--macos-text-secondary)' }}>
+          <p
+            style={{
+              marginTop: 'var(--macos-space-3)',
+              color: 'var(--macos-text-secondary)',
+            }}
+          >
             Cargando métricas...
           </p>
         </div>
@@ -440,6 +490,10 @@ const Metrics: React.FC = () => {
                       fontWeight: 600,
                       color: 'var(--macos-text-primary)',
                       fontSize: '14px',
+                      position: 'sticky',
+                      left: 0,
+                      backgroundColor: 'var(--macos-background-secondary)',
+                      zIndex: 1,
                     }}
                   >
                     Fecha
@@ -464,7 +518,7 @@ const Metrics: React.FC = () => {
                       fontSize: '14px',
                     }}
                   >
-                    Cajas
+                    Total Cajas
                   </th>
                   <th
                     style={{
@@ -475,7 +529,7 @@ const Metrics: React.FC = () => {
                       fontSize: '14px',
                     }}
                   >
-                    Pallets
+                    Total Pallets
                   </th>
                   <th
                     style={{
@@ -488,6 +542,57 @@ const Metrics: React.FC = () => {
                   >
                     Eficiencia
                   </th>
+                  {metricType === 'all' || metricType === 'PRODUCTION_DAILY' ? (
+                    <>
+                      <th
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'left',
+                          fontWeight: 600,
+                          color: 'var(--macos-text-primary)',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Cajas por Calibre
+                      </th>
+                      <th
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'left',
+                          fontWeight: 600,
+                          color: 'var(--macos-text-primary)',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Cajas por Horario
+                      </th>
+                      <th
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'left',
+                          fontWeight: 600,
+                          color: 'var(--macos-text-primary)',
+                          fontSize: '14px',
+                        }}
+                      >
+                        Cajas por Operario
+                      </th>
+                    </>
+                  ) : null}
+                  {metricType === 'all' ||
+                  metricType === 'INVENTORY_SNAPSHOT' ? (
+                    <th
+                      style={{
+                        padding: 'var(--macos-space-3)',
+                        textAlign: 'left',
+                        fontWeight: 600,
+                        color: 'var(--macos-text-primary)',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Por Ubicación
+                    </th>
+                  ) : null}
                   <th
                     style={{
                       padding: 'var(--macos-space-3)',
@@ -508,120 +613,186 @@ const Metrics: React.FC = () => {
                       fontSize: '14px',
                     }}
                   >
-                    Detalles
+                    Calculado
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {data.metrics.map((metric, index) => {
-                  const isExpanded = expandedRows.has(metric.dateKey);
                   const isProduction = metric.metricType === 'PRODUCTION_DAILY';
                   const metricData = metric.data || {};
 
+                  // Helper function to safely extract number from parsed DynamoDB data
+                  const safeNumber = (value: any): number => {
+                    if (value === null || value === undefined) return 0;
+                    if (typeof value === 'number') return value;
+                    if (typeof value === 'string') {
+                      const num = parseFloat(value);
+                      return isNaN(num) ? 0 : num;
+                    }
+                    return 0;
+                  };
+
+                  // Helper function to format object as string for display
+                  const formatObjectAsText = (
+                    obj: any,
+                    maxItems: number = 3
+                  ): string => {
+                    if (!obj || typeof obj !== 'object') return '-';
+                    const entries = Object.entries(obj);
+                    if (entries.length === 0) return '-';
+                    const displayEntries = entries.slice(0, maxItems);
+                    const result = displayEntries
+                      .map(
+                        ([key, val]) =>
+                          `${key}: ${formatNumber(safeNumber(val))}`
+                      )
+                      .join(', ');
+                    return entries.length > maxItems
+                      ? `${result}... (+${entries.length - maxItems})`
+                      : result;
+                  };
+
                   return (
-                    <React.Fragment key={`${metric.metricType}-${metric.dateKey}`}>
-                      <tr
+                    <tr
+                      key={`${metric.metricType}-${metric.dateKey}`}
+                      style={{
+                        backgroundColor:
+                          index % 2 === 0
+                            ? 'var(--macos-background-primary)'
+                            : 'var(--macos-background-secondary)',
+                        borderBottom: '1px solid var(--macos-border-primary)',
+                      }}
+                    >
+                      <td
                         style={{
-                          backgroundColor: index % 2 === 0 ? 'var(--macos-background-primary)' : 'var(--macos-background-secondary)',
-                          borderBottom: '1px solid var(--macos-border-primary)',
-                          cursor: 'pointer',
+                          padding: 'var(--macos-space-3)',
+                          position: 'sticky',
+                          left: 0,
+                          backgroundColor: 'inherit',
                         }}
-                        onClick={() => toggleRowExpansion(metric.dateKey)}
                       >
-                        <td style={{ padding: 'var(--macos-space-3)' }}>
-                          {formatDate(metric.date || metric.dateKey)}
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)' }}>
-                          {isProduction ? 'Producción Diaria' : 'Snapshot Inventario'}
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)', textAlign: 'right' }}>
-                          {formatNumber(metricData.totalBoxes || 0)}
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)', textAlign: 'right' }}>
-                          {formatNumber(metricData.totalPallets || 0)}
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)', textAlign: 'right' }}>
-                          {metricData.efficiency !== undefined
-                            ? `${metricData.efficiency.toFixed(2)}%`
-                            : '-'}
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)', textAlign: 'center' }}>
-                          <span
+                        {formatDate(metric.date || metric.dateKey)}
+                      </td>
+                      <td style={{ padding: 'var(--macos-space-3)' }}>
+                        {isProduction
+                          ? 'Producción Diaria'
+                          : 'Snapshot Inventario'}
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'right',
+                        }}
+                      >
+                        {formatNumber(safeNumber(metricData.totalBoxes))}
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'right',
+                        }}
+                      >
+                        {formatNumber(safeNumber(metricData.totalPallets))}
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'right',
+                        }}
+                      >
+                        {metricData.efficiency !== undefined &&
+                        metricData.efficiency !== null
+                          ? `${safeNumber(metricData.efficiency).toFixed(2)}%`
+                          : '-'}
+                      </td>
+                      {metricType === 'all' ||
+                      metricType === 'PRODUCTION_DAILY' ? (
+                        <>
+                          <td
                             style={{
-                              padding: 'var(--macos-space-1) var(--macos-space-2)',
-                              borderRadius: 'var(--macos-radius-small)',
-                              backgroundColor: metric.isFinal
-                                ? 'var(--macos-green)'
-                                : 'var(--macos-orange)',
-                              color: 'white',
+                              padding: 'var(--macos-space-3)',
+                              textAlign: 'left',
                               fontSize: '12px',
-                              fontWeight: 600,
                             }}
                           >
-                            {metric.isFinal ? 'Final' : 'Preliminar'}
-                          </span>
-                        </td>
-                        <td style={{ padding: 'var(--macos-space-3)', textAlign: 'center' }}>
-                          <BarChart3
-                            style={{
-                              width: '16px',
-                              height: '16px',
-                              color: 'var(--macos-blue)',
-                              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                              transition: 'transform 0.2s',
-                            }}
-                          />
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={7} style={{ padding: 'var(--macos-space-4)', backgroundColor: 'var(--macos-background-secondary)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--macos-space-4)' }}>
-                              {isProduction && (
-                                <>
-                                  {metricData.boxesByCalibre && (
-                                    <div>
-                                      <p style={{ fontWeight: 600, marginBottom: 'var(--macos-space-2)', fontSize: '14px' }}>Cajas por Calibre</p>
-                                      {Object.entries(metricData.boxesByCalibre).map(([calibre, count]: [string, any]) => (
-                                        <p key={calibre} style={{ fontSize: '13px', margin: 'var(--macos-space-1) 0' }}>
-                                          Calibre {calibre}: {formatNumber(count)}
-                                        </p>
-                                      ))}
-                                    </div>
-                                  )}
-                                  {metricData.boxesByShift && (
-                                    <div>
-                                      <p style={{ fontWeight: 600, marginBottom: 'var(--macos-space-2)', fontSize: '14px' }}>Cajas por Horario</p>
-                                      {Object.entries(metricData.boxesByShift).map(([shift, count]: [string, any]) => (
-                                        <p key={shift} style={{ fontSize: '13px', margin: 'var(--macos-space-1) 0' }}>
-                                          {shift}: {formatNumber(count)}
-                                        </p>
-                                      ))}
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                              {!isProduction && metricData.byLocation && (
-                                <div>
-                                  <p style={{ fontWeight: 600, marginBottom: 'var(--macos-space-2)', fontSize: '14px' }}>Por Ubicación</p>
-                                  {Object.entries(metricData.byLocation).map(([location, count]: [string, any]) => (
-                                    <p key={location} style={{ fontSize: '13px', margin: 'var(--macos-space-1) 0' }}>
-                                      {location}: {formatNumber(count)}
-                                    </p>
-                                  ))}
-                                </div>
-                              )}
-                              <div>
-                                <p style={{ fontWeight: 600, marginBottom: 'var(--macos-space-2)', fontSize: '14px' }}>Calculado</p>
-                                <p style={{ fontSize: '13px', margin: 'var(--macos-space-1) 0' }}>
-                                  {formatDate(metric.calculatedAt)}
-                                </p>
-                              </div>
-                            </div>
+                            {isProduction
+                              ? formatObjectAsText(metricData.boxesByCalibre)
+                              : '-'}
                           </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                          <td
+                            style={{
+                              padding: 'var(--macos-space-3)',
+                              textAlign: 'left',
+                              fontSize: '12px',
+                            }}
+                          >
+                            {isProduction
+                              ? formatObjectAsText(metricData.boxesByShift)
+                              : '-'}
+                          </td>
+                          <td
+                            style={{
+                              padding: 'var(--macos-space-3)',
+                              textAlign: 'left',
+                              fontSize: '12px',
+                            }}
+                          >
+                            {isProduction
+                              ? formatObjectAsText(metricData.boxesByOperario)
+                              : '-'}
+                          </td>
+                        </>
+                      ) : null}
+                      {metricType === 'all' ||
+                      metricType === 'INVENTORY_SNAPSHOT' ? (
+                        <td
+                          style={{
+                            padding: 'var(--macos-space-3)',
+                            textAlign: 'left',
+                            fontSize: '12px',
+                          }}
+                        >
+                          {!isProduction
+                            ? formatObjectAsText(metricData.byLocation)
+                            : '-'}
+                        </td>
+                      ) : null}
+                      <td
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <span
+                          style={{
+                            padding:
+                              'var(--macos-space-1) var(--macos-space-2)',
+                            borderRadius: 'var(--macos-radius-small)',
+                            backgroundColor: metric.isFinal
+                              ? 'var(--macos-green)'
+                              : 'var(--macos-orange)',
+                            color: 'white',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {metric.isFinal ? 'Final' : 'Preliminar'}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: 'var(--macos-space-3)',
+                          textAlign: 'center',
+                          fontSize: '12px',
+                          color: 'var(--macos-text-secondary)',
+                        }}
+                      >
+                        {metric.calculatedAt
+                          ? formatDate(metric.calculatedAt)
+                          : '-'}
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
@@ -643,7 +814,10 @@ const Metrics: React.FC = () => {
           />
           <p
             className="macos-text-body"
-            style={{ color: 'var(--macos-text-secondary)', marginBottom: 'var(--macos-space-4)' }}
+            style={{
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-4)',
+            }}
           >
             No se encontraron métricas para el período seleccionado
           </p>
@@ -657,4 +831,3 @@ const Metrics: React.FC = () => {
 };
 
 export default Metrics;
-
