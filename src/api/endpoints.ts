@@ -467,6 +467,38 @@ export const calculateMetricsForDate = (params: {
     details?: Array<{ date: string; status: string; metrics?: any; error?: string }>;
   }>('calculateMetrics', 'report', params);
 
+// Get metrics with filtering
+export const getMetrics = (params?: {
+  metricType?: 'PRODUCTION_DAILY' | 'INVENTORY_SNAPSHOT' | 'all';
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+}) =>
+  admin<{
+    metrics: Array<{
+      metricType: string;
+      dateKey: string;
+      date: string;
+      data: any;
+      calculatedAt: string;
+      isFinal: boolean;
+    }>;
+    summary: {
+      totalBoxes: number;
+      totalPallets: number;
+      averageEfficiency: number;
+      totalDays: number;
+    };
+    count: number;
+    totalFound: number;
+    dateRange: {
+      start: string;
+      end: string;
+    };
+    metricType: string;
+    timestamp: string;
+  }>('getMetrics', 'report', params || {});
+
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>
   get(`/powerbi/export/${dataType}`);

@@ -28,6 +28,7 @@ const ConfirmedSalesOrdersList = lazy(
 );
 const AdminIssues = lazy(() => import('../views/Admin/Issues'));
 const AdminDangerZone = lazy(() => import('../views/Admin/DangerZone'));
+const AdminMetrics = lazy(() => import('../views/Admin/Metrics'));
 
 export const routes = [
   {
@@ -89,6 +90,10 @@ export const routes = [
   {
     path: '/admin/danger-zone',
     element: <AdminDangerZone />,
+  },
+  {
+    path: '/admin/metrics',
+    element: <AdminMetrics />,
   },
 ];
 

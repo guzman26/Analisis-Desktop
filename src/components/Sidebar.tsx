@@ -20,6 +20,7 @@ import {
   Search,
   AlertTriangle,
   Truck,
+  BarChart3,
 } from 'lucide-react';
 import '../styles/designSystem.css';
 
@@ -122,6 +123,11 @@ const sidebarItems: SidebarItem[] = [
         path: '/admin/issues',
         label: 'Problemas',
         icon: <Search className="w-4 h-4" />,
+      },
+      {
+        path: '/admin/metrics',
+        label: 'Métricas',
+        icon: <BarChart3 className="w-4 h-4" />,
       },
       {
         path: '/admin/danger-zone',
