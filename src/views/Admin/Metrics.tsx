@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Button, Input } from '@/components/design-system';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Card, Button, Input, DataTable, DataTableColumn } from '@/components/design-system';
 import {
   RefreshCw,
   TrendingUp,
@@ -45,6 +45,11 @@ const Metrics: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Table UI state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortColumn, setSortColumn] = useState<string | null>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Filters
   const [metricType, setMetricType] = useState<
@@ -108,9 +113,221 @@ const Metrics: React.FC = () => {
     });
   };
 
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('es-ES').format(num);
+  const formatNumber = (num: number) =>
+    new Intl.NumberFormat('es-ES').format(num);
+
+  // Helper function to safely extract number from parsed DynamoDB data
+  const safeNumber = (value: any): number => {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const num = parseFloat(value);
+      return Number.isNaN(num) ? 0 : num;
+    }
+    return 0;
   };
+
+  // Helper to display key/value aggregates as compact text
+  const formatObjectAsText = (obj: any, maxItems: number = 3): string => {
+    if (!obj || typeof obj !== 'object') return '-';
+    const entries = Object.entries(obj);
+    if (entries.length === 0) return '-';
+    const displayEntries = entries.slice(0, maxItems);
+    const result = displayEntries
+      .map(([key, val]) => `${key}: ${formatNumber(safeNumber(val))}`)
+      .join(', ');
+    return entries.length > maxItems
+      ? `${result}... (+${entries.length - maxItems})`
+      : result;
+  };
+
+  const createChipsFromObject = (obj: any) => {
+    if (!obj || typeof obj !== 'object') return null;
+    const entries = Object.entries(obj);
+    if (!entries.length) return null;
+
+    return (
+      <div className="macos-hstack" style={{ flexWrap: 'wrap', gap: 4 }}>
+        {entries.map(([key, val]) => (
+          <span
+            key={key}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '2px 8px',
+              borderRadius: 999,
+              backgroundColor: 'var(--macos-gray-6)',
+              fontSize: 11,
+              color: 'var(--macos-text-secondary)',
+            }}
+          >
+            <span style={{ fontWeight: 600, marginRight: 4 }}>{key}</span>
+            <span>{formatNumber(safeNumber(val))}</span>
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  const handleSortChange = (columnId: string, direction: 'asc' | 'desc') => {
+    setSortColumn(columnId);
+    setSortDirection(direction);
+  };
+
+  const filteredMetrics = useMemo(() => {
+    if (!data?.metrics) return [];
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return data.metrics;
+
+    return data.metrics.filter((metric) => {
+      const isProduction = metric.metricType === 'PRODUCTION_DAILY';
+      const typeLabel = isProduction
+        ? 'producción diaria'
+        : 'snapshot inventario';
+      const dateLabel = formatDate(metric.date || metric.dateKey).toLowerCase();
+
+      return (
+        dateLabel.includes(term) ||
+        typeLabel.includes(term) ||
+        metric.metricType.toLowerCase().includes(term)
+      );
+    });
+  }, [data, searchTerm]);
+
+  type MetricsRow = Metric & { metricData: any; isProduction: boolean };
+
+  const tableRows: MetricsRow[] = useMemo(() => {
+    return filteredMetrics.map((metric) => {
+      const isProduction = metric.metricType === 'PRODUCTION_DAILY';
+      const metricData = metric.data || {};
+
+      return {
+        ...metric,
+        metricData,
+        isProduction,
+      };
+    });
+  }, [filteredMetrics]);
+
+  const metricsColumns: DataTableColumn<MetricsRow>[] = useMemo(
+    () => [
+      {
+        id: 'date',
+        header: 'Fecha',
+        accessor: (row) => formatDate(row.date || row.dateKey),
+        sortable: true,
+        width: 140,
+      },
+      {
+        id: 'type',
+        header: 'Tipo',
+        accessor: (row) =>
+          row.isProduction ? 'Producción Diaria' : 'Snapshot Inventario',
+        sortable: true,
+        width: 160,
+      },
+      {
+        id: 'totalBoxes',
+        header: 'Total Cajas',
+        align: 'right',
+        sortable: true,
+        accessor: (row) => safeNumber(row.metricData.totalBoxes),
+        renderCell: (row) =>
+          formatNumber(safeNumber(row.metricData.totalBoxes)),
+        width: 120,
+      },
+      {
+        id: 'totalPallets',
+        header: 'Total Pallets',
+        align: 'right',
+        sortable: true,
+        accessor: (row) => safeNumber(row.metricData.totalPallets),
+        renderCell: (row) =>
+          formatNumber(safeNumber(row.metricData.totalPallets)),
+        width: 120,
+      },
+      {
+        id: 'efficiency',
+        header: 'Eficiencia',
+        align: 'right',
+        sortable: true,
+        accessor: (row) => safeNumber(row.metricData.efficiency),
+        renderCell: (row) =>
+          row.metricData.efficiency !== undefined &&
+          row.metricData.efficiency !== null
+            ? `${safeNumber(row.metricData.efficiency).toFixed(2)}%`
+            : '-',
+        width: 120,
+      },
+      {
+        id: 'byCalibre',
+        header: 'Cajas por Calibre',
+        accessor: (row) =>
+          row.isProduction
+            ? formatObjectAsText(row.metricData.boxesByCalibre)
+            : '-',
+        width: 220,
+      },
+      {
+        id: 'byShift',
+        header: 'Cajas por Horario',
+        accessor: (row) =>
+          row.isProduction
+            ? formatObjectAsText(row.metricData.boxesByShift)
+            : '-',
+        width: 220,
+      },
+      {
+        id: 'byOperario',
+        header: 'Cajas por Operario',
+        accessor: (row) =>
+          row.isProduction
+            ? formatObjectAsText(row.metricData.boxesByOperario)
+            : '-',
+        width: 220,
+      },
+      {
+        id: 'byLocation',
+        header: 'Por Ubicación',
+        accessor: (row) =>
+          !row.isProduction
+            ? formatObjectAsText(row.metricData.byLocation)
+            : '-',
+        width: 220,
+      },
+      {
+        id: 'status',
+        header: 'Estado',
+        accessor: (row) => (row.isFinal ? 'Final' : 'Preliminar'),
+        width: 110,
+        renderCell: (row) => (
+          <span
+            style={{
+              padding:
+                'var(--macos-space-1) var(--macos-space-2)',
+              borderRadius: 'var(--macos-radius-small)',
+              backgroundColor: row.isFinal
+                ? 'var(--macos-green)'
+                : 'var(--macos-orange)',
+              color: 'white',
+              fontSize: 12,
+              fontWeight: 600,
+            }}
+          >
+            {row.isFinal ? 'Final' : 'Preliminar'}
+          </span>
+        ),
+      },
+      {
+        id: 'calculatedAt',
+        header: 'Calculado',
+        accessor: (row) =>
+          row.calculatedAt ? formatDate(row.calculatedAt) : '-',
+        width: 140,
+      },
+    ],
+    []
+  );
 
   return (
     <div
@@ -222,6 +439,33 @@ const Metrics: React.FC = () => {
             />
           </div>
 
+          <div
+            className="macos-hstack"
+            style={{
+              gap: 'var(--macos-space-3)',
+              alignItems: 'flex-end',
+              flex: 1,
+              justifyContent: 'flex-end',
+            }}
+          >
+            <div style={{ minWidth: '220px' }}>
+              <label
+                className="macos-text-footnote"
+                style={{
+                  color: 'var(--macos-text-secondary)',
+                  marginBottom: 'var(--macos-space-1)',
+                  display: 'block',
+                }}
+              >
+                Buscar en resultados
+              </label>
+              <Input
+                placeholder="Filtrar por fecha o tipo..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ width: '100%' }}
+              />
+            </div>
           <Button
             variant="primary"
             size="medium"
@@ -230,6 +474,7 @@ const Metrics: React.FC = () => {
           >
             Aplicar Filtros
           </Button>
+          </div>
         </div>
       </div>
 
@@ -467,337 +712,125 @@ const Metrics: React.FC = () => {
       )}
 
       {/* Metrics Table */}
-      {!loading && data && data.metrics.length > 0 && (
+      {!loading && data && tableRows.length > 0 && (
         <Card variant="default" padding="none">
-          <div style={{ overflowX: 'auto' }}>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-              }}
-            >
-              <thead>
-                <tr
-                  style={{
-                    backgroundColor: 'var(--macos-background-secondary)',
-                    borderBottom: '1px solid var(--macos-border-primary)',
-                  }}
-                >
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'left',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                      position: 'sticky',
-                      left: 0,
-                      backgroundColor: 'var(--macos-background-secondary)',
-                      zIndex: 1,
-                    }}
-                  >
-                    Fecha
-                  </th>
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'left',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Tipo
-                  </th>
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'right',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Total Cajas
-                  </th>
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'right',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Total Pallets
-                  </th>
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'right',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Eficiencia
-                  </th>
-                  {metricType === 'all' || metricType === 'PRODUCTION_DAILY' ? (
+          <DataTable<MetricsRow>
+            columns={metricsColumns}
+            data={tableRows}
+            getRowId={(row) => `${row.metricType}-${row.dateKey}`}
+            initialSort={{
+              columnId: sortColumn || 'date',
+              direction: sortDirection,
+            }}
+            onSortChange={handleSortChange}
+            renderExpandedContent={(row) => {
+              const { metricData, isProduction } = row;
+
+              return (
+                <>
+                  {isProduction && (
                     <>
-                      <th
+                      <div>
+                        <p
+                          className="macos-text-footnote"
                         style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'left',
+                            color: 'var(--macos-text-secondary)',
+                            marginBottom: 'var(--macos-space-1)',
                           fontWeight: 600,
-                          color: 'var(--macos-text-primary)',
-                          fontSize: '14px',
                         }}
                       >
                         Cajas por Calibre
-                      </th>
-                      <th
+                        </p>
+                        {createChipsFromObject(metricData.boxesByCalibre) || (
+                          <p
+                            className="macos-text-caption-1"
                         style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'left',
+                              color: 'var(--macos-text-tertiary)',
+                              margin: 0,
+                            }}
+                          >
+                            Sin datos de calibre.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p
+                          className="macos-text-footnote"
+                        style={{
+                            color: 'var(--macos-text-secondary)',
+                            marginBottom: 'var(--macos-space-1)',
                           fontWeight: 600,
-                          color: 'var(--macos-text-primary)',
-                          fontSize: '14px',
-                        }}
-                      >
-                        Cajas por Horario
-                      </th>
-                      <th
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'left',
-                          fontWeight: 600,
-                          color: 'var(--macos-text-primary)',
-                          fontSize: '14px',
-                        }}
-                      >
-                        Cajas por Operario
-                      </th>
-                    </>
-                  ) : null}
-                  {metricType === 'all' ||
-                  metricType === 'INVENTORY_SNAPSHOT' ? (
-                    <th
-                      style={{
-                        padding: 'var(--macos-space-3)',
-                        textAlign: 'left',
-                        fontWeight: 600,
-                        color: 'var(--macos-text-primary)',
-                        fontSize: '14px',
-                      }}
-                    >
-                      Por Ubicación
-                    </th>
-                  ) : null}
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'center',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Estado
-                  </th>
-                  <th
-                    style={{
-                      padding: 'var(--macos-space-3)',
-                      textAlign: 'center',
-                      fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
-                      fontSize: '14px',
-                    }}
-                  >
-                    Calculado
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.metrics.map((metric, index) => {
-                  const isProduction = metric.metricType === 'PRODUCTION_DAILY';
-                  const metricData = metric.data || {};
-
-                  // Helper function to safely extract number from parsed DynamoDB data
-                  const safeNumber = (value: any): number => {
-                    if (value === null || value === undefined) return 0;
-                    if (typeof value === 'number') return value;
-                    if (typeof value === 'string') {
-                      const num = parseFloat(value);
-                      return isNaN(num) ? 0 : num;
-                    }
-                    return 0;
-                  };
-
-                  // Helper function to format object as string for display
-                  const formatObjectAsText = (
-                    obj: any,
-                    maxItems: number = 3
-                  ): string => {
-                    if (!obj || typeof obj !== 'object') return '-';
-                    const entries = Object.entries(obj);
-                    if (entries.length === 0) return '-';
-                    const displayEntries = entries.slice(0, maxItems);
-                    const result = displayEntries
-                      .map(
-                        ([key, val]) =>
-                          `${key}: ${formatNumber(safeNumber(val))}`
-                      )
-                      .join(', ');
-                    return entries.length > maxItems
-                      ? `${result}... (+${entries.length - maxItems})`
-                      : result;
-                  };
-
-                  return (
-                    <tr
-                      key={`${metric.metricType}-${metric.dateKey}`}
-                      style={{
-                        backgroundColor:
-                          index % 2 === 0
-                            ? 'var(--macos-background-primary)'
-                            : 'var(--macos-background-secondary)',
-                        borderBottom: '1px solid var(--macos-border-primary)',
-                      }}
-                    >
-                      <td
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          position: 'sticky',
-                          left: 0,
-                          backgroundColor: 'inherit',
-                        }}
-                      >
-                        {formatDate(metric.date || metric.dateKey)}
-                      </td>
-                      <td style={{ padding: 'var(--macos-space-3)' }}>
-                        {isProduction
-                          ? 'Producción Diaria'
-                          : 'Snapshot Inventario'}
-                      </td>
-                      <td
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'right',
-                        }}
-                      >
-                        {formatNumber(safeNumber(metricData.totalBoxes))}
-                      </td>
-                      <td
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'right',
-                        }}
-                      >
-                        {formatNumber(safeNumber(metricData.totalPallets))}
-                      </td>
-                      <td
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'right',
-                        }}
-                      >
-                        {metricData.efficiency !== undefined &&
-                        metricData.efficiency !== null
-                          ? `${safeNumber(metricData.efficiency).toFixed(2)}%`
-                          : '-'}
-                      </td>
-                      {metricType === 'all' ||
-                      metricType === 'PRODUCTION_DAILY' ? (
-                        <>
-                          <td
-                            style={{
-                              padding: 'var(--macos-space-3)',
-                              textAlign: 'left',
-                              fontSize: '12px',
-                            }}
-                          >
-                            {isProduction
-                              ? formatObjectAsText(metricData.boxesByCalibre)
-                              : '-'}
-                          </td>
-                          <td
-                            style={{
-                              padding: 'var(--macos-space-3)',
-                              textAlign: 'left',
-                              fontSize: '12px',
-                            }}
-                          >
-                            {isProduction
-                              ? formatObjectAsText(metricData.boxesByShift)
-                              : '-'}
-                          </td>
-                          <td
-                            style={{
-                              padding: 'var(--macos-space-3)',
-                              textAlign: 'left',
-                              fontSize: '12px',
-                            }}
-                          >
-                            {isProduction
-                              ? formatObjectAsText(metricData.boxesByOperario)
-                              : '-'}
-                          </td>
-                        </>
-                      ) : null}
-                      {metricType === 'all' ||
-                      metricType === 'INVENTORY_SNAPSHOT' ? (
-                        <td
-                          style={{
-                            padding: 'var(--macos-space-3)',
-                            textAlign: 'left',
-                            fontSize: '12px',
                           }}
                         >
-                          {!isProduction
-                            ? formatObjectAsText(metricData.byLocation)
-                            : '-'}
-                        </td>
-                      ) : null}
-                      <td
-                        style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'center',
-                        }}
-                      >
-                        <span
-                          style={{
-                            padding:
-                              'var(--macos-space-1) var(--macos-space-2)',
-                            borderRadius: 'var(--macos-radius-small)',
-                            backgroundColor: metric.isFinal
-                              ? 'var(--macos-green)'
-                              : 'var(--macos-orange)',
-                            color: 'white',
-                            fontSize: '12px',
+                          Cajas por Horario
+                        </p>
+                        {createChipsFromObject(metricData.boxesByShift) || (
+                          <p
+                            className="macos-text-caption-1"
+                      style={{
+                              color: 'var(--macos-text-tertiary)',
+                              margin: 0,
+                            }}
+                          >
+                            Sin datos de horario.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <p
+                          className="macos-text-footnote"
+                    style={{
+                            color: 'var(--macos-text-secondary)',
+                            marginBottom: 'var(--macos-space-1)',
+                      fontWeight: 600,
+                          }}
+                        >
+                          Cajas por Operario
+                        </p>
+                        {createChipsFromObject(metricData.boxesByOperario) || (
+                          <p
+                            className="macos-text-caption-1"
+                    style={{
+                              color: 'var(--macos-text-tertiary)',
+                              margin: 0,
+                            }}
+                          >
+                            Sin datos de operario.
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {!isProduction && (
+                    <div>
+                      <p
+                        className="macos-text-footnote"
+                      style={{
+                          color: 'var(--macos-text-secondary)',
+                          marginBottom: 'var(--macos-space-1)',
                             fontWeight: 600,
                           }}
                         >
-                          {metric.isFinal ? 'Final' : 'Preliminar'}
-                        </span>
-                      </td>
-                      <td
+                        Cajas por Ubicación
+                      </p>
+                      {createChipsFromObject(metricData.byLocation) || (
+                        <p
+                          className="macos-text-caption-1"
                         style={{
-                          padding: 'var(--macos-space-3)',
-                          textAlign: 'center',
-                          fontSize: '12px',
-                          color: 'var(--macos-text-secondary)',
-                        }}
-                      >
-                        {metric.calculatedAt
-                          ? formatDate(metric.calculatedAt)
-                          : '-'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            color: 'var(--macos-text-tertiary)',
+                            margin: 0,
+                          }}
+                        >
+                          Sin datos de ubicación.
+                        </p>
+                      )}
           </div>
+                  )}
+                </>
+              );
+            }}
+          />
         </Card>
       )}
 

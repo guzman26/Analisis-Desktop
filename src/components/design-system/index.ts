@@ -10,6 +10,9 @@ export type { ModalProps } from './Modal';
 export { default as Input } from './Input';
 export type { InputProps } from './Input';
 
+export { default as DataTable } from './DataTable';
+export type { DataTableProps, DataTableColumn, SortDirection } from './DataTable';
+
 export { default as WindowContainer } from './WindowContainer';
 export type { WindowContainerProps } from './WindowContainer';
 
