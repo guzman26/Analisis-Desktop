@@ -314,10 +314,11 @@ export const confirmSale = (id: string) =>
 
 /**
  * Validate inventory availability before creating a sale
- * Checks if all boxes are still available for sale
+ * Checks if all boxes and pallets are still available for sale (in BODEGA)
+ * @param items - Array of items with palletId and boxIds
  */
-export const validateInventory = (boxIds: string[]) =>
-  sales<InventoryValidationResult>('validate-inventory', 'order', { boxIds });
+export const validateInventory = (items: Array<{ palletId: string; boxIds: string[] }>) =>
+  sales<InventoryValidationResult>('validate-inventory', 'order', { items });
 
 /**
  * Get customer purchase preferences based on history

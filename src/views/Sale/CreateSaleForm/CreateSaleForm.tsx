@@ -69,28 +69,15 @@ const CreateSaleForm: React.FC = () => {
     setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      // Step 1: Validate inventory availability
-      showSuccess('Validando inventario...');
-      const validationResult = await validateInventory(state.selectedBoxCodes);
-
-      if (!validationResult.valid) {
-        const unavailableCount = validationResult.unavailableBoxes.length;
-        const reasons = validationResult.unavailableBoxes
-          .slice(0, 3)
-          .map((box) => `${box.boxId}: ${box.reason}`)
-          .join(', ');
-
-        showError(
-          `${unavailableCount} caja(s) no disponible(s). Ejemplos: ${reasons}. Por favor, actualice la selección.`
-        );
-        setState((prev) => ({ ...prev, isSubmitting: false }));
-        return;
-      }
-
-      // Step 2: Group selected boxes by their pallets
+      // Step 1: Group selected boxes by their pallets first
       const palletGroupedBoxes = new Map<string, string[]>();
 
       closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
+        // Ensure pallet is in BODEGA
+        if (pallet.ubicacion !== 'BODEGA') {
+          return;
+        }
+
         const selectedBoxesInPallet = getPalletBoxes(pallet).filter((boxId) =>
           state.selectedBoxCodes.includes(boxId)
         );
@@ -101,18 +88,66 @@ const CreateSaleForm: React.FC = () => {
       });
 
       if (palletGroupedBoxes.size === 0) {
-        showError('No se pudieron agrupar las cajas por pallets');
+        showError('No se pudieron agrupar las cajas por pallets. Asegúrese de que los pallets estén en BODEGA.');
         setState((prev) => ({ ...prev, isSubmitting: false }));
         return;
       }
 
-      // Step 3: Create items array with pallets containing their boxes
+      // Step 2: Create items array with pallets containing their boxes
       const items: SaleItem[] = Array.from(palletGroupedBoxes.entries()).map(
         ([palletId, boxIds]) => ({
           palletId,
           boxIds,
         })
       );
+
+      // Step 3: Validate inventory availability (pallets and boxes in BODEGA)
+      showSuccess('Validando inventario...');
+      const validationResult = await validateInventory(items);
+
+      if (!validationResult.valid) {
+        // Build comprehensive error message
+        const errorMessages: string[] = [];
+
+        if (validationResult.palletErrors && validationResult.palletErrors.length > 0) {
+          const palletErrors = validationResult.palletErrors
+            .slice(0, 3)
+            .map((err) => `Pallet ${err.palletId}: ${err.reason}`)
+            .join('; ');
+          const morePallets = validationResult.palletErrors.length > 3
+            ? ` y ${validationResult.palletErrors.length - 3} pallet(s) más`
+            : '';
+          errorMessages.push(`${validationResult.palletErrors.length} pallet(s) con errores: ${palletErrors}${morePallets}`);
+        }
+
+        if (validationResult.boxErrors && validationResult.boxErrors.length > 0) {
+          const boxErrors = validationResult.boxErrors
+            .slice(0, 3)
+            .map((err) => `Caja ${err.boxId}: ${err.reason}`)
+            .join('; ');
+          const moreBoxes = validationResult.boxErrors.length > 3
+            ? ` y ${validationResult.boxErrors.length - 3} caja(s) más`
+            : '';
+          errorMessages.push(`${validationResult.boxErrors.length} caja(s) con errores: ${boxErrors}${moreBoxes}`);
+        }
+
+        // Fallback to old format if new format not available
+        if (validationResult.unavailableBoxes && validationResult.unavailableBoxes.length > 0) {
+          const reasons = validationResult.unavailableBoxes
+            .slice(0, 3)
+            .map((box) => `${box.boxId}: ${box.reason}`)
+            .join(', ');
+          errorMessages.push(`${validationResult.unavailableBoxes.length} caja(s) no disponible(s): ${reasons}`);
+        }
+
+        const finalMessage = errorMessages.length > 0
+          ? errorMessages.join('. ')
+          : 'El inventario no está disponible para la venta. Por favor, actualice la selección.';
+
+        showError(finalMessage);
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        return;
+      }
 
       const saleRequest: SaleRequest = {
         customerId: state.selectedCustomer.customerId,
@@ -121,7 +156,7 @@ const CreateSaleForm: React.FC = () => {
         notes,
       };
 
-      // Step 4: Create the sale
+      // Step 4: Create the sale (backend will re-validate for transaction safety)
       showSuccess('Creando venta...');
       const sale = await createSale(saleRequest);
 
@@ -146,26 +181,35 @@ const CreateSaleForm: React.FC = () => {
       let errorMessage = 'Error al crear la venta';
 
       if (error instanceof Error) {
-        if (
-          error.message.includes('Customer') &&
-          error.message.includes('not active')
-        ) {
+        const errorMsg = error.message.toLowerCase();
+
+        if (errorMsg.includes('customer') && errorMsg.includes('not active')) {
           errorMessage = 'El cliente seleccionado no está activo';
-        } else if (error.message.includes('not found')) {
-          errorMessage =
-            'Algunos elementos no fueron encontrados. Actualice la página.';
+        } else if (errorMsg.includes('not found') || errorMsg.includes('no encontrado')) {
+          errorMessage = 'Algunos elementos no fueron encontrados. Actualice la página.';
         } else if (
-          error.message.includes('not available') ||
-          error.message.includes('not in BODEGA')
+          errorMsg.includes('not available') ||
+          errorMsg.includes('not in bodega') ||
+          errorMsg.includes('no está en bodega') ||
+          errorMsg.includes('debe estar en bodega')
         ) {
-          errorMessage =
-            'Algunas cajas ya no están disponibles. Actualice la selección.';
+          errorMessage = 'Algunas cajas o pallets ya no están en BODEGA. Actualice la selección.';
+        } else if (errorMsg.includes('reservada') || errorMsg.includes('reserved')) {
+          errorMessage = 'Algunas cajas están reservadas para otra venta. Actualice la selección.';
+        } else if (errorMsg.includes('ya fue vendida') || errorMsg.includes('already sold')) {
+          errorMessage = 'Algunas cajas ya fueron vendidas. Actualice la selección.';
+        } else if (errorMsg.includes('duplicada') || errorMsg.includes('duplicate')) {
+          errorMessage = 'Se detectó un intento de venta duplicada. Por favor, intente nuevamente.';
         } else if (
-          error.message.includes('network') ||
-          error.message.includes('NetworkError')
+          errorMsg.includes('network') ||
+          errorMsg.includes('networkerror') ||
+          errorMsg.includes('fetch')
         ) {
           errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+        } else if (errorMsg.includes('debe estar cerrado') || errorMsg.includes('must be closed')) {
+          errorMessage = 'Algunos pallets deben estar cerrados antes de crear la venta.';
         } else {
+          // Show the actual error message if it's in Spanish or a known format
           errorMessage = error.message;
         }
       }

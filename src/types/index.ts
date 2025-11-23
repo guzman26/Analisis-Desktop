@@ -379,9 +379,42 @@ export interface BoxAvailability {
 
 export interface InventoryValidationResult {
   valid: boolean;
-  unavailableBoxes: BoxAvailability[];
-  totalChecked: number;
-  totalAvailable: number;
+  totalItems?: number;
+  totalBoxes?: number;
+  unavailableBoxes?: BoxAvailability[];
+  palletErrors?: Array<{
+    palletId: string;
+    available: boolean;
+    reason: string;
+    errorCode?: string;
+    currentUbicacion?: string;
+    currentEstado?: string;
+  }>;
+  boxErrors?: Array<{
+    boxId: string;
+    palletId: string;
+    available: boolean;
+    reason: string;
+    errorCode?: string;
+    currentUbicacion?: string;
+    reservedFor?: string;
+    reservedSaleId?: string;
+    soldTo?: string;
+    actualPalletId?: string;
+  }>;
+  errors?: Array<{
+    type: string;
+    message: string;
+    item?: any;
+  }>;
+  summary?: {
+    totalErrors: number;
+    palletErrorCount: number;
+    boxErrorCount: number;
+  };
+  message?: string;
+  totalChecked?: number;
+  totalAvailable?: number;
 }
 
 // Enhanced Error types
