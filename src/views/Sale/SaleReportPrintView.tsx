@@ -4,6 +4,11 @@ import { Sale, Customer } from '@/types';
 import { SalesContext } from '@/contexts/SalesContext';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { formatDate } from '@/utils/formatDate';
+import {
+  getCompanyName,
+  getCompanyRUT,
+  getContactPhone,
+} from '@/utils/company';
 import '@/styles/SaleReportPrintView.css';
 import { WindowContainer } from '@/components/design-system';
 import { Button } from '@/components/design-system';
@@ -156,12 +161,12 @@ const SaleReportPrintView: React.FC = () => {
         {/* Header */}
         <div className="report-header">
           <div className="company-info">
-            <h1 className="company-name">Lomas Altas</h1>
+            <h1 className="company-name">{getCompanyName()}</h1>
             <p className="company-subtitle">Agrícola</p>
             <div className="company-details">
-              <p>RUT: 87.590.100-1</p>
+              <p>RUT: {getCompanyRUT()}</p>
               <p>Dirección: Fundo San Ramiro, San Pedro, Chile</p>
-              <p>Teléfono: Por definir</p>
+              <p>Teléfono: {getContactPhone()}</p>
             </div>
           </div>
           <div className="document-info">
@@ -392,7 +397,7 @@ const SaleReportPrintView: React.FC = () => {
             <div className="signature-box">
               <div className="signature-line"></div>
               <p className="signature-label">Firma Vendedor</p>
-              <p className="signature-name">Lomas Altas</p>
+              <p className="signature-name">{getCompanyName()}</p>
             </div>
             <div className="signature-box">
               <div className="signature-line"></div>

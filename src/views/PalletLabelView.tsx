@@ -7,6 +7,12 @@ import {
 } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
 import { getPalletBoxCount } from '@/utils/palletHelpers';
+import {
+  getCompanyName,
+  getCompanyRUT,
+  getContactEmail,
+  getContactPhone,
+} from '@/utils/company';
 import { WindowContainer, Button } from '@/components/design-system';
 import JsBarcode from 'jsbarcode';
 import { getPalletByCode } from '@/api/endpoints';
@@ -225,10 +231,10 @@ const PalletLabelView: React.FC = () => {
         <div className="label-footer">
           <div className="contact-info">
             <p>
-              <strong>Lomas Altas Agrícola</strong>
+              <strong>{getCompanyName()}</strong>
             </p>
-            <p>RUT: 87.590.100-1</p>
-            <p>Teléfono: Por definir | Email: contacto@lomasaltas.cl</p>
+            <p>RUT: {getCompanyRUT()}</p>
+            <p>Teléfono: {getContactPhone()} | Email: {getContactEmail()}</p>
           </div>
 
           <div className="print-info">
