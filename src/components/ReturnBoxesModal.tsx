@@ -33,8 +33,35 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showSuccess, showError } = useNotifications();
 
-  // Get all boxes from sale items
-  const allBoxes = sale.items.flatMap((item) => ({
+  // Get all boxes from sale items, pallets/boxes, or metadata.items
+  const getItems = () => {
+    if (sale.items && Array.isArray(sale.items) && sale.items.length > 0) {
+      return sale.items;
+    }
+    // Check metadata.items
+    if (sale.metadata?.items && Array.isArray(sale.metadata.items)) {
+      return sale.metadata.items;
+    }
+    // Reconstruct from pallets and boxes arrays
+    if (sale.pallets && sale.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+      const items: Array<{ palletId: string; boxIds: string[] }> = [];
+      const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
+      let boxIndex = 0;
+      
+      for (const palletId of sale.pallets) {
+        const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
+        if (boxIds.length > 0) {
+          items.push({ palletId, boxIds });
+        }
+        boxIndex += boxesPerPallet;
+      }
+      
+      return items;
+    }
+    return [];
+  };
+
+  const allBoxes = getItems().flatMap((item) => ({
     palletId: item.palletId,
     boxIds: item.boxIds,
   }));
@@ -148,7 +175,7 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
                   <span className="box-count">{item.boxIds.length} cajas</span>
                 </div>
                 <div className="boxes-grid">
-                  {item.boxIds.map((boxId) => (
+                  {item.boxIds.map((boxId: string) => (
                     <label key={boxId} className="box-checkbox">
                       <input
                         type="checkbox"

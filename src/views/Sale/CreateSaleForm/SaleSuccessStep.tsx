@@ -9,16 +9,21 @@ interface SaleSuccessStepProps {
 }
 
 const SaleSuccessStep: React.FC<SaleSuccessStepProps> = ({ saleResult }) => {
-  // Función para calcular el total de cajas desde los items
+  // Función para calcular el total de cajas desde los items, boxes array, o totalBoxes
   const getTotalBoxes = (sale: Sale): number => {
-    return (
-      sale.totalBoxes ||
-      sale.items?.reduce(
+    if (sale.totalBoxes !== undefined) {
+      return sale.totalBoxes;
+    }
+    if (sale.boxes && Array.isArray(sale.boxes)) {
+      return sale.boxes.length;
+    }
+    if (sale.items && Array.isArray(sale.items)) {
+      return sale.items.reduce(
         (total, item) => total + (item.boxIds?.length || 0),
         0
-      ) ||
-      0
-    );
+      );
+    }
+    return 0;
   };
 
   const handleDownloadReport = () => {

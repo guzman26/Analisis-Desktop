@@ -76,12 +76,45 @@ const SaleReportPrintView: React.FC = () => {
   }, [sale, customerAPI]);
 
   const getTotalBoxes = () => {
-    return (
-      sale?.items?.reduce(
+    if (sale?.totalBoxes !== undefined) {
+      return sale.totalBoxes;
+    }
+    if (sale?.boxes && Array.isArray(sale.boxes)) {
+      return sale.boxes.length;
+    }
+    if (sale?.items && Array.isArray(sale.items)) {
+      return sale.items.reduce(
         (total, item) => total + (item.boxIds?.length || 0),
         0
-      ) || 0
-    );
+      );
+    }
+    return 0;
+  };
+
+  const getItems = () => {
+    if (sale?.items && Array.isArray(sale.items) && sale.items.length > 0) {
+      return sale.items;
+    }
+    if (sale?.metadata?.items && Array.isArray(sale.metadata.items)) {
+      return sale.metadata.items;
+    }
+    // Reconstruct from pallets and boxes
+    if (sale?.pallets && sale?.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+      const items: Array<{ palletId: string; boxIds: string[] }> = [];
+      const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
+      let boxIndex = 0;
+      
+      for (const palletId of sale.pallets) {
+        const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
+        if (boxIds.length > 0) {
+          items.push({ palletId, boxIds });
+        }
+        boxIndex += boxesPerPallet;
+      }
+      
+      return items;
+    }
+    return [];
   };
 
   // Función para mostrar códigos de cajas de manera más eficiente
@@ -100,7 +133,7 @@ const SaleReportPrintView: React.FC = () => {
   };
 
   // Determinar si usar vista compacta (muchos pallets)
-  const useCompactView = (sale?.items?.length || 0) > 10;
+  const useCompactView = getItems().length > 10;
 
   const handlePrint = () => {
     // Simply print the current preview directly
@@ -237,7 +270,7 @@ const SaleReportPrintView: React.FC = () => {
             </div>
             <div className="info-field">
               <span className="field-label">Total Pallets:</span>
-              <span className="field-value">{sale.items?.length || 0}</span>
+              <span className="field-value">{getItems().length}</span>
             </div>
             <div className="info-field">
               <span className="field-label">Total Cajas:</span>
@@ -254,7 +287,7 @@ const SaleReportPrintView: React.FC = () => {
             <div className="compact-items-container">
               <div className="compact-summary">
                 <p>
-                  <strong>Resumen:</strong> {sale.items?.length || 0} pallets
+                  <strong>Resumen:</strong> {getItems().length} pallets
                   con {getTotalBoxes()} cajas en total
                 </p>
               </div>
@@ -268,7 +301,7 @@ const SaleReportPrintView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {sale.items?.map((item, index) => {
+                  {getItems().map((item, index) => {
                     const boxCodesData = formatBoxCodes(item.boxIds || [], 4);
                     return (
                       <tr key={index}>
@@ -321,7 +354,7 @@ const SaleReportPrintView: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {sale.items?.map((item, index) => {
+                {getItems().map((item, index) => {
                   const boxCodesData = formatBoxCodes(item.boxIds || [], 8);
                   return (
                     <tr key={index}>
@@ -380,7 +413,7 @@ const SaleReportPrintView: React.FC = () => {
               <div className="totals-box">
                 <div className="total-row">
                   <span className="total-label">Total Pallets:</span>
-                  <span className="total-value">{sale.items?.length || 0}</span>
+                  <span className="total-value">{getItems().length}</span>
                 </div>
                 <div className="total-row">
                   <span className="total-label">Total Cajas:</span>

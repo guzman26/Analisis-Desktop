@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sale, Customer, Box } from '@/types';
+import { Sale, Customer, Box, SaleItem } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { getBoxByCode, getCustomerById } from '@/api/endpoints';
 import BoxDetailModal from './BoxDetailModal';
@@ -264,7 +264,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                       <div className="item-boxes">
                         <span className="boxes-label">Cajas incluidas:</span>
                         <div className="boxes-grid">
-                          {item.boxIds?.map((boxId, boxIndex) => (
+                          {item.boxIds?.map((boxId: string, boxIndex: number) => (
                             <div
                               key={boxIndex}
                               className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
