@@ -91,8 +91,7 @@ function DataTableInner<T>({
         return column.accessor(row);
       }
       if (typeof column.accessor === 'string') {
-        // @ts-expect-error indexing by keyof
-        return row[column.accessor];
+        return (row as Record<string, unknown>)[column.accessor as string];
       }
       return null;
     };
@@ -135,8 +134,8 @@ function DataTableInner<T>({
                     ? '▲'
                     : '▼'
                   : column.sortable
-                  ? '▲'
-                  : null;
+                    ? '▲'
+                    : null;
 
               return (
                 <th
@@ -197,8 +196,9 @@ function DataTableInner<T>({
                     } else if (typeof column.accessor === 'function') {
                       content = column.accessor(row);
                     } else if (typeof column.accessor === 'string') {
-                      // @ts-expect-error indexing by keyof
-                      content = row[column.accessor];
+                      content = (row as Record<string, unknown>)[
+                        column.accessor as string
+                      ] as React.ReactNode;
                     }
 
                     return (
@@ -237,7 +237,10 @@ function DataTableInner<T>({
               <td
                 className={styles.td}
                 colSpan={columns.length}
-                style={{ textAlign: 'center', color: 'var(--macos-text-secondary)' }}
+                style={{
+                  textAlign: 'center',
+                  color: 'var(--macos-text-secondary)',
+                }}
               >
                 No hay datos para mostrar.
               </td>
@@ -255,5 +258,3 @@ function DataTable<T>(props: DataTableProps<T>) {
 }
 
 export default DataTable;
-
-
