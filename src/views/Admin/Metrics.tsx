@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card, Button, Input, DataTable, DataTableColumn } from '@/components/design-system';
+import { Card, Button, Input, DataTable, DataTableColumn, Modal } from '@/components/design-system';
 import {
   RefreshCw,
   TrendingUp,
@@ -7,6 +7,7 @@ import {
   Palette,
   BarChart3,
   Calendar,
+  Columns,
 } from 'lucide-react';
 import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
@@ -50,6 +51,33 @@ const Metrics: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+  
+  // Column visibility - load from localStorage or use defaults
+  const [visibleColumns, setVisibleColumns] = useState<Set<string>>(() => {
+    const saved = localStorage.getItem('metrics-visible-columns');
+    if (saved) {
+      try {
+        return new Set(JSON.parse(saved));
+      } catch {
+        // Fallback to defaults
+      }
+    }
+    // Default: show all columns
+    return new Set([
+      'date',
+      'type',
+      'totalBoxes',
+      'totalPallets',
+      'efficiency',
+      'byCalibre',
+      'byShift',
+      'byOperario',
+      'byLocation',
+      'status',
+      'calculatedAt',
+    ]);
+  });
 
   // Filters
   const [metricType, setMetricType] = useState<
@@ -209,7 +237,27 @@ const Metrics: React.FC = () => {
     });
   }, [filteredMetrics]);
 
-  const metricsColumns: DataTableColumn<MetricsRow>[] = useMemo(
+  // Save column visibility to localStorage
+  useEffect(() => {
+    localStorage.setItem(
+      'metrics-visible-columns',
+      JSON.stringify(Array.from(visibleColumns))
+    );
+  }, [visibleColumns]);
+
+  const toggleColumnVisibility = (columnId: string) => {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      if (next.has(columnId)) {
+        next.delete(columnId);
+      } else {
+        next.add(columnId);
+      }
+      return next;
+    });
+  };
+
+  const allColumns: DataTableColumn<MetricsRow>[] = useMemo(
     () => [
       {
         id: 'date',
@@ -334,6 +382,12 @@ const Metrics: React.FC = () => {
     []
   );
 
+  // Filter columns based on visibility
+  const metricsColumns = useMemo(
+    () => allColumns.filter((col) => visibleColumns.has(col.id)),
+    [allColumns, visibleColumns]
+  );
+
   return (
     <div
       className="macos-animate-fade-in"
@@ -355,6 +409,15 @@ const Metrics: React.FC = () => {
             Métricas del Sistema
           </h1>
           <div className="macos-hstack" style={{ gap: 'var(--macos-space-2)' }}>
+            <Button
+              leftIcon={<Columns style={{ width: '16px', height: '16px' }} />}
+              variant="secondary"
+              size="medium"
+              onClick={() => setIsColumnSelectorOpen(true)}
+              disabled={loading}
+            >
+              Columnas
+            </Button>
             <Button
               leftIcon={<RefreshCw style={{ width: '16px', height: '16px' }} />}
               variant="secondary"
@@ -715,6 +778,126 @@ const Metrics: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/* Column Selector Modal */}
+      <Modal
+        isOpen={isColumnSelectorOpen}
+        onClose={() => setIsColumnSelectorOpen(false)}
+        title="Personalizar Columnas"
+        size="small"
+      >
+        <div style={{ padding: 'var(--macos-space-5)' }}>
+          <p
+            className="macos-text-footnote"
+            style={{
+              color: 'var(--macos-text-secondary)',
+              marginBottom: 'var(--macos-space-4)',
+            }}
+          >
+            Selecciona las columnas que deseas mostrar en la tabla:
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--macos-space-3)',
+              maxHeight: '400px',
+              overflowY: 'auto',
+            }}
+          >
+            {allColumns.map((column) => (
+              <label
+                key={column.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--macos-space-3)',
+                  padding: 'var(--macos-space-2)',
+                  cursor: 'pointer',
+                  borderRadius: 'var(--macos-radius-small)',
+                  transition: 'background-color 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    'var(--macos-gray-6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.has(column.id)}
+                  onChange={() => toggleColumnVisibility(column.id)}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    cursor: 'pointer',
+                    accentColor: 'var(--macos-blue)',
+                  }}
+                />
+                <span
+                  className="macos-text-body"
+                  style={{ color: 'var(--macos-text-primary)', flex: 1 }}
+                >
+                  {column.header}
+                </span>
+                {column.sortable && (
+                  <span
+                    className="macos-text-caption-1"
+                    style={{
+                      color: 'var(--macos-text-tertiary)',
+                      fontSize: '11px',
+                    }}
+                  >
+                    Ordenable
+                  </span>
+                )}
+              </label>
+            ))}
+          </div>
+          <div
+            className="macos-hstack"
+            style={{
+              marginTop: 'var(--macos-space-5)',
+              gap: 'var(--macos-space-2)',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Button
+              variant="ghost"
+              size="medium"
+              onClick={() => {
+                // Show all columns
+                setVisibleColumns(
+                  new Set(allColumns.map((col) => col.id))
+                );
+              }}
+            >
+              Mostrar Todas
+            </Button>
+            <Button
+              variant="ghost"
+              size="medium"
+              onClick={() => {
+                // Show only essential columns
+                setVisibleColumns(
+                  new Set(['date', 'type', 'totalBoxes', 'efficiency', 'status'])
+                );
+              }}
+            >
+              Solo Esenciales
+            </Button>
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={() => setIsColumnSelectorOpen(false)}
+            >
+              Aplicar
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Metrics Table */}
       {!loading && data && tableRows.length > 0 && (
