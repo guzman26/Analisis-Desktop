@@ -151,7 +151,10 @@ export interface Sale {
     email?: string;
     phone?: string;
   };
-  items: SaleItem[];
+  customerName?: string; // Backend also provides customerName directly
+  items?: SaleItem[]; // Optional - for backward compatibility
+  pallets?: string[]; // Array of pallet codes
+  boxes?: string[]; // Array of box codes
   createdAt: string;
   reportUrl?: string;
   totalBoxes?: number;

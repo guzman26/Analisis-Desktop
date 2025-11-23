@@ -43,16 +43,56 @@ const SalesCard: React.FC<SalesCardProps> = ({
     }).format(date);
   };
 
-  // Calculate total boxes from items
+  // Calculate total boxes from items, boxes array, or totalBoxes
   const getTotalBoxes = (sale: Sale): number => {
-    return (
-      sale.totalBoxes ||
-      sale.items?.reduce(
+    if (sale.totalBoxes !== undefined) {
+      return sale.totalBoxes;
+    }
+    if (sale.boxes && Array.isArray(sale.boxes)) {
+      return sale.boxes.length;
+    }
+    if (sale.items && Array.isArray(sale.items)) {
+      return sale.items.reduce(
         (total: number, item: any) => total + (item.boxIds?.length || 0),
         0
-      ) ||
-      0
-    );
+      );
+    }
+    return 0;
+  };
+
+  // Get pallets count
+  const getPalletsCount = (sale: Sale): number => {
+    if (sale.pallets && Array.isArray(sale.pallets)) {
+      return sale.pallets.length;
+    }
+    if (sale.items && Array.isArray(sale.items)) {
+      return sale.items.length;
+    }
+    return 0;
+  };
+
+  // Get items structure - prefer items, otherwise reconstruct from pallets/boxes
+  const getItems = (sale: Sale): any[] => {
+    if (sale.items && Array.isArray(sale.items) && sale.items.length > 0) {
+      return sale.items;
+    }
+    // Reconstruct from pallets and boxes arrays
+    if (sale.pallets && sale.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+      const items: any[] = [];
+      const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
+      let boxIndex = 0;
+      
+      for (const palletId of sale.pallets) {
+        const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
+        if (boxIds.length > 0) {
+          items.push({ palletId, boxIds });
+        }
+        boxIndex += boxesPerPallet;
+      }
+      
+      return items;
+    }
+    return [];
   };
 
   // Format sale ID to make it more readable
@@ -88,17 +128,23 @@ const SalesCard: React.FC<SalesCardProps> = ({
 
       <div className="sale-items">
         <span className="items-label">
-          Pallets ({sale.items?.length || 0}):
+          Pallets ({getPalletsCount(sale)}):
         </span>
         <div className="pallets-list">
-          {sale.items?.map((item: any, index: number) => (
-            <div key={index} className="pallet-item">
-              <span className="pallet-id">{item.palletId}</span>
-              <span className="box-count">
-                ({item.boxIds?.length || 0} cajas)
-              </span>
-            </div>
-          )) || <span className="no-items">No hay pallets disponibles</span>}
+          {(() => {
+            const items = getItems(sale);
+            if (items.length === 0) {
+              return <span className="no-items">No hay pallets disponibles</span>;
+            }
+            return items.map((item: any, index: number) => (
+              <div key={index} className="pallet-item">
+                <span className="pallet-id">{item.palletId}</span>
+                <span className="box-count">
+                  ({item.boxIds?.length || 0} cajas)
+                </span>
+              </div>
+            ));
+          })()}
         </div>
       </div>
 

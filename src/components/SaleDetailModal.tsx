@@ -103,12 +103,57 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
   // Helper functions
   const getTotalBoxes = () => {
-    return (
-      sale?.items?.reduce(
+    // Use totalBoxes if available, otherwise calculate from boxes array or items
+    if (sale?.totalBoxes !== undefined) {
+      return sale.totalBoxes;
+    }
+    if (sale?.boxes && Array.isArray(sale.boxes)) {
+      return sale.boxes.length;
+    }
+    if (sale?.items && Array.isArray(sale.items)) {
+      return sale.items.reduce(
         (total, item) => total + (item.boxIds?.length || 0),
         0
-      ) || 0
-    );
+      );
+    }
+    return 0;
+  };
+
+  const getTotalPallets = () => {
+    // Use pallets array if available, otherwise use items
+    if (sale?.pallets && Array.isArray(sale.pallets)) {
+      return sale.pallets.length;
+    }
+    if (sale?.items && Array.isArray(sale.items)) {
+      return sale.items.length;
+    }
+    return 0;
+  };
+
+  // Get items structure - prefer items, otherwise reconstruct from pallets/boxes
+  const getItems = () => {
+    if (sale?.items && Array.isArray(sale.items) && sale.items.length > 0) {
+      return sale.items;
+    }
+    // Reconstruct from pallets and boxes arrays
+    if (sale?.pallets && sale?.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+      // Group boxes by pallet - simplified: distribute boxes evenly
+      // For accurate grouping, we'd need to query each box's palletId
+      const items: SaleItem[] = [];
+      const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
+      let boxIndex = 0;
+      
+      for (const palletId of sale.pallets) {
+        const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
+        if (boxIds.length > 0) {
+          items.push({ palletId, boxIds });
+        }
+        boxIndex += boxesPerPallet;
+      }
+      
+      return items;
+    }
+    return [];
   };
 
   const handleShowPrintView = () => {
@@ -127,7 +172,9 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           <div>
             <h2 className="modal-title">Orden de Venta {sale.saleId}</h2>
             <div className="modal-badges">
-              <span className="status-badge success">COMPLETADA</span>
+              <span className={`status-badge ${sale.state === 'COMPLETED' ? 'success' : sale.state === 'CONFIRMED' ? 'info' : sale.state === 'DISPATCHED' ? 'warning' : 'secondary'}`}>
+                {sale.state || 'DRAFT'}
+              </span>
               <span className="date-badge">{formatDate(sale.createdAt)}</span>
             </div>
           </div>
@@ -151,7 +198,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
               <div className="info-item total-amount-item">
                 <span className="info-label">Total de Pallets</span>
                 <span className="info-value large total-amount-text">
-                  {sale.items?.length || 0}
+                  {getTotalPallets()}
                 </span>
               </div>
 
@@ -173,7 +220,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
               <div className="info-item">
                 <span className="info-label">Nombre</span>
                 <span className="info-value">
-                  {sale.customerInfo?.name || customer?.name || 'Cargando...'}
+                  {sale.customerInfo?.name || sale.customerName || customer?.name || 'Cargando...'}
                 </span>
               </div>
               {(sale.customerInfo?.email || customer?.email) && (
@@ -198,46 +245,50 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           {/* Items Details */}
           <div className="modal-section">
             <h3 className="section-title">Detalle de Pallets</h3>
-            {!sale.items || sale.items.length === 0 ? (
-              <div className="items-empty">No hay items en esta venta</div>
-            ) : (
-              <div className="items-container">
-                {sale.items.map((item, index) => (
-                  <div key={index} className="item-card">
-                    <div className="item-header">
-                      <h4 className="item-title">Pallet {item.palletId}</h4>
-                      <span className="item-count">
-                        {item.boxIds?.length || 0} cajas
-                      </span>
-                    </div>
+            {(() => {
+              const items = getItems();
+              if (!items || items.length === 0) {
+                return <div className="items-empty">No hay items en esta venta</div>;
+              }
+              return (
+                <div className="items-container">
+                  {items.map((item, index) => (
+                    <div key={index} className="item-card">
+                      <div className="item-header">
+                        <h4 className="item-title">Pallet {item.palletId}</h4>
+                        <span className="item-count">
+                          {item.boxIds?.length || 0} cajas
+                        </span>
+                      </div>
 
-                    <div className="item-boxes">
-                      <span className="boxes-label">Cajas incluidas:</span>
-                      <div className="boxes-grid">
-                        {item.boxIds?.map((boxId, boxIndex) => (
-                          <div
-                            key={boxIndex}
-                            className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
-                            onClick={() => handleBoxClick(boxId)}
-                            title="Clic para ver detalles de la caja"
-                          >
-                            {loadingBox === boxId ? (
-                              <span className="loading-text">Cargando...</span>
-                            ) : (
-                              boxId
-                            )}
-                          </div>
-                        )) || (
-                          <span className="no-boxes">
-                            No hay cajas asignadas
-                          </span>
-                        )}
+                      <div className="item-boxes">
+                        <span className="boxes-label">Cajas incluidas:</span>
+                        <div className="boxes-grid">
+                          {item.boxIds?.map((boxId, boxIndex) => (
+                            <div
+                              key={boxIndex}
+                              className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
+                              onClick={() => handleBoxClick(boxId)}
+                              title="Clic para ver detalles de la caja"
+                            >
+                              {loadingBox === boxId ? (
+                                <span className="loading-text">Cargando...</span>
+                              ) : (
+                                boxId
+                              )}
+                            </div>
+                          )) || (
+                            <span className="no-boxes">
+                              No hay cajas asignadas
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Notes */}
