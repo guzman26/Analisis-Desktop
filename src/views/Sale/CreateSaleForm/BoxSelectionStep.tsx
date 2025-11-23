@@ -270,6 +270,9 @@ const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
                     variant={
                       selectedBoxCodes.includes(boxId) ? 'elevated' : 'flat'
                     }
+                    isPressable={true}
+                    isHoverable={true}
+                    isSelected={selectedBoxCodes.includes(boxId)}
                     onClick={() => handleBoxToggle(boxId)}
                   >
                     <div className="p-3 flex justify-between items-center">
