@@ -169,30 +169,167 @@ const Metrics: React.FC = () => {
       : result;
   };
 
-  const createChipsFromObject = (obj: any) => {
+  const createDetailTable = (
+    obj: any,
+    title: string,
+    keyLabel: string = 'Código',
+    valueLabel: string = 'Cantidad'
+  ) => {
     if (!obj || typeof obj !== 'object') return null;
     const entries = Object.entries(obj);
     if (!entries.length) return null;
 
+    // Sort by value (descending) for better readability
+    const sortedEntries = entries.sort((a, b) => {
+      const aVal = safeNumber(a[1]);
+      const bVal = safeNumber(b[1]);
+      return bVal - aVal;
+    });
+
+    const total = sortedEntries.reduce(
+      (sum, [, val]) => sum + safeNumber(val),
+      0
+    );
+
     return (
-      <div className="macos-hstack" style={{ flexWrap: 'wrap', gap: 4 }}>
-        {entries.map(([key, val]) => (
-          <span
-            key={key}
+      <div
+        style={{
+          border: '1px solid #e0e0e0',
+          borderRadius: '4px',
+          overflow: 'hidden',
+          backgroundColor: 'white',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#f5f5f5',
+            padding: '10px 12px',
+            borderBottom: '1px solid #e0e0e0',
+          }}
+        >
+          <h4
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '2px 8px',
-              borderRadius: 999,
-              backgroundColor: 'var(--macos-gray-6)',
-              fontSize: 11,
-              color: 'var(--macos-text-secondary)',
+              margin: 0,
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#333',
             }}
           >
-            <span style={{ fontWeight: 600, marginRight: 4 }}>{key}</span>
-            <span>{formatNumber(safeNumber(val))}</span>
-          </span>
-        ))}
+            {title}
+          </h4>
+          <p
+            style={{
+              margin: '4px 0 0 0',
+              fontSize: '11px',
+              color: '#666',
+            }}
+          >
+            Total: {formatNumber(total)} cajas
+          </p>
+        </div>
+        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '12px',
+            }}
+          >
+            <thead>
+              <tr
+                style={{
+                  backgroundColor: '#fafafa',
+                  borderBottom: '1px solid #e0e0e0',
+                }}
+              >
+                <th
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    color: '#555',
+                    fontSize: '11px',
+                    borderRight: '1px solid #e0e0e0',
+                    width: '40%',
+                  }}
+                >
+                  {keyLabel}
+                </th>
+                <th
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: 'right',
+                    fontWeight: 600,
+                    color: '#555',
+                    fontSize: '11px',
+                    width: '35%',
+                  }}
+                >
+                  {valueLabel}
+                </th>
+                <th
+                  style={{
+                    padding: '8px 12px',
+                    textAlign: 'right',
+                    fontWeight: 600,
+                    color: '#555',
+                    fontSize: '11px',
+                    width: '25%',
+                  }}
+                >
+                  %
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEntries.map(([key, val], index) => {
+                const value = safeNumber(val);
+                const percentage = total > 0 ? (value / total) * 100 : 0;
+                return (
+                  <tr
+                    key={key}
+                    style={{
+                      borderBottom: '1px solid #f0f0f0',
+                      backgroundColor: index % 2 === 0 ? 'white' : '#fafafa',
+                    }}
+                  >
+                    <td
+                      style={{
+                        padding: '8px 12px',
+                        borderRight: '1px solid #f0f0f0',
+                        fontWeight: 500,
+                        color: '#333',
+                      }}
+                    >
+                      {key}
+                    </td>
+                    <td
+                      style={{
+                        padding: '8px 12px',
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums',
+                        color: '#333',
+                      }}
+                    >
+                      {formatNumber(value)}
+                    </td>
+                    <td
+                      style={{
+                        padding: '8px 12px',
+                        textAlign: 'right',
+                        fontVariantNumeric: 'tabular-nums',
+                        color: '#666',
+                        fontSize: '11px',
+                      }}
+                    >
+                      {percentage.toFixed(1)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };
@@ -789,15 +926,15 @@ const Metrics: React.FC = () => {
         <div style={{ padding: 'var(--macos-space-5)' }}>
           <p
             className="macos-text-footnote"
-            style={{
+                  style={{
               color: 'var(--macos-text-secondary)',
               marginBottom: 'var(--macos-space-4)',
-            }}
-          >
+                  }}
+                >
             Selecciona las columnas que deseas mostrar en la tabla:
           </p>
           <div
-            style={{
+                    style={{
               display: 'flex',
               flexDirection: 'column',
               gap: 'var(--macos-space-3)',
@@ -808,7 +945,7 @@ const Metrics: React.FC = () => {
             {allColumns.map((column) => (
               <label
                 key={column.id}
-                style={{
+                    style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--macos-space-3)',
@@ -829,7 +966,7 @@ const Metrics: React.FC = () => {
                   type="checkbox"
                   checked={visibleColumns.has(column.id)}
                   onChange={() => toggleColumnVisibility(column.id)}
-                  style={{
+                    style={{
                     width: '18px',
                     height: '18px',
                     cursor: 'pointer',
@@ -845,7 +982,7 @@ const Metrics: React.FC = () => {
                 {column.sortable && (
                   <span
                     className="macos-text-caption-1"
-                    style={{
+                        style={{
                       color: 'var(--macos-text-tertiary)',
                       fontSize: '11px',
                     }}
@@ -858,7 +995,7 @@ const Metrics: React.FC = () => {
           </div>
           <div
             className="macos-hstack"
-            style={{
+                        style={{
               marginTop: 'var(--macos-space-5)',
               gap: 'var(--macos-space-2)',
               justifyContent: 'flex-end',
@@ -914,108 +1051,107 @@ const Metrics: React.FC = () => {
             renderExpandedContent={(row) => {
               const { metricData, isProduction } = row;
 
-              return (
-                <>
-                  {isProduction && (
-                    <>
-                      <div>
-                        <p
-                          className="macos-text-footnote"
-                        style={{
-                            color: 'var(--macos-text-secondary)',
-                            marginBottom: 'var(--macos-space-1)',
-                          fontWeight: 600,
-                        }}
-                      >
-                        Cajas por Calibre
-                        </p>
-                        {createChipsFromObject(metricData.boxesByCalibre) || (
-                          <p
-                            className="macos-text-caption-1"
-                        style={{
-                              color: 'var(--macos-text-tertiary)',
-                              margin: 0,
-                            }}
-                          >
-                            Sin datos de calibre.
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <p
-                          className="macos-text-footnote"
-                        style={{
-                            color: 'var(--macos-text-secondary)',
-                            marginBottom: 'var(--macos-space-1)',
-                          fontWeight: 600,
-                          }}
-                        >
-                          Cajas por Horario
-                        </p>
-                        {createChipsFromObject(metricData.boxesByShift) || (
-                          <p
-                            className="macos-text-caption-1"
+                  return (
+                <div
                       style={{
-                              color: 'var(--macos-text-tertiary)',
-                              margin: 0,
-                            }}
-                          >
-                            Sin datos de horario.
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <p
-                          className="macos-text-footnote"
-                    style={{
-                            color: 'var(--macos-text-secondary)',
-                            marginBottom: 'var(--macos-space-1)',
-                      fontWeight: 600,
-                          }}
-                        >
-                          Cajas por Operario
-                        </p>
-                        {createChipsFromObject(metricData.boxesByOperario) || (
-                          <p
-                            className="macos-text-caption-1"
-                    style={{
-                              color: 'var(--macos-text-tertiary)',
-                              margin: 0,
-                            }}
-                          >
-                            Sin datos de operario.
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {!isProduction && (
-                    <div>
-                      <p
-                        className="macos-text-footnote"
-                      style={{
-                          color: 'var(--macos-text-secondary)',
-                          marginBottom: 'var(--macos-space-1)',
-                            fontWeight: 600,
-                          }}
-                        >
-                        Cajas por Ubicación
-                      </p>
-                      {createChipsFromObject(metricData.byLocation) || (
-                        <p
-                          className="macos-text-caption-1"
+                    padding: '16px',
+                    backgroundColor: '#fafafa',
+                  }}
+                >
+                  {isProduction ? (
+                    <div
                         style={{
-                            color: 'var(--macos-text-tertiary)',
-                            margin: 0,
-                          }}
-                        >
-                          Sin datos de ubicación.
-                        </p>
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                        gap: '16px',
+                      }}
+                    >
+                      {createDetailTable(
+                        metricData.boxesByCalibre,
+                        'Cajas por Calibre',
+                        'Calibre',
+                        'Cajas'
+                      ) || (
+                        <div
+                        style={{
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
+                            padding: '20px',
+                            textAlign: 'center',
+                            backgroundColor: 'white',
+                            color: '#999',
+                              fontSize: '12px',
+                            }}
+                          >
+                          Sin datos de calibre
+                        </div>
                       )}
+                      {createDetailTable(
+                        metricData.boxesByShift,
+                        'Cajas por Horario',
+                        'Horario',
+                        'Cajas'
+                      ) || (
+                        <div
+                            style={{
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
+                            padding: '20px',
+                            textAlign: 'center',
+                            backgroundColor: 'white',
+                            color: '#999',
+                              fontSize: '12px',
+                            }}
+                          >
+                          Sin datos de horario
+                        </div>
+                      )}
+                      {createDetailTable(
+                        metricData.boxesByOperario,
+                        'Cajas por Operario',
+                        'Operario',
+                        'Cajas'
+                      ) || (
+                        <div
+                            style={{
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
+                            padding: '20px',
+                          textAlign: 'center',
+                            backgroundColor: 'white',
+                            color: '#999',
+                            fontSize: '12px',
+                          }}
+                        >
+                          Sin datos de operario
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ maxWidth: '600px' }}>
+                      {createDetailTable(
+                        metricData.byLocation,
+                        'Cajas por Ubicación',
+                        'Ubicación',
+                        'Cajas'
+                      ) || (
+                        <div
+                        style={{
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '4px',
+                            padding: '20px',
+                          textAlign: 'center',
+                            backgroundColor: 'white',
+                            color: '#999',
+                          fontSize: '12px',
+                          }}
+                        >
+                          Sin datos de ubicación
           </div>
+                      )}
+                    </div>
                   )}
-                </>
+                </div>
               );
             }}
           />
