@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
 
 interface Metric {
@@ -42,6 +43,7 @@ interface MetricsResponse {
 
 const Metrics: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsResponse | null>(null);
@@ -546,6 +548,14 @@ const Metrics: React.FC = () => {
             Métricas del Sistema
           </h1>
           <div className="macos-hstack" style={{ gap: 'var(--macos-space-2)' }}>
+            <Button
+              leftIcon={<TrendingUp style={{ width: '16px', height: '16px' }} />}
+              variant="secondary"
+              size="medium"
+              onClick={() => navigate('/admin/metrics/aggregated')}
+            >
+              Vista Acumulada
+            </Button>
             <Button
               leftIcon={<Columns style={{ width: '16px', height: '16px' }} />}
               variant="secondary"
