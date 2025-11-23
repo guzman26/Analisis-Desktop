@@ -279,7 +279,7 @@ export const getCustomers = (params?: GetCustomersParams) =>
   }).then((res) => res.items || []);
 
 export const getCustomerById = (id: string) =>
-  sales<Customer>('get', 'customer', { id });
+  sales<{ customer: Customer }>('get', 'customer', { id }).then((res) => res.customer);
 
 // Get customer by email - use GET with email filter
 export const getCustomerByEmail = (email: string) =>
