@@ -4,8 +4,8 @@ import { useCustomerContext } from '@/contexts/CustomerContext';
 import { useNotifications } from '@/components/Notification/Notification';
 import { Customer, CustomerStatus } from '@/types';
 import DataTable, { DataTableColumn, SortDirection } from '@/components/design-system/DataTable';
-import { Card } from '@/components/design-system/Card';
-import { Button } from '@/components/design-system/Button';
+import Card from '@/components/design-system/Card';
+import Button from '@/components/design-system/Button';
 import EditableCell from '@/components/CustomersTable/EditableCell';
 import { Search, Trash2, ShoppingCart, FileText, Download } from 'lucide-react';
 import './CustomersTable.css';
@@ -290,7 +290,7 @@ const CustomersTable: React.FC = () => {
           <Button
             variant="ghost"
             size="small"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               navigate(`/sales/new?customerId=${customer.customerId}`);
             }}
@@ -301,7 +301,7 @@ const CustomersTable: React.FC = () => {
           <Button
             variant="ghost"
             size="small"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               // TODO: Navegar a historial de compras
               showSuccess(`Ver historial de ${customer.name}`);
@@ -313,7 +313,7 @@ const CustomersTable: React.FC = () => {
           <Button
             variant="danger"
             size="small"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               handleDelete(customer.customerId, customer.name);
             }}

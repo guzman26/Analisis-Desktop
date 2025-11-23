@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { useDebouncedUpdate, UpdateState } from '@/hooks/useDebouncedUpdate';
+import { useDebouncedUpdate } from '@/hooks/useDebouncedUpdate';
 import './EditableCell.css';
 
 export type EditableCellType = 'text' | 'email' | 'tel' | 'select';
