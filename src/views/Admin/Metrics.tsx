@@ -214,9 +214,14 @@ const Metrics: React.FC = () => {
       {
         id: 'date',
         header: 'Fecha',
-        accessor: (row) => formatDate(row.date || row.dateKey),
+        accessor: (row) => {
+          // Return date object for proper sorting
+          const dateStr = row.date || row.dateKey;
+          return dateStr ? new Date(dateStr).getTime() : 0;
+        },
         sortable: true,
         width: 140,
+        renderCell: (row) => formatDate(row.date || row.dateKey),
       },
       {
         id: 'type',

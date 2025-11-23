@@ -1,27 +1,39 @@
 .tableContainer {
   width: 100%;
   overflow-x: auto;
+  background: white;
+  border: 1px solid #d0d0d0;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  background: white;
 }
 
 .thead {
-  background-color: var(--macos-gray-6);
-  border-bottom: 1px solid var(--macos-border-primary);
+  background-color: #f2f2f2;
+  border-bottom: 2px solid #d0d0d0;
 }
 
 .th {
-  padding: var(--macos-space-3);
+  padding: 8px 10px;
   font-weight: 600;
-  color: var(--macos-text-primary);
+  color: #333;
   text-align: left;
   white-space: nowrap;
   position: relative;
   user-select: none;
+  border-right: 1px solid #d0d0d0;
+  border-bottom: 1px solid #d0d0d0;
+  background-color: #f2f2f2;
+  font-size: 12px;
+}
+
+.th:last-child {
+  border-right: none;
 }
 
 .thNumeric {
@@ -30,72 +42,96 @@
 
 .thSortable {
   cursor: pointer;
+  user-select: none;
+}
+
+.thSortable:hover {
+  background-color: #e8e8e8;
 }
 
 .sortIcon {
-  margin-left: 4px;
+  margin-left: 6px;
   font-size: 10px;
-  color: var(--macos-text-tertiary);
+  color: #666;
+  display: inline-block;
 }
 
 .tbodyRow {
-  border-bottom: 1px solid var(--macos-border-primary);
-  transition: background-color var(--macos-duration-fast) var(--macos-ease-out);
+  border-bottom: 1px solid #e0e0e0;
+  transition: background-color 0.1s ease;
+  background-color: white;
 }
 
 .tbodyRow:nth-child(even) {
-  background-color: var(--macos-content-bg);
+  background-color: #fafafa;
 }
 
 .tbodyRow:nth-child(odd) {
-  background-color: #f8f8f9;
+  background-color: white;
 }
 
 .tbodyRowHoverable:hover {
-  background-color: var(--macos-gray-6);
+  background-color: #f0f7ff;
+  cursor: pointer;
+}
+
+.tbodyRow:last-child {
+  border-bottom: none;
 }
 
 .td {
-  padding: var(--macos-space-3);
+  padding: 6px 10px;
   vertical-align: middle;
+  border-right: 1px solid #e8e8e8;
+  color: #333;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.td:last-child {
+  border-right: none;
 }
 
 .tdNumeric {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .tdStatusPill {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  border-radius: var(--macos-radius-small);
-  font-size: 12px;
+  border-radius: 3px;
+  font-size: 11px;
   font-weight: 600;
   color: white;
 }
 
 .statusFinal {
-  background-color: var(--macos-green);
+  background-color: #28a745;
 }
 
 .statusPreliminar {
-  background-color: var(--macos-orange);
+  background-color: #ffc107;
+  color: #333;
 }
 
 .expandedRow {
-  background-color: var(--macos-content-bg);
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
 }
 
 .expandedCell {
-  padding: 0 var(--macos-space-3) var(--macos-space-3);
+  padding: 12px 10px;
+  border-right: 1px solid #e8e8e8;
 }
 
 .expandedContent {
-  border-top: 1px solid var(--macos-border-secondary);
-  padding-top: var(--macos-space-3);
+  border-top: 1px solid #e0e0e0;
+  padding-top: 12px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--macos-space-4);
+  gap: 16px;
 }
 
 .chipGroup {
@@ -107,11 +143,12 @@
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background-color: var(--macos-gray-6);
-  color: var(--macos-text-secondary);
+  padding: 3px 8px;
+  border-radius: 3px;
+  background-color: #e9ecef;
+  color: #495057;
   font-size: 11px;
+  border: 1px solid #dee2e6;
 }
 
 .chipKey {
@@ -126,13 +163,11 @@
 .subTitle {
   font-size: 12px;
   font-weight: 600;
-  color: var(--macos-text-secondary);
-  margin-bottom: 4px;
+  color: #495057;
+  margin-bottom: 6px;
 }
 
 .smallText {
   font-size: 12px;
-  color: var(--macos-text-secondary);
+  color: #6c757d;
 }
-
-

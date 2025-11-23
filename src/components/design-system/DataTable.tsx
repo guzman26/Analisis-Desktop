@@ -110,6 +110,11 @@ function DataTableInner<T>({
         return (aValue - bValue) * directionFactor;
       }
 
+      // Handle Date objects
+      if (aValue instanceof Date && bValue instanceof Date) {
+        return (aValue.getTime() - bValue.getTime()) * directionFactor;
+      }
+
       const aStr = String(aValue).toLocaleLowerCase();
       const bStr = String(bValue).toLocaleLowerCase();
       if (aStr < bStr) return -1 * directionFactor;
