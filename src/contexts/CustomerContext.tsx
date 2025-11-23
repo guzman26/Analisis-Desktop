@@ -133,6 +133,46 @@ const customerReducer = (
       return { ...state, status: 'loading', error: null };
     case ActionType.FETCH_ERROR:
       return { ...state, status: 'error', error: action.payload as Error };
+    case ActionType.UPDATE_SUCCESS:
+      // Optimistic update: actualizar el cliente en el array
+      const updatedCustomer = action.payload as Customer;
+      return {
+        ...state,
+        customers: state.customers.map((c) =>
+          c.customerId === updatedCustomer.customerId ? updatedCustomer : c
+        ),
+        data: state.data.map((c) =>
+          c.customerId === updatedCustomer.customerId ? updatedCustomer : c
+        ),
+        // Si el cliente actualizado es el seleccionado, actualizarlo también
+        selectedCustomer:
+          state.selectedCustomer?.customerId === updatedCustomer.customerId
+            ? updatedCustomer
+            : state.selectedCustomer,
+        lastUpdated: Date.now(),
+      };
+    case ActionType.DELETE_SUCCESS:
+      // Remover cliente eliminado del array
+      const deletedCustomerId = action.payload as string;
+      return {
+        ...state,
+        customers: state.customers.filter((c) => c.customerId !== deletedCustomerId),
+        data: state.data.filter((c) => c.customerId !== deletedCustomerId),
+        selectedCustomer:
+          state.selectedCustomer?.customerId === deletedCustomerId
+            ? null
+            : state.selectedCustomer,
+        lastUpdated: Date.now(),
+      };
+    case ActionType.CREATE_SUCCESS:
+      // Agregar nuevo cliente al array
+      const newCustomer = action.payload as Customer;
+      return {
+        ...state,
+        customers: [...state.customers, newCustomer],
+        data: [...state.data, newCustomer],
+        lastUpdated: Date.now(),
+      };
     default:
       return state;
   }

@@ -99,6 +99,11 @@ const sidebarItems: SidebarItem[] = [
         icon: <FileText className="w-4 h-4" />,
       },
       {
+        path: '/sales/customers',
+        label: 'Clientes',
+        icon: <UserPlus className="w-4 h-4" />,
+      },
+      {
         path: '/sales/createCustomer',
         label: 'Crear Cliente',
         icon: <UserPlus className="w-4 h-4" />,

@@ -26,6 +26,7 @@ const PalletLabelView = lazy(() => import('../views/PalletLabelView'));
 const ConfirmedSalesOrdersList = lazy(
   () => import('../views/Sale/ConfirmedSalesOrdersList')
 );
+const CustomersTable = lazy(() => import('../views/Sale/CustomersTable'));
 const AdminIssues = lazy(() => import('../views/Admin/Issues'));
 const AdminDangerZone = lazy(() => import('../views/Admin/DangerZone'));
 const AdminMetrics = lazy(() => import('../views/Admin/Metrics'));
@@ -83,6 +84,10 @@ export const routes = [
   {
     path: '/sales/confirmed',
     element: <ConfirmedSalesOrdersList />,
+  },
+  {
+    path: '/sales/customers',
+    element: <CustomersTable />,
   },
   {
     path: '/admin/issues',
