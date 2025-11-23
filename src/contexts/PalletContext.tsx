@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useEffect,
   ReactNode,
 } from 'react';
 import {
@@ -608,11 +609,20 @@ export const useSelectedPallet = () => {
 };
 
 export const useFilteredPallets = () => {
-  const { openPallets } = usePalletContext();
+  const { closedPalletsInBodega, loading, error, fetchClosedPalletsInBodega } = usePalletContext();
+  
+  // Auto-fetch on mount if not already loaded
+  useEffect(() => {
+    if (closedPalletsInBodega.length === 0 && !loading) {
+      fetchClosedPalletsInBodega();
+    }
+  }, [closedPalletsInBodega.length, loading, fetchClosedPalletsInBodega]);
+  
   return {
-    pallets: openPallets,
-    loading: false,
-    error: null,
+    pallets: closedPalletsInBodega,
+    loading,
+    error,
+    fetchClosedPalletsInBodega,
   };
 };
 
