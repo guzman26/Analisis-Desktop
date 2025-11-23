@@ -25,11 +25,13 @@ export const extractDataFromResponse = async (
 
   // Common containers
   const candidates = [
+    unwrapped?.data?.items, // Check nested data.items first (for paginated responses)
     unwrapped?.items,
     unwrapped?.boxes,
     unwrapped?.pallets,
     unwrapped?.customers,
     unwrapped?.orders,
+    unwrapped?.data, // Check data object itself
     unwrapped,
   ];
 

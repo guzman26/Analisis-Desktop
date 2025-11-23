@@ -51,7 +51,16 @@ export const usePagination = <T>({
         // Extract pagination metadata
         const paginationData = response?.data || response;
         const newNextKey = paginationData?.nextKey || null;
-        const items = extractDataFromResponse(response);
+        
+        // Extract items - handle both direct items array and nested data.items
+        let items: T[];
+        if (Array.isArray(paginationData?.items)) {
+          // Direct access to items in paginationData
+          items = paginationData.items;
+        } else {
+          // Try extractDataFromResponse as fallback
+          items = await extractDataFromResponse(response);
+        }
 
         if (Array.isArray(items)) {
           setData((prev: T[]) => (isLoadMore ? [...prev, ...items] : items));
