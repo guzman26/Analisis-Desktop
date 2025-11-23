@@ -21,24 +21,31 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const [loadingBox, setLoadingBox] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Fetch customer data when sale changes
+  // Fetch customer data when sale changes and modal is open
   useEffect(() => {
     const fetchCustomer = async () => {
-      if (sale?.customerId) {
-        try {
-          const customerData = await getCustomerById(sale.customerId);
-          setCustomer(customerData);
-        } catch (error) {
-          console.error('Error fetching customer:', error);
-          setCustomer(null);
-        }
+      // Only fetch if modal is open and sale exists
+      if (!isOpen || !sale?.customerId) {
+        return;
+      }
+
+      // Only fetch if customerInfo is not already available
+      if (sale.customerInfo?.name) {
+        setCustomer(null); // Don't fetch if we already have customer info
+        return;
+      }
+
+      try {
+        const customerData = await getCustomerById(sale.customerId);
+        setCustomer(customerData);
+      } catch (error) {
+        console.error('Error fetching customer:', error);
+        setCustomer(null);
       }
     };
 
-    if (sale) {
-      fetchCustomer();
-    }
-  }, [sale]);
+    fetchCustomer();
+  }, [sale, isOpen]);
 
   // Close modal on Escape key
   useEffect(() => {

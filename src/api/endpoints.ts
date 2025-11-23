@@ -309,11 +309,22 @@ export const deleteCustomer = (id: string) =>
   sales<any>('delete', 'customer', { id });
 
 // Sales operations - now using consolidated /sales endpoint
-export const getSalesOrders = (params?: GetSalesOrdersParamsPaginated) =>
-  sales<PaginatedResponse<Sale>>('get', 'order', {
-    filters: params?.filters,
+export const getSalesOrders = (params?: GetSalesOrdersParamsPaginated) => {
+  // Build filters object - support both direct state param and nested filters
+  const filters: any = {
+    ...params?.filters,
+  };
+  
+  // If state is passed directly (not in filters), add it to filters
+  if (params?.state && !filters.state) {
+    filters.state = params.state;
+  }
+  
+  return sales<PaginatedResponse<Sale>>('get', 'order', {
+    filters,
     pagination: { limit: params?.limit, lastKey: params?.lastKey },
   });
+};
 
 export const getSaleById = (id: string) => sales<Sale>('get', 'order', { id });
 
