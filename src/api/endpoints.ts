@@ -78,6 +78,17 @@ export const closePallet = (codigo: string) =>
 export const movePallet = (codigo: string, ubicacion: string) =>
   inventory<any>('move', 'pallet', { codigo, ubicacion });
 
+export const moveAllPalletsFromTransitToBodega = () =>
+  inventory<{
+    success: boolean;
+    palletsMoved: number;
+    boxesMoved: number;
+    totalPallets: number;
+    message: string;
+    errors?: Array<{ palletCode: string; error: string }>;
+    details?: Array<{ palletCode: string; boxesMoved: number; success: boolean }>;
+  }>('move-all-from-transit', 'pallet', {});
+
 export const auditPallet = (palletCode: string, scannedBoxes: string[] = []) =>
   admin<PalletAuditResult>('create', 'audit', { palletCode, scannedBoxes });
 

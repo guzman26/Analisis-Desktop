@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import { closePallet, movePallet } from '@/api/endpoints';
+import { closePallet, movePallet, moveAllPalletsFromTransitToBodega } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { Card, Button } from '@/components/design-system';
+import { useNotifications } from '@/components/Notification/Notification';
 import '../../styles/designSystem.css';
 
 const TransitoPallets = () => {
   const { closedPalletsInTransit, fetchClosedPalletsInTransit } =
     usePalletContext();
+  const { showSuccess, showError } = useNotifications();
 
   // Create refresh function
   const refresh = () => {
@@ -17,11 +19,50 @@ const TransitoPallets = () => {
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMovingAll, setIsMovingAll] = useState(false);
 
   // Cargar datos al montar el componente
   useEffect(() => {
     refresh();
   }, []);
+
+  // Manejar mover todos los pallets a bodega
+  const handleMoveAllToBodega = async () => {
+    if (closedPalletsInTransit.length === 0) {
+      showError('No hay pallets en tránsito para mover');
+      return;
+    }
+
+    const confirmMessage = `¿Está seguro de que desea mover todos los ${closedPalletsInTransit.length} pallets en tránsito a bodega?`;
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    setIsMovingAll(true);
+    try {
+      const result = await moveAllPalletsFromTransitToBodega();
+      
+      if (result.success) {
+        showSuccess(
+          `Se movieron exitosamente ${result.palletsMoved} pallets y ${result.boxesMoved} cajas a bodega`
+        );
+      } else {
+        const errorMsg = result.errors && result.errors.length > 0
+          ? `${result.message}. Errores: ${result.errors.map(e => `${e.palletCode}: ${e.error}`).join(', ')}`
+          : result.message;
+        showError(errorMsg);
+      }
+      
+      // Refrescar la lista
+      await refresh();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error al mover pallets a bodega';
+      showError(errorMessage);
+    } finally {
+      setIsMovingAll(false);
+    }
+  };
 
   return (
     <div className="macos-animate-fade-in">
@@ -40,9 +81,21 @@ const TransitoPallets = () => {
           >
             Pallets en Tránsito
           </h1>
-          <Button variant="secondary" size="medium" onClick={refresh}>
-            Refrescar
-          </Button>
+          <div style={{ display: 'flex', gap: 'var(--macos-space-3)' }}>
+            {closedPalletsInTransit.length > 0 && (
+              <Button
+                variant="primary"
+                size="medium"
+                onClick={handleMoveAllToBodega}
+                disabled={isMovingAll}
+              >
+                {isMovingAll ? 'Moviendo...' : 'Mover Todos a Bodega'}
+              </Button>
+            )}
+            <Button variant="secondary" size="medium" onClick={refresh}>
+              Refrescar
+            </Button>
+          </div>
         </div>
         <p
           className="macos-text-body"
