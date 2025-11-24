@@ -6,14 +6,9 @@ import { Button, WindowContainer } from '../../components/design-system';
 import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { useNotifications } from '../../components/Notification';
+import { confirmSale } from '@/api/endpoints';
 
 import '@/styles/SalesOrdersList.css';
-
-// Implementation of confirmSale function to match the expected behavior
-const confirmSale = async (saleId: string) => {
-  console.log('Confirming sale:', saleId);
-  return { success: true };
-};
 
 const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
@@ -66,11 +61,16 @@ const SalesOrdersList: React.FC = () => {
       // Establecer el estado de carga para esta venta específica
       setConfirmingStates((prev) => ({ ...prev, [sale.saleId]: true }));
 
+      // Llamar al endpoint real de confirmación
+      // El backend retorna el objeto sale confirmado directamente
       await confirmSale(sale.saleId);
 
       // Refrescar ambas listas después de confirmar
-      salesOrdersDRAFTPaginated?.refresh();
-      salesOrdersCONFIRMEDPaginated?.refresh();
+      // Esperar un momento para que el backend procese la actualización
+      setTimeout(() => {
+        salesOrdersDRAFTPaginated?.refresh();
+        salesOrdersCONFIRMEDPaginated?.refresh();
+      }, 500);
 
       showSuccess(`Venta ${sale.saleId} confirmada exitosamente`);
     } catch (error) {
