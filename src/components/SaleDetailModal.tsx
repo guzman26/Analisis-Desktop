@@ -243,8 +243,13 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           </div>
 
           {/* Items Details */}
-          <div className="modal-section">
-            <h3 className="section-title">Detalle de Pallets</h3>
+          <div className="modal-section pallets-detail-section">
+            <div className="section-header">
+              <h3 className="section-title">Detalle de Pallets</h3>
+              <span className="section-subtitle">
+                {getTotalPallets()} pallet{getTotalPallets() !== 1 ? 's' : ''} • {getTotalBoxes()} caja{getTotalBoxes() !== 1 ? 's' : ''} en total
+              </span>
+            </div>
             {(() => {
               const items = getItems();
               if (!items || items.length === 0) {
@@ -253,16 +258,23 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
               return (
                 <div className="items-container">
                   {items.map((item, index) => (
-                    <div key={index} className="item-card">
-                      <div className="item-header">
-                        <h4 className="item-title">Pallet {item.palletId}</h4>
-                        <span className="item-count">
-                          {item.boxIds?.length || 0} cajas
-                        </span>
+                    <div key={index} className="item-card pallet-card">
+                      <div className="item-header pallet-header">
+                        <div className="pallet-title-group">
+                          <span className="pallet-number">#{index + 1}</span>
+                          <h4 className="item-title pallet-id">Pallet {item.palletId}</h4>
+                        </div>
+                        <div className="pallet-count-badge">
+                          <span className="count-number">{item.boxIds?.length || 0}</span>
+                          <span className="count-label">cajas</span>
+                        </div>
                       </div>
 
-                      <div className="item-boxes">
-                        <span className="boxes-label">Cajas incluidas:</span>
+                      <div className="item-boxes pallet-boxes">
+                        <div className="boxes-header">
+                          <span className="boxes-label">CAJAS INCLUIDAS</span>
+                          <span className="boxes-count">{item.boxIds?.length || 0} caja{item.boxIds?.length !== 1 ? 's' : ''}</span>
+                        </div>
                         <div className="boxes-grid">
                           {item.boxIds?.map((boxId: string, boxIndex: number) => (
                             <div
@@ -274,7 +286,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                               {loadingBox === boxId ? (
                                 <span className="loading-text">Cargando...</span>
                               ) : (
-                                boxId
+                                <span className="box-code">{boxId}</span>
                               )}
                             </div>
                           )) || (
