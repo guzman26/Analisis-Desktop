@@ -219,10 +219,11 @@
 .sale-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   margin-top: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--border-subtle, #e2e2e2);
+  flex-wrap: wrap;
 }
 
 .action-button {
@@ -230,7 +231,7 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  padding: 7px 14px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -238,6 +239,7 @@
   justify-content: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   white-space: nowrap;
+  min-width: fit-content;
 }
 
 .view-details-btn {
@@ -256,6 +258,30 @@
   background-color: var(--accent-blue, #0070e0);
   color: white;
   border: 1px solid var(--accent-blue-dark, #0060c0);
+}
+
+.return-btn {
+  background-color: var(--surface-tertiary, #f8f8f8);
+  color: var(--text-secondary, #666666);
+  border: 1px solid var(--border-default, #d1d1d1);
+}
+
+.add-boxes-btn {
+  background-color: var(--surface-tertiary, #f8f8f8);
+  color: var(--text-secondary, #666666);
+  border: 1px solid var(--border-default, #d1d1d1);
+}
+
+.dispatch-btn {
+  background-color: var(--accent-blue, #0070e0);
+  color: white;
+  border: 1px solid var(--accent-blue-dark, #0060c0);
+}
+
+.complete-btn {
+  background-color: #28a745;
+  color: white;
+  border: 1px solid #218838;
 }
 
 .action-button:hover {

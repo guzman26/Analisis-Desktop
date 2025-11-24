@@ -334,6 +334,12 @@ export const createSale = (data: SaleRequest) =>
 export const confirmSale = (id: string) =>
   sales<any>('confirm', 'order', { id });
 
+export const dispatchSale = (id: string, notes?: string) =>
+  sales<any>('dispatch', 'order', { id, notes });
+
+export const completeSale = (id: string, notes?: string) =>
+  sales<any>('complete', 'order', { id, notes });
+
 /**
  * Validate inventory availability before creating a sale
  * Checks if all boxes and pallets are still available for sale (in BODEGA)

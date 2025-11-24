@@ -7,7 +7,7 @@ import SaleDetailModal from '@/components/SaleDetailModal';
 import ReturnBoxesModal from '@/components/ReturnBoxesModal';
 import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
 import { WindowContainer, Button } from '../../components/design-system';
-import { updateSaleState } from '@/api/endpoints';
+import { dispatchSale, completeSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 
 import '@/styles/SalesOrdersList.css';
@@ -68,31 +68,37 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handleDispatchSale = async (sale: Sale) => {
     try {
-      await updateSaleState(
-        sale.saleId,
-        'DISPATCHED',
-        'Marcado como despachado'
-      );
-      showSuccess('Venta marcada como despachada');
-      salesOrdersCONFIRMEDPaginated.refresh();
+      await dispatchSale(sale.saleId, 'Marcado como despachado');
+      showSuccess('Venta marcada como despachada exitosamente');
+      // Esperar un momento para que el backend procese la actualización
+      setTimeout(() => {
+        salesOrdersCONFIRMEDPaginated.refresh();
+      }, 500);
     } catch (error) {
       console.error('Error dispatching sale:', error);
-      showError('Error al marcar como despachada');
+      showError(
+        error instanceof Error
+          ? `Error al marcar como despachada: ${error.message}`
+          : 'Error desconocido al marcar como despachada'
+      );
     }
   };
 
   const handleCompleteSale = async (sale: Sale) => {
     try {
-      await updateSaleState(
-        sale.saleId,
-        'COMPLETED',
-        'Marcado como completado'
-      );
+      await completeSale(sale.saleId, 'Marcado como completado');
       showSuccess('Venta completada exitosamente');
-      salesOrdersCONFIRMEDPaginated.refresh();
+      // Esperar un momento para que el backend procese la actualización
+      setTimeout(() => {
+        salesOrdersCONFIRMEDPaginated.refresh();
+      }, 500);
     } catch (error) {
       console.error('Error completing sale:', error);
-      showError('Error al completar la venta');
+      showError(
+        error instanceof Error
+          ? `Error al completar la venta: ${error.message}`
+          : 'Error desconocido al completar la venta'
+      );
     }
   };
 
