@@ -151,30 +151,6 @@
   margin-left: var(--macos-space-2);
 }
 
-/* Dark Mode Adjustments */
-@media (prefers-color-scheme: dark) {
-  .secondary {
-    background: var(--macos-gray-5);
-    color: var(--macos-text-primary);
-    border-color: var(--macos-border-primary);
-  }
-
-  .secondary:hover:not(:disabled) {
-    background: var(--macos-gray-4);
-  }
-
-  .secondary:active:not(:disabled) {
-    background: var(--macos-gray-3);
-  }
-
-  .ghost:hover:not(:disabled) {
-    background: rgba(0, 122, 255, 0.2);
-  }
-
-  .ghost:active:not(:disabled) {
-    background: rgba(0, 122, 255, 0.3);
-  }
-}
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {

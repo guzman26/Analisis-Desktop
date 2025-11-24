@@ -264,18 +264,6 @@
   }
 }
 
-/* Dark Mode Adjustments */
-@media (prefers-color-scheme: dark) {
-  .actionCard {
-    background: var(--macos-gray-5);
-    border-color: var(--macos-border-primary);
-  }
-
-  .warningBanner {
-    background: var(--macos-red);
-    border-color: var(--macos-red);
-  }
-}
 
 /* Animation */
 .actionCard {
@@ -408,26 +396,15 @@
   }
 }
 
-/* Dark Mode for Location Selection */
-@media (prefers-color-scheme: dark) {
-  .locationSection {
-    background: var(--macos-gray-5);
-    border-color: var(--macos-border-primary);
-  }
-
-  .locationButton {
-    background: var(--macos-gray-4);
-    border-color: var(--macos-border-primary);
-  }
-
-  .locationButton:hover:not(:disabled) {
-    background: var(--macos-gray-3);
-  }
-
-  .locationWarning {
-    background: rgba(255, 59, 48, 0.15);
-  }
+/* Location Selection Styles */
+.locationSection {
+  padding: var(--macos-space-4);
+  background: var(--macos-bg-secondary);
+  border: 1px solid var(--macos-border-primary);
+  border-radius: var(--macos-radius-medium);
+  margin-bottom: var(--macos-space-4);
 }
+
 
 /* Responsive adjustments for location grid */
 @media (max-width: 768px) {

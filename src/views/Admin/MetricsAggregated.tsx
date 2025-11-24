@@ -678,15 +678,6 @@ const MetricsAggregated: React.FC = () => {
                     renderCell: (row) => formatNumber(row.totalPallets),
                   },
                   {
-                    id: 'averageEfficiency',
-                    header: 'Eficiencia Promedio',
-                    align: 'right',
-                    width: 180,
-                    accessor: (row) => row.averageEfficiency,
-                    sortable: true,
-                    renderCell: (row) => `${row.averageEfficiency.toFixed(2)}%`,
-                  },
-                  {
                     id: 'percentage',
                     header: 'Participación',
                     align: 'right',
@@ -732,15 +723,6 @@ const MetricsAggregated: React.FC = () => {
                     accessor: (row) => row.totalPallets,
                     sortable: true,
                     renderCell: (row) => formatNumber(row.totalPallets),
-                  },
-                  {
-                    id: 'averageEfficiency',
-                    header: 'Eficiencia Promedio',
-                    align: 'right',
-                    width: 180,
-                    accessor: (row) => row.averageEfficiency,
-                    sortable: true,
-                    renderCell: (row) => `${row.averageEfficiency.toFixed(2)}%`,
                   },
                 ]}
                 data={temporalData}

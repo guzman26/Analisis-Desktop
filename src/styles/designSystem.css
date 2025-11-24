@@ -226,41 +226,6 @@
   --macos-z-notification: 1080;
 }
 
-/* ========================================
-   Dark Mode Variables (System Automatic)
-   Only applies when no manual override exists
-   ======================================== */
-
-@media (prefers-color-scheme: dark) {
-  :root:not(.macos-dark):not(.macos-light) {
-    /* Window Colors - Dark */
-    --macos-window-bg: rgba(40, 40, 40, 0.95);
-    --macos-window-bg-translucent: rgba(50, 50, 50, 0.8);
-    --macos-titlebar-bg: rgba(50, 50, 50, 0.85);
-    --macos-sidebar-bg: rgba(30, 30, 30, 0.95);
-    --macos-content-bg: rgba(40, 40, 40, 0.95);
-
-    /* Text Colors - Dark */
-    --macos-text-primary: rgba(255, 255, 255, 0.85);
-    --macos-text-secondary: rgba(255, 255, 255, 0.6);
-    --macos-text-tertiary: rgba(255, 255, 255, 0.4);
-    --macos-text-quaternary: rgba(255, 255, 255, 0.18);
-    --macos-text-on-color: rgba(255, 255, 255, 0.95);
-
-    /* Border Colors - Dark */
-    --macos-border-primary: rgba(255, 255, 255, 0.1);
-    --macos-border-secondary: rgba(255, 255, 255, 0.05);
-    --macos-separator: rgba(255, 255, 255, 0.08);
-
-    /* Gray Scale - Dark */
-    --macos-gray-1: #8e8e93;
-    --macos-gray-2: #636366;
-    --macos-gray-3: #48484a;
-    --macos-gray-4: #3a3a3c;
-    --macos-gray-5: #2c2c2e;
-    --macos-gray-6: #1c1c1e;
-  }
-}
 
 /* ========================================
    Global Styles
@@ -711,37 +676,3 @@ body {
   }
 }
 
-/* ========================================
-   Manual Theme Toggle Classes
-   ======================================== */
-
-/* Manual dark mode override */
-:root.macos-dark {
-  --macos-window-bg: rgba(40, 40, 40, 0.95);
-  --macos-window-bg-translucent: rgba(50, 50, 50, 0.8);
-  --macos-titlebar-bg: rgba(50, 50, 50, 0.85);
-  --macos-sidebar-bg: rgba(30, 30, 30, 0.95);
-  --macos-content-bg: rgba(40, 40, 40, 0.95);
-
-  --macos-text-primary: rgba(255, 255, 255, 0.85);
-  --macos-text-secondary: rgba(255, 255, 255, 0.6);
-  --macos-text-tertiary: rgba(255, 255, 255, 0.4);
-  --macos-text-quaternary: rgba(255, 255, 255, 0.18);
-  --macos-text-on-color: rgba(255, 255, 255, 0.95);
-
-  --macos-border-primary: rgba(255, 255, 255, 0.1);
-  --macos-border-secondary: rgba(255, 255, 255, 0.05);
-  --macos-separator: rgba(255, 255, 255, 0.08);
-
-  --macos-gray-1: #8e8e93;
-  --macos-gray-2: #636366;
-  --macos-gray-3: #48484a;
-  --macos-gray-4: #3a3a3c;
-  --macos-gray-5: #2c2c2e;
-  --macos-gray-6: #1c1c1e;
-}
-
-/* Manual light mode override */
-:root.macos-light {
-  /* Uses the default light mode variables already defined in :root */
-}

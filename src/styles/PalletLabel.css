@@ -382,11 +382,8 @@
     print-color-adjust: exact !important;
   }
 
-  /* Override any dark theme or container backgrounds */
-  [data-theme='dark'],
-  [data-theme='dark'] *,
-  .dark,
-  .dark * {
+  /* Override any container backgrounds */
+  * {
     background: white !important;
     background-color: white !important;
     color: black !important;

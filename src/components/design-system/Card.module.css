@@ -83,13 +83,6 @@
     var(--macos-shadow-medium);
 }
 
-/* Dark Mode Adjustments */
-@media (prefers-color-scheme: dark) {
-  .flat {
-    background: var(--macos-gray-5);
-    border-color: var(--macos-border-primary);
-  }
-}
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
