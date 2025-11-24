@@ -114,21 +114,21 @@ const SalesCard: React.FC<SalesCardProps> = ({
 
       <div className="sale-secondary-info">
         <div className="sale-id-secondary">
-          <span className="label">ID:</span>
+          <span className="label">ID Venta</span>
           <span className="value" title={sale.saleId}>
             {formatSaleId(sale.saleId)}
           </span>
         </div>
 
         <div className="sale-boxes-info">
-          <span className="label">Total Cajas:</span>
+          <span className="label">Total Cajas</span>
           <span className="value">{getTotalBoxes(sale)}</span>
         </div>
       </div>
 
       <div className="sale-items">
         <span className="items-label">
-          Pallets ({getPalletsCount(sale)}):
+          Pallets ({getPalletsCount(sale)})
         </span>
         <div className="pallets-list">
           {(() => {
@@ -140,7 +140,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
               <div key={index} className="pallet-item">
                 <span className="pallet-id">{item.palletId}</span>
                 <span className="box-count">
-                  ({item.boxIds?.length || 0} cajas)
+                  {item.boxIds?.length || 0} caja{item.boxIds?.length !== 1 ? 's' : ''}
                 </span>
               </div>
             ));
