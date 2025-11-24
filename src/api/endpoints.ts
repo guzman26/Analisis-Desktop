@@ -515,7 +515,6 @@ export const getMetrics = (params?: {
     summary: {
       totalBoxes: number;
       totalPallets: number;
-      averageEfficiency: number;
       totalDays: number;
     };
     count: number;

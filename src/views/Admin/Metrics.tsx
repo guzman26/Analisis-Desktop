@@ -28,7 +28,6 @@ interface MetricsResponse {
   summary: {
     totalBoxes: number;
     totalPallets: number;
-    averageEfficiency: number;
     totalDays: number;
   };
   count: number;
@@ -71,7 +70,6 @@ const Metrics: React.FC = () => {
       'type',
       'totalBoxes',
       'totalPallets',
-      'efficiency',
       'byCalibre',
       'byShift',
       'byOperario',
@@ -439,19 +437,6 @@ const Metrics: React.FC = () => {
         width: 120,
       },
       {
-        id: 'efficiency',
-        header: 'Eficiencia',
-        align: 'right',
-        sortable: true,
-        accessor: (row) => safeNumber(row.metricData.efficiency),
-        renderCell: (row) =>
-          row.metricData.efficiency !== undefined &&
-          row.metricData.efficiency !== null
-            ? `${safeNumber(row.metricData.efficiency).toFixed(2)}%`
-            : '-',
-        width: 120,
-      },
-      {
         id: 'byCalibre',
         header: 'Cajas por Calibre',
         accessor: (row) =>
@@ -810,53 +795,6 @@ const Metrics: React.FC = () => {
                   width: '48px',
                   height: '48px',
                   borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-orange)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <TrendingUp
-                  style={{ width: '24px', height: '24px', color: 'white' }}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p
-                  className="macos-text-footnote"
-                  style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
-                  }}
-                >
-                  Eficiencia Promedio
-                </p>
-                <p
-                  className="macos-text-title-1"
-                  style={{
-                    color: 'var(--macos-text-primary)',
-                    fontWeight: 700,
-                    margin: 0,
-                  }}
-                >
-                  {data.summary.averageEfficiency.toFixed(2)}%
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="flat" padding="medium">
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--macos-space-3)',
-              }}
-            >
-              <div
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: 'var(--macos-radius-medium)',
                   backgroundColor: 'var(--macos-indigo)',
                   display: 'flex',
                   alignItems: 'center',
@@ -1029,7 +967,7 @@ const Metrics: React.FC = () => {
               onClick={() => {
                 // Show only essential columns
                 setVisibleColumns(
-                  new Set(['date', 'type', 'totalBoxes', 'efficiency', 'status'])
+                  new Set(['date', 'type', 'totalBoxes', 'status'])
                 );
               }}
             >

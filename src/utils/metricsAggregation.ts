@@ -7,7 +7,13 @@ export interface Metric {
   isFinal: boolean;
 }
 
-export type PeriodType = 'week' | 'month' | 'quarter' | 'semester' | 'year' | 'custom';
+export type PeriodType =
+  | 'week'
+  | 'month'
+  | 'quarter'
+  | 'semester'
+  | 'year'
+  | 'custom';
 
 export interface PeriodRange {
   start: Date;
@@ -19,7 +25,6 @@ export interface AggregatedByOperario {
   operario: string;
   totalBoxes: number;
   totalPallets: number;
-  averageEfficiency: number;
   daysWorked: number;
   percentage: number;
 }
@@ -34,7 +39,6 @@ export interface AggregatedByHorario {
   horario: string;
   totalBoxes: number;
   totalPallets: number;
-  averageEfficiency: number;
   percentage: number;
 }
 
@@ -42,14 +46,12 @@ export interface TemporalData {
   period: string;
   totalBoxes: number;
   totalPallets: number;
-  averageEfficiency: number;
   date: Date;
 }
 
 export interface SummaryData {
   totalBoxes: number;
   totalPallets: number;
-  averageEfficiency: number;
   totalDays: number;
   topOperarios: AggregatedByOperario[];
   topCalibres: AggregatedByCalibre[];
@@ -168,13 +170,14 @@ export function filterMetricsByPeriod(
  * Aggregate metrics by operario
  */
 export function aggregateByOperario(metrics: Metric[]): AggregatedByOperario[] {
-  const operarioMap = new Map<string, {
-    totalBoxes: number;
-    totalPallets: number;
-    totalEfficiency: number;
-    efficiencyCount: number;
-    daysWorked: Set<string>;
-  }>();
+  const operarioMap = new Map<
+    string,
+    {
+      totalBoxes: number;
+      totalPallets: number;
+      daysWorked: Set<string>;
+    }
+  >();
 
   metrics.forEach((metric) => {
     if (metric.metricType !== 'PRODUCTION_DAILY') return;
@@ -189,22 +192,16 @@ export function aggregateByOperario(metrics: Metric[]): AggregatedByOperario[] {
         operarioMap.set(operario, {
           totalBoxes: 0,
           totalPallets: 0,
-          totalEfficiency: 0,
-          efficiencyCount: 0,
           daysWorked: new Set(),
         });
       }
 
       const entry = operarioMap.get(operario)!;
       entry.totalBoxes += boxesNum;
-      entry.totalPallets += safeNumber(data.totalPallets) * (boxesNum / safeNumber(data.totalBoxes));
+      entry.totalPallets +=
+        safeNumber(data.totalPallets) *
+        (boxesNum / safeNumber(data.totalBoxes));
       entry.daysWorked.add(metric.date || metric.dateKey);
-
-      const efficiency = safeNumber(data.efficiency);
-      if (efficiency > 0) {
-        entry.totalEfficiency += efficiency;
-        entry.efficiencyCount += 1;
-      }
     });
   });
 
@@ -218,9 +215,6 @@ export function aggregateByOperario(metrics: Metric[]): AggregatedByOperario[] {
       operario,
       totalBoxes: data.totalBoxes,
       totalPallets: Math.round(data.totalPallets),
-      averageEfficiency: data.efficiencyCount > 0
-        ? data.totalEfficiency / data.efficiencyCount
-        : 0,
       daysWorked: data.daysWorked.size,
       percentage: totalBoxes > 0 ? (data.totalBoxes / totalBoxes) * 100 : 0,
     }))
@@ -265,12 +259,13 @@ export function aggregateByCalibre(metrics: Metric[]): AggregatedByCalibre[] {
  * Aggregate metrics by horario/turno
  */
 export function aggregateByHorario(metrics: Metric[]): AggregatedByHorario[] {
-  const horarioMap = new Map<string, {
-    totalBoxes: number;
-    totalPallets: number;
-    totalEfficiency: number;
-    efficiencyCount: number;
-  }>();
+  const horarioMap = new Map<
+    string,
+    {
+      totalBoxes: number;
+      totalPallets: number;
+    }
+  >();
 
   metrics.forEach((metric) => {
     if (metric.metricType !== 'PRODUCTION_DAILY') return;
@@ -285,20 +280,14 @@ export function aggregateByHorario(metrics: Metric[]): AggregatedByHorario[] {
         horarioMap.set(horario, {
           totalBoxes: 0,
           totalPallets: 0,
-          totalEfficiency: 0,
-          efficiencyCount: 0,
         });
       }
 
       const entry = horarioMap.get(horario)!;
       entry.totalBoxes += boxesNum;
-      entry.totalPallets += safeNumber(data.totalPallets) * (boxesNum / safeNumber(data.totalBoxes));
-
-      const efficiency = safeNumber(data.efficiency);
-      if (efficiency > 0) {
-        entry.totalEfficiency += efficiency;
-        entry.efficiencyCount += 1;
-      }
+      entry.totalPallets +=
+        safeNumber(data.totalPallets) *
+        (boxesNum / safeNumber(data.totalBoxes));
     });
   });
 
@@ -312,12 +301,12 @@ export function aggregateByHorario(metrics: Metric[]): AggregatedByHorario[] {
       horario: `Turno ${horario}`,
       totalBoxes: data.totalBoxes,
       totalPallets: Math.round(data.totalPallets),
-      averageEfficiency: data.efficiencyCount > 0
-        ? data.totalEfficiency / data.efficiencyCount
-        : 0,
       percentage: totalBoxes > 0 ? (data.totalBoxes / totalBoxes) * 100 : 0,
     }))
-    .sort((a, b) => parseInt(a.horario.split(' ')[1]) - parseInt(b.horario.split(' ')[1]));
+    .sort(
+      (a, b) =>
+        parseInt(a.horario.split(' ')[1]) - parseInt(b.horario.split(' ')[1])
+    );
 }
 
 /**
@@ -327,13 +316,14 @@ export function aggregateByTemporalPeriod(
   metrics: Metric[],
   groupBy: 'week' | 'month'
 ): TemporalData[] {
-  const periodMap = new Map<string, {
-    totalBoxes: number;
-    totalPallets: number;
-    totalEfficiency: number;
-    efficiencyCount: number;
-    date: Date;
-  }>();
+  const periodMap = new Map<
+    string,
+    {
+      totalBoxes: number;
+      totalPallets: number;
+      date: Date;
+    }
+  >();
 
   metrics.forEach((metric) => {
     if (metric.metricType !== 'PRODUCTION_DAILY') return;
@@ -346,15 +336,16 @@ export function aggregateByTemporalPeriod(
       weekStart.setDate(metricDate.getDate() - metricDate.getDay());
       periodKey = `Semana ${weekStart.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}`;
     } else {
-      periodKey = metricDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      periodKey = metricDate.toLocaleDateString('es-ES', {
+        month: 'long',
+        year: 'numeric',
+      });
     }
 
     if (!periodMap.has(periodKey)) {
       periodMap.set(periodKey, {
         totalBoxes: 0,
         totalPallets: 0,
-        totalEfficiency: 0,
-        efficiencyCount: 0,
         date: new Date(metricDate),
       });
     }
@@ -362,12 +353,6 @@ export function aggregateByTemporalPeriod(
     const entry = periodMap.get(periodKey)!;
     entry.totalBoxes += safeNumber(data.totalBoxes);
     entry.totalPallets += safeNumber(data.totalPallets);
-
-    const efficiency = safeNumber(data.efficiency);
-    if (efficiency > 0) {
-      entry.totalEfficiency += efficiency;
-      entry.efficiencyCount += 1;
-    }
   });
 
   return Array.from(periodMap.entries())
@@ -375,9 +360,6 @@ export function aggregateByTemporalPeriod(
       period,
       totalBoxes: data.totalBoxes,
       totalPallets: data.totalPallets,
-      averageEfficiency: data.efficiencyCount > 0
-        ? data.totalEfficiency / data.efficiencyCount
-        : 0,
       date: data.date,
     }))
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -387,8 +369,10 @@ export function aggregateByTemporalPeriod(
  * Calculate summary data for a period
  */
 export function calculateSummary(metrics: Metric[]): SummaryData {
-  const productionMetrics = metrics.filter((m) => m.metricType === 'PRODUCTION_DAILY');
-  
+  const productionMetrics = metrics.filter(
+    (m) => m.metricType === 'PRODUCTION_DAILY'
+  );
+
   const totalBoxes = productionMetrics.reduce(
     (sum, m) => sum + safeNumber(m.data?.totalBoxes || 0),
     0
@@ -398,14 +382,6 @@ export function calculateSummary(metrics: Metric[]): SummaryData {
     (sum, m) => sum + safeNumber(m.data?.totalPallets || 0),
     0
   );
-
-  const efficiencies = productionMetrics
-    .map((m) => safeNumber(m.data?.efficiency || 0))
-    .filter((e) => e > 0);
-
-  const averageEfficiency = efficiencies.length > 0
-    ? efficiencies.reduce((sum, e) => sum + e, 0) / efficiencies.length
-    : 0;
 
   const uniqueDates = new Set(
     productionMetrics.map((m) => m.date || m.dateKey)
@@ -418,7 +394,6 @@ export function calculateSummary(metrics: Metric[]): SummaryData {
   return {
     totalBoxes,
     totalPallets,
-    averageEfficiency,
     totalDays: uniqueDates.size,
     topOperarios: operarios.slice(0, 5),
     topCalibres: calibres.slice(0, 5),
@@ -432,4 +407,3 @@ export function calculateSummary(metrics: Metric[]): SummaryData {
 export function formatPeriodLabel(periodRange: PeriodRange): string {
   return periodRange.label;
 }
-

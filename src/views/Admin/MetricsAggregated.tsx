@@ -358,53 +358,6 @@ const MetricsAggregated: React.FC = () => {
                         width: '48px',
                         height: '48px',
                         borderRadius: 'var(--macos-radius-medium)',
-                        backgroundColor: 'var(--macos-orange)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <TrendingUp
-                        style={{ width: '24px', height: '24px', color: 'white' }}
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <p
-                        className="macos-text-footnote"
-                        style={{
-                          color: 'var(--macos-text-secondary)',
-                          marginBottom: 'var(--macos-space-1)',
-                        }}
-                      >
-                        Eficiencia Promedio
-                      </p>
-                      <p
-                        className="macos-text-title-1"
-                        style={{
-                          color: 'var(--macos-text-primary)',
-                          fontWeight: 700,
-                          margin: 0,
-                        }}
-                      >
-                        {summaryData.averageEfficiency.toFixed(2)}%
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card variant="flat" padding="medium">
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 'var(--macos-space-3)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: 'var(--macos-radius-medium)',
                         backgroundColor: 'var(--macos-indigo)',
                         display: 'flex',
                         alignItems: 'center',
@@ -616,15 +569,6 @@ const MetricsAggregated: React.FC = () => {
                     accessor: (row) => row.totalPallets,
                     sortable: true,
                     renderCell: (row) => formatNumber(row.totalPallets),
-                  },
-                  {
-                    id: 'averageEfficiency',
-                    header: 'Eficiencia Promedio',
-                    align: 'right',
-                    width: 160,
-                    accessor: (row) => row.averageEfficiency,
-                    sortable: true,
-                    renderCell: (row) => `${row.averageEfficiency.toFixed(2)}%`,
                   },
                   {
                     id: 'daysWorked',
