@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
@@ -6,6 +6,8 @@ import { closePallet, movePallet, deletePallet, getClosedPallets } from '@/api/e
 import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
+import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
+import { Building2 } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
@@ -81,6 +83,26 @@ const ClosedPallets = () => {
       setLoadingMore(false);
     }
   };
+
+  // Agrupar pallets por empresa
+  const palletsByCompany = useMemo(() => {
+    const groups: Record<string, Pallet[]> = {};
+    
+    filtered.forEach((pallet) => {
+      const empresa = getEmpresaNombre(pallet.codigo);
+      if (!groups[empresa]) {
+        groups[empresa] = [];
+      }
+      groups[empresa].push(pallet);
+    });
+
+    // Ordenar las empresas alfabéticamente
+    const sortedEntries = Object.entries(groups).sort(([a], [b]) => 
+      a.localeCompare(b, 'es')
+    );
+
+    return sortedEntries;
+  }, [filtered]);
 
   return (
     <div className="macos-animate-fade-in">
@@ -183,7 +205,7 @@ const ClosedPallets = () => {
         </Card>
       </div>
 
-      {/* Pallets Grid */}
+      {/* Pallets agrupados por empresa */}
       {closedPalletsInPacking.length === 0 ? (
         <Card>
           <p
@@ -198,29 +220,74 @@ const ClosedPallets = () => {
           </p>
         </Card>
       ) : (
-        <div
-          className="macos-grid"
-          style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          }}
-        >
-          {filtered.map((pallet: any) => (
-            <PalletCard
-              key={pallet.codigo}
-              pallet={pallet}
-              setSelectedPallet={setSelectedPallet}
-              setIsModalOpen={setIsModalOpen}
-              closePallet={closePallet}
-              fetchActivePallets={refresh}
-              onDelete={async (codigo) => {
-                try {
-                  await deletePallet(codigo);
-                  refresh();
-                } catch (error) {
-                  console.error('Error al eliminar pallet:', error);
-                }
-              }}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-6)' }}>
+          {palletsByCompany.map(([empresa, pallets]) => (
+            <div key={empresa}>
+              {/* Encabezado del grupo */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--macos-space-3)',
+                  marginBottom: 'var(--macos-space-4)',
+                  paddingBottom: 'var(--macos-space-2)',
+                  borderBottom: '1px solid var(--macos-separator)',
+                }}
+              >
+                <Building2
+                  size={20}
+                  style={{ color: 'var(--macos-blue)' }}
+                />
+                <h2
+                  className="macos-text-title-2"
+                  style={{
+                    color: 'var(--macos-text-primary)',
+                    fontWeight: 600,
+                    margin: 0,
+                  }}
+                >
+                  {empresa}
+                </h2>
+                <span
+                  className="macos-text-footnote"
+                  style={{
+                    color: 'var(--macos-text-tertiary)',
+                    backgroundColor: 'var(--macos-fill-secondary)',
+                    padding: '2px 8px',
+                    borderRadius: 'var(--macos-radius-sm)',
+                  }}
+                >
+                  {pallets.length} {pallets.length === 1 ? 'pallet' : 'pallets'}
+                </span>
+              </div>
+              
+              {/* Grid de pallets de esta empresa */}
+              <div
+                className="macos-grid"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                }}
+              >
+                {pallets.map((pallet: Pallet) => (
+                  <PalletCard
+                    key={pallet.codigo}
+                    pallet={pallet}
+                    setSelectedPallet={setSelectedPallet}
+                    setIsModalOpen={setIsModalOpen}
+                    closePallet={closePallet}
+                    fetchActivePallets={refresh}
+                    onDelete={async (codigo) => {
+                      try {
+                        await deletePallet(codigo);
+                        refresh();
+                      } catch (error) {
+                        console.error('Error al eliminar pallet:', error);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}

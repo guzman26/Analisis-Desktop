@@ -12,6 +12,8 @@ import {
 import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
+import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
+import CalibreLegend from '@/components/CalibreLegend';
 import '../../styles/designSystem.css';
 
 interface Metric {
@@ -179,6 +181,9 @@ const Metrics: React.FC = () => {
     const entries = Object.entries(obj);
     if (!entries.length) return null;
 
+    // Determinar si es una tabla de calibres
+    const isCalibreTable = title === 'Cajas por Calibre';
+
     // Sort by value (descending) for better readability
     const sortedEntries = entries.sort((a, b) => {
       const aVal = safeNumber(a[1]);
@@ -285,6 +290,10 @@ const Metrics: React.FC = () => {
               {sortedEntries.map(([key, val], index) => {
                 const value = safeNumber(val);
                 const percentage = total > 0 ? (value / total) * 100 : 0;
+                const calibreName = isCalibreTable 
+                  ? CALIBRE_MAP[key as keyof typeof CALIBRE_MAP]
+                  : null;
+                
                 return (
                   <tr
                     key={key}
@@ -301,7 +310,18 @@ const Metrics: React.FC = () => {
                         color: '#333',
                       }}
                     >
-                      {key}
+                      {isCalibreTable && calibreName ? (
+                        <div>
+                          <div style={{ fontWeight: 700, fontFamily: 'monospace' }}>
+                            {key}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>
+                            {calibreName}
+                          </div>
+                        </div>
+                      ) : (
+                        key
+                      )}
                     </td>
                     <td
                       style={{
@@ -1007,74 +1027,86 @@ const Metrics: React.FC = () => {
                   }}
                 >
                   {isProduction ? (
-                    <div
+                    <>
+                      <div
                         style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                        gap: '16px',
-                      }}
-                    >
-                      {createDetailTable(
-                        metricData.boxesByCalibre,
-                        'Cajas por Calibre',
-                        'Calibre',
-                        'Cajas'
-                      ) || (
-                        <div
-                        style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                            padding: '20px',
-                            textAlign: 'center',
-                            backgroundColor: 'white',
-                            color: '#999',
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                          gap: '16px',
+                        }}
+                      >
+                        {createDetailTable(
+                          metricData.boxesByCalibre,
+                          'Cajas por Calibre',
+                          'Calibre',
+                          'Cajas'
+                        ) || (
+                          <div
+                            style={{
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              padding: '20px',
+                              textAlign: 'center',
+                              backgroundColor: 'white',
+                              color: '#999',
                               fontSize: '12px',
                             }}
                           >
-                          Sin datos de calibre
-                        </div>
-                      )}
-                      {createDetailTable(
-                        metricData.boxesByShift,
-                        'Cajas por Horario',
-                        'Horario',
-                        'Cajas'
-                      ) || (
-                        <div
+                            Sin datos de calibre
+                          </div>
+                        )}
+                        {createDetailTable(
+                          metricData.boxesByShift,
+                          'Cajas por Horario',
+                          'Horario',
+                          'Cajas'
+                        ) || (
+                          <div
                             style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                            padding: '20px',
-                            textAlign: 'center',
-                            backgroundColor: 'white',
-                            color: '#999',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              padding: '20px',
+                              textAlign: 'center',
+                              backgroundColor: 'white',
+                              color: '#999',
                               fontSize: '12px',
                             }}
                           >
-                          Sin datos de horario
-                        </div>
-                      )}
-                      {createDetailTable(
-                        metricData.boxesByOperario,
-                        'Cajas por Operario',
-                        'Operario',
-                        'Cajas'
-                      ) || (
-                        <div
+                            Sin datos de horario
+                          </div>
+                        )}
+                        {createDetailTable(
+                          metricData.boxesByOperario,
+                          'Cajas por Operario',
+                          'Operario',
+                          'Cajas'
+                        ) || (
+                          <div
                             style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                            padding: '20px',
-                          textAlign: 'center',
-                            backgroundColor: 'white',
-                            color: '#999',
-                            fontSize: '12px',
-                          }}
-                        >
-                          Sin datos de operario
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              padding: '20px',
+                              textAlign: 'center',
+                              backgroundColor: 'white',
+                              color: '#999',
+                              fontSize: '12px',
+                            }}
+                          >
+                            Sin datos de operario
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Leyenda de calibres solo si hay datos de calibre */}
+                      {metricData.boxesByCalibre && Object.keys(metricData.boxesByCalibre).length > 0 && (
+                        <div style={{ marginTop: '16px' }}>
+                          <CalibreLegend 
+                            onlyShow={Object.keys(metricData.boxesByCalibre)} 
+                            compact={true}
+                          />
                         </div>
                       )}
-                    </div>
+                    </>
                   ) : (
                     <div style={{ maxWidth: '600px' }}>
                       {createDetailTable(

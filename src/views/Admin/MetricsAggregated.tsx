@@ -15,6 +15,8 @@ import { getMetrics } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
 import PeriodSelector from '@/components/PeriodSelector';
+import CalibreLegend from '@/components/CalibreLegend';
+import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
 import {
   PeriodType,
   getPeriodRange,
@@ -480,47 +482,61 @@ const MetricsAggregated: React.FC = () => {
                     Top 5 Calibres
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-2)' }}>
-                    {summaryData.topCalibres.map((cal, index) => (
-                      <div
-                        key={cal.calibre}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          padding: 'var(--macos-space-2)',
-                          backgroundColor: index % 2 === 0 ? 'var(--macos-gray-6)' : 'transparent',
-                          borderRadius: 'var(--macos-radius-small)',
-                        }}
-                      >
-                        <span
+                    {summaryData.topCalibres.map((cal, index) => {
+                      const calibreName = CALIBRE_MAP[cal.calibre as keyof typeof CALIBRE_MAP] || 'Desconocido';
+                      return (
+                        <div
+                          key={cal.calibre}
                           style={{
-                            fontWeight: 600,
-                            color: 'var(--macos-text-primary)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 'var(--macos-space-2)',
+                            backgroundColor: index % 2 === 0 ? 'var(--macos-gray-6)' : 'transparent',
+                            borderRadius: 'var(--macos-radius-small)',
                           }}
                         >
-                          Calibre {cal.calibre}
-                        </span>
-                        <div style={{ textAlign: 'right' }}>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              color: 'var(--macos-text-primary)',
-                            }}
-                          >
-                            {formatNumber(cal.totalBoxes)}
-                          </span>
-                          <p
-                            className="macos-text-caption-1"
-                            style={{
-                              color: 'var(--macos-text-secondary)',
-                              margin: 0,
-                            }}
-                          >
-                            {cal.percentage.toFixed(1)}%
-                          </p>
+                          <div>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                color: 'var(--macos-text-primary)',
+                              }}
+                            >
+                              {cal.calibre}
+                            </span>
+                            <p
+                              className="macos-text-caption-1"
+                              style={{
+                                color: 'var(--macos-text-secondary)',
+                                margin: 0,
+                              }}
+                            >
+                              {calibreName}
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                color: 'var(--macos-text-primary)',
+                              }}
+                            >
+                              {formatNumber(cal.totalBoxes)}
+                            </span>
+                            <p
+                              className="macos-text-caption-1"
+                              style={{
+                                color: 'var(--macos-text-secondary)',
+                                margin: 0,
+                              }}
+                            >
+                              {cal.percentage.toFixed(1)}%
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </Card>
               </div>
@@ -597,54 +613,71 @@ const MetricsAggregated: React.FC = () => {
 
           {/* Calibre View */}
           {currentView === 'calibre' && (
-            <Card variant="default" padding="none">
-              <DataTable
-                columns={[
-                  {
-                    id: 'rank',
-                    header: '#',
-                    width: 60,
-                    renderCell: (row) => {
-                      const index = calibreData.findIndex((cal) => cal.calibre === row.calibre);
-                      return (
-                        <span style={{ fontWeight: 600, color: 'var(--macos-text-secondary)' }}>
-                          #{index + 1}
-                        </span>
-                      );
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-5)' }}>
+              <Card variant="default" padding="none">
+                <DataTable
+                  columns={[
+                    {
+                      id: 'rank',
+                      header: '#',
+                      width: 60,
+                      renderCell: (row) => {
+                        const index = calibreData.findIndex((cal) => cal.calibre === row.calibre);
+                        return (
+                          <span style={{ fontWeight: 600, color: 'var(--macos-text-secondary)' }}>
+                            #{index + 1}
+                          </span>
+                        );
+                      },
                     },
-                  },
-                  {
-                    id: 'calibre',
-                    header: 'Calibre',
-                    width: 120,
-                    accessor: (row) => row.calibre,
-                    sortable: true,
-                    renderCell: (row) => `Calibre ${row.calibre}`,
-                  },
-                  {
-                    id: 'totalBoxes',
-                    header: 'Total Cajas',
-                    align: 'right',
-                    width: 180,
-                    accessor: (row) => row.totalBoxes,
-                    sortable: true,
-                    renderCell: (row) => formatNumber(row.totalBoxes),
-                  },
-                  {
-                    id: 'percentage',
-                    header: 'Distribución',
-                    align: 'right',
-                    width: 150,
-                    accessor: (row) => row.percentage,
-                    sortable: true,
-                    renderCell: (row) => `${row.percentage.toFixed(2)}%`,
-                  },
-                ]}
-                data={calibreData}
-                getRowId={(row) => row.calibre}
-                initialSort={{ columnId: 'totalBoxes', direction: 'desc' }}
-              />
-            </Card>
+                    {
+                      id: 'calibre',
+                      header: 'Calibre',
+                      width: 120,
+                      accessor: (row) => row.calibre,
+                      sortable: true,
+                      renderCell: (row) => {
+                        const calibreName = CALIBRE_MAP[row.calibre as keyof typeof CALIBRE_MAP] || 'Desconocido';
+                        return (
+                          <div>
+                            <div style={{ fontWeight: 600 }}>{row.calibre}</div>
+                            <div
+                              className="macos-text-caption-1"
+                              style={{ color: 'var(--macos-text-secondary)' }}
+                            >
+                              {calibreName}
+                            </div>
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      id: 'totalBoxes',
+                      header: 'Total Cajas',
+                      align: 'right',
+                      width: 180,
+                      accessor: (row) => row.totalBoxes,
+                      sortable: true,
+                      renderCell: (row) => formatNumber(row.totalBoxes),
+                    },
+                    {
+                      id: 'percentage',
+                      header: 'Distribución',
+                      align: 'right',
+                      width: 150,
+                      accessor: (row) => row.percentage,
+                      sortable: true,
+                      renderCell: (row) => `${row.percentage.toFixed(2)}%`,
+                    },
+                  ]}
+                  data={calibreData}
+                  getRowId={(row) => row.calibre}
+                  initialSort={{ columnId: 'totalBoxes', direction: 'desc' }}
+                />
+              </Card>
+              
+              <CalibreLegend onlyShow={calibreData.map((c) => c.calibre)} />
+            </div>
           )}
 
           {/* Horario View */}
