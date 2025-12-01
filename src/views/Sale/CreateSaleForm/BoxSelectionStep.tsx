@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, Button } from '@/components/design-system';
 import { Check, X } from 'lucide-react';
 import { ALL_CALIBRE_CODES, CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
