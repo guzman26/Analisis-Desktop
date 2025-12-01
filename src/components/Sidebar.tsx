@@ -130,9 +130,20 @@ const sidebarItems: SidebarItem[] = [
         icon: <Search className="w-4 h-4" />,
       },
       {
-        path: '/admin/metrics',
         label: 'Métricas',
         icon: <BarChart3 className="w-4 h-4" />,
+        children: [
+          {
+            path: '/admin/metrics',
+            label: 'Métricas Producción',
+            icon: <BarChart3 className="w-4 h-4" />,
+          },
+          {
+            path: '/admin/metrics/sales',
+            label: 'Métricas Ventas',
+            icon: <BarChart3 className="w-4 h-4" />,
+          },
+        ],
       },
       {
         path: '/admin/danger-zone',

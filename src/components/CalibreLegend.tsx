@@ -191,3 +191,5 @@ function renderLegendContent(
 
 export default CalibreLegend;
 
+
+

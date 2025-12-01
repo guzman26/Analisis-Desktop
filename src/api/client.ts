@@ -48,26 +48,59 @@ export const api = async <T = any>(
     }
 
     if (!response.ok) {
-      // Extraer mensaje correctamente, manejando cuando error es un objeto
-      let message = `HTTP ${response.status}`;
+      // Extraer información de error del backend de forma estructurada
+      let message = `Error HTTP ${response.status}`;
+      let errorCode: string | undefined;
+      let errorDetails: any = null;
+
       if (rawData && typeof rawData === 'object') {
-        if (rawData.message && typeof rawData.message === 'string') {
-          message = rawData.message;
-        } else if (rawData.error) {
-          // Si error es un objeto con message, extraer el message
-          if (typeof rawData.error === 'object' && rawData.error.message) {
-            message = rawData.error.message;
+        // Estructura estándar del backend: { success: false, error: { code, message }, meta }
+        if (rawData.error) {
+          if (typeof rawData.error === 'object') {
+            errorCode = rawData.error.code;
+            message = rawData.error.message || message;
+            errorDetails = rawData.error.details || rawData.error.data || null;
           } else if (typeof rawData.error === 'string') {
             message = rawData.error;
           }
         }
+        
+        // Fallback: buscar message directamente
+        if (!message || message.startsWith('Error HTTP')) {
+          if (rawData.message && typeof rawData.message === 'string') {
+            message = rawData.message;
+          }
+        }
+
+        // Extraer detalles adicionales si existen
+        if (rawData.data && typeof rawData.data === 'object') {
+          errorDetails = rawData.data;
+        }
       }
       
+      // Determinar el status basado en el código HTTP o el código de error
+      let status: 'success' | 'fail' | 'error' = 'error';
+      if (response.status >= 400 && response.status < 500) {
+        status = 'fail';
+      } else if (response.status >= 500) {
+        status = 'error';
+      }
+      
+      // Si rawData tiene status, usarlo
+      if (rawData && rawData.status) {
+        status = rawData.status as 'success' | 'fail' | 'error';
+      }
+
       throw new ApiError({
         message,
         httpStatus: response.status,
-        status: (rawData && (rawData.status as any)) || 'error',
-        meta: (rawData && (rawData.meta as any)) || undefined,
+        status,
+        code: errorCode,
+        meta: {
+          ...(rawData && (rawData.meta as any)),
+          errorDetails,
+          responseStatus: response.status,
+        },
       });
     }
 
@@ -119,3 +152,4 @@ export const put = <T = any>(endpoint: string, body?: any) =>
 
 export const del = <T = any>(endpoint: string) =>
   api<T>(endpoint, { method: 'DELETE' });
+
