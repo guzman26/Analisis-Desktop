@@ -1,27 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { Customer } from '@/types';
+import { Customer, CalibreSelection } from '@/types';
 import { Card, Button } from '@/components/design-system';
-import FreshnessIndicator from '@/components/design-system/FreshnessIndicator';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
 import { getEggCountForBox, formatEggCount } from '@/utils/eggCalculations';
-import {
-  calculateAverageAge,
-  findOldestPallet,
-} from '@/utils/freshnessCalculations';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
-
-interface BoxData {
-  boxId: string;
-  palletCode: string;
-  calibre: string;
-  format?: string;
-}
 
 interface SaleSummaryStepProps {
   customer: Customer;
   saleType: SaleType;
-  boxes: BoxData[];
+  calibres: CalibreSelection[];
   onConfirm: (notes?: string) => void;
   isSubmitting: boolean;
 }
@@ -29,47 +17,23 @@ interface SaleSummaryStepProps {
 const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
   customer,
   saleType,
-  boxes,
+  calibres,
   onConfirm,
   isSubmitting,
 }) => {
   const [notes, setNotes] = useState<string>('');
-  const [expandedPallets, setExpandedPallets] = useState<Set<string>>(
-    new Set()
-  );
 
-  const totalBoxes = boxes.length;
+  // Calcular total de cajas
+  const totalBoxes = useMemo(() => {
+    return calibres.reduce((sum, cal) => sum + cal.boxCount, 0);
+  }, [calibres]);
 
-  // Calculate total eggs
+  // Calcular total de huevos estimados (asumiendo formato 1 por defecto)
+  // Nota: En el futuro se podría permitir especificar formato por calibre
   const totalEggs = useMemo(() => {
-    return boxes.reduce((sum, box) => {
-      const format = box.format || '1'; // Default to format 1 if not provided
-      return sum + getEggCountForBox(format);
-    }, 0);
-  }, [boxes]);
-
-  // Group boxes by pallet for counting
-  const palletGroups = boxes.reduce(
-    (acc, box) => {
-      if (!acc[box.palletCode]) {
-        acc[box.palletCode] = {
-          calibre: box.calibre,
-          boxes: [],
-          format: box.format || '1',
-        };
-      }
-      acc[box.palletCode].boxes.push(box.boxId);
-      return acc;
-    },
-    {} as Record<string, { calibre: string; boxes: string[]; format: string }>
-  );
-
-  const totalPallets = Object.keys(palletGroups).length;
-
-  // Calculate freshness stats
-  const palletCodes = Object.keys(palletGroups);
-  const avgAge = calculateAverageAge(palletCodes);
-  const oldestPallet = findOldestPallet(palletCodes);
+    const eggsPerBox = getEggCountForBox('1'); // Formato 1 = 180 huevos
+    return totalBoxes * eggsPerBox;
+  }, [totalBoxes]);
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNotes(e.target.value);
@@ -77,23 +41,6 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
 
   const handleConfirm = () => {
     onConfirm(notes);
-  };
-
-  const togglePalletExpansion = (palletCode: string) => {
-    const newExpanded = new Set(expandedPallets);
-    if (newExpanded.has(palletCode)) {
-      newExpanded.delete(palletCode);
-    } else {
-      newExpanded.add(palletCode);
-    }
-    setExpandedPallets(newExpanded);
-  };
-
-  const formatBoxCodesPreview = (boxes: string[], maxVisible: number = 6) => {
-    if (boxes.length <= maxVisible) {
-      return boxes;
-    }
-    return boxes.slice(0, maxVisible);
   };
 
   return (
@@ -110,9 +57,9 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
             </div>
             <div className="flex gap-6">
               <div className="text-center">
-                <span className="block text-2xl font-bold">{totalPallets}</span>
+                <span className="block text-2xl font-bold">{calibres.length}</span>
                 <span className="block text-sm text-gray-500">
-                  Pallet{totalPallets !== 1 ? 's' : ''}
+                  Calibre{calibres.length !== 1 ? 's' : ''}
                 </span>
               </div>
               <div className="text-center">
@@ -126,44 +73,14 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
                   {formatEggCount(totalEggs)}
                 </span>
                 <span className="block text-sm text-gray-500">
-                  Huevo{totalEggs !== 1 ? 's' : ''}
+                  Huevo{totalEggs !== 1 ? 's' : ''} (estimado)
                 </span>
               </div>
             </div>
           </div>
         </Card>
 
-        {/* Freshness Summary */}
-        {avgAge !== null && (
-          <Card className="p-4" variant="flat">
-            <h3 className="text-lg font-medium mb-3">Frescura</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Edad Promedio:</span>
-                <span className="font-medium">{avgAge} días</span>
-              </div>
-              {oldestPallet && (
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">
-                    Pallet Más Antiguo:
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
-                      {oldestPallet.palletCode}
-                    </span>
-                    <FreshnessIndicator
-                      palletCode={oldestPallet.palletCode}
-                      size="small"
-                      showLabel={false}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Customer Details - Collapsible */}
+        {/* Customer Details */}
         <Card className="p-4" variant="flat">
           <div className="mb-3">
             <h3 className="text-lg font-medium">Cliente Seleccionado</h3>
@@ -175,11 +92,11 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-gray-500">Email:</span>
-              <span className="font-medium">{customer.email}</span>
+              <span className="font-medium">{customer.email || 'N/A'}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-sm text-gray-500">Teléfono:</span>
-              <span className="font-medium">{customer.phone}</span>
+              <span className="font-medium">{customer.phone || 'N/A'}</span>
             </div>
             {customer.taxId && (
               <div className="flex flex-col">
@@ -190,87 +107,58 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
           </div>
         </Card>
 
-        {/* Pallets & Boxes Summary - Improved */}
+        {/* Calibres Summary */}
         <Card className="p-4" variant="flat">
           <div className="mb-4">
             <h3 className="text-lg font-medium">
-              Pallets y Cajas Seleccionadas
+              Calibres y Cantidades Seleccionadas
             </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              La asignación de cajas específicas se realizará más adelante
+            </p>
           </div>
 
           <div className="space-y-3">
-            {Object.entries(palletGroups).map(([palletCode, palletData]) => {
-              const isExpanded = expandedPallets.has(palletCode);
-              const previewBoxes = formatBoxCodesPreview(palletData.boxes, 6);
-              const hasMoreBoxes = palletData.boxes.length > 6;
+            {calibres.map((cal) => {
+              const calibreName =
+                CALIBRE_MAP[cal.calibre as keyof typeof CALIBRE_MAP] ||
+                cal.calibre;
+              const eggsForCalibre = cal.boxCount * getEggCountForBox('1');
 
               return (
                 <Card
-                  key={palletCode}
+                  key={cal.calibre}
                   className="mb-2 border border-gray-200"
                   variant="flat"
                 >
-                  <div className="p-3 flex justify-between items-center">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">Pallet {palletCode}</h4>
-                        <FreshnessIndicator
-                          palletCode={palletCode}
-                          size="small"
-                          showLabel={false}
-                        />
-                      </div>
-                      <div className="flex gap-3 mt-1">
-                        <span className="text-xs py-1 px-2 bg-blue-50 text-blue-700 rounded">
-                          Calibre: {palletData.calibre}
-                        </span>
-                        <span className="text-xs py-1 px-2 bg-gray-50 text-gray-700 rounded">
-                          {palletData.boxes.length} cajas •{' '}
-                          {formatEggCount(
-                            palletData.boxes.length *
-                              getEggCountForBox(palletData.format)
-                          )}{' '}
-                          huevos
-                        </span>
-                      </div>
-                    </div>
-                    {hasMoreBoxes && (
-                      <Button
-                        variant="secondary"
-                        size="small"
-                        onClick={() => togglePalletExpansion(palletCode)}
-                        className="text-xs"
-                      >
-                        {isExpanded ? (
-                          <>
-                            <ChevronDown size={14} /> Contraer
-                          </>
-                        ) : (
-                          <>
-                            <ChevronRight size={14} /> Ver todas
-                          </>
-                        )}
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="p-3 pt-0 border-t border-gray-100">
-                    <div className="flex flex-wrap gap-2">
-                      {(isExpanded ? palletData.boxes : previewBoxes).map(
-                        (boxId) => (
-                          <span
-                            key={boxId}
-                            className="py-1 px-2 text-xs bg-gray-100 rounded-md"
-                          >
-                            {boxId}
+                  <div className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-medium text-lg">{calibreName}</h4>
+                          <span className="text-xs py-1 px-2 bg-blue-50 text-blue-700 rounded">
+                            Código: {cal.calibre}
                           </span>
-                        )
-                      )}
-                      {!isExpanded && hasMoreBoxes && (
-                        <span className="py-1 px-2 text-xs bg-blue-50 text-blue-600 rounded-md">
-                          +{palletData.boxes.length - previewBoxes.length} más
-                        </span>
-                      )}
+                        </div>
+                        <div className="flex gap-4 mt-2">
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500">
+                              Cantidad de cajas:
+                            </span>
+                            <span className="text-lg font-semibold text-blue-600">
+                              {cal.boxCount}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-500">
+                              Huevos estimados:
+                            </span>
+                            <span className="text-lg font-semibold text-gray-700">
+                              {formatEggCount(eggsForCalibre)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -300,11 +188,13 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
           <div className="mb-4">
             <p className="text-center text-lg">
               ¿Confirma que desea procesar esta {saleType.toLowerCase()} de{' '}
-              <strong>
-                {totalPallets} pallet{totalPallets !== 1 ? 's' : ''}
-              </strong>{' '}
-              ({totalBoxes} cajas) para el cliente{' '}
-              <strong>{customer.name}</strong>?
+              <strong>{totalBoxes} caja{totalBoxes !== 1 ? 's' : ''}</strong>{' '}
+              ({calibres.length} calibre{calibres.length !== 1 ? 's' : ''}) para
+              el cliente <strong>{customer.name}</strong>?
+            </p>
+            <p className="text-center text-sm text-gray-600 mt-2">
+              La asignación de cajas específicas se realizará en un proceso
+              posterior
             </p>
           </div>
 

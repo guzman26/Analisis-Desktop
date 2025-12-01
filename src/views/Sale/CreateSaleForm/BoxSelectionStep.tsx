@@ -1,299 +1,345 @@
-import React, { useState, useEffect } from 'react';
-import { useFilteredPallets } from '@/contexts/PalletContext';
-import { Pallet } from '@/types';
-import { getPalletBoxes } from '@/utils/palletHelpers';
+import React, { useState, useMemo } from 'react';
 import { Card, Button } from '@/components/design-system';
-import { ArrowLeft, Check, Circle } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { ALL_CALIBRE_CODES, CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
+import { CalibreSelection } from '@/types';
 
 interface BoxSelectionStepProps {
-  selectedBoxCodes: string[];
-  onSelectionChange: (selectedBoxCodes: string[]) => void;
-}
-
-interface PalletGroup {
-  pallet: Pallet;
-  selectedBoxIds: string[];
+  selectedCalibres: CalibreSelection[];
+  onSelectionChange: (calibres: CalibreSelection[]) => void;
 }
 
 const BoxSelectionStep: React.FC<BoxSelectionStepProps> = ({
-  selectedBoxCodes,
+  selectedCalibres,
   onSelectionChange,
 }) => {
-  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
+  // Convertir array a Map para facilitar el manejo
+  const calibreMap = useMemo(() => {
+    const map = new Map<string, number>();
+    selectedCalibres.forEach((cal) => {
+      map.set(cal.calibre, cal.boxCount);
+    });
+    return map;
+  }, [selectedCalibres]);
 
-  const [selectedPallet, setSelectedPallet] = useState<string | null>(null);
+  // Manejar selección/deselección de calibre
+  const handleCalibreToggle = (calibre: string) => {
+    const newCalibres = [...selectedCalibres];
+    const existingIndex = newCalibres.findIndex((c) => c.calibre === calibre);
 
-  // Fetch pallets on component mount if not already loaded
-  useEffect(() => {
-    // Data is automatically fetched by useFilteredPallets hook
-  }, []);
-
-  // Process pallets and track selected boxes
-  const palletGroups: PalletGroup[] = closedPalletsInBodegaPaginated.map(
-    (pallet: any) => ({
-      pallet,
-      selectedBoxIds: getPalletBoxes(pallet).filter((boxId: any) =>
-        selectedBoxCodes.includes(boxId)
-      ),
-    })
-  );
-
-  const selectedPalletGroup = palletGroups.find(
-    (group) => group.pallet.codigo === selectedPallet
-  );
-
-  // Handle pallet selection/deselection (select all boxes in pallet)
-  const handlePalletToggle = (palletCode: string) => {
-    const palletGroup = palletGroups.find(
-      (group) => group.pallet.codigo === palletCode
-    );
-    if (!palletGroup) return;
-
-    const allBoxIds = getPalletBoxes(palletGroup.pallet);
-    const isFullySelected = allBoxIds.every((boxId) =>
-      selectedBoxCodes.includes(boxId)
-    );
-
-    let newSelectedBoxCodes: string[];
-    if (isFullySelected) {
-      // Deselect all boxes from this pallet
-      newSelectedBoxCodes = selectedBoxCodes.filter(
-        (boxId) => !allBoxIds.includes(boxId)
-      );
+    if (existingIndex >= 0) {
+      // Remover calibre si ya está seleccionado
+      newCalibres.splice(existingIndex, 1);
     } else {
-      // Select all boxes from this pallet
-      const newBoxIds = allBoxIds.filter(
-        (boxId) => !selectedBoxCodes.includes(boxId)
-      );
-      newSelectedBoxCodes = [...selectedBoxCodes, ...newBoxIds];
+      // Agregar calibre con cantidad inicial 0
+      newCalibres.push({ calibre, boxCount: 0 });
     }
 
-    onSelectionChange(newSelectedBoxCodes);
+    onSelectionChange(newCalibres);
   };
 
-  // Handle individual box selection within a pallet
-  const handleBoxToggle = (boxId: string) => {
-    const newSelectedBoxCodes = selectedBoxCodes.includes(boxId)
-      ? selectedBoxCodes.filter((id) => id !== boxId)
-      : [...selectedBoxCodes, boxId];
+  // Manejar cambio de cantidad para un calibre
+  const handleQuantityChange = (calibre: string, quantity: number) => {
+    const newCalibres = [...selectedCalibres];
+    const existingIndex = newCalibres.findIndex((c) => c.calibre === calibre);
 
-    onSelectionChange(newSelectedBoxCodes);
+    if (existingIndex >= 0) {
+      // Actualizar cantidad
+      newCalibres[existingIndex] = {
+        ...newCalibres[existingIndex],
+        boxCount: Math.max(0, quantity),
+      };
+    } else {
+      // Agregar nuevo calibre con cantidad
+      newCalibres.push({ calibre, boxCount: Math.max(0, quantity) });
+    }
+
+    onSelectionChange(newCalibres);
   };
 
-  const handleBackToPallets = () => {
-    setSelectedPallet(null);
+  // Remover calibre de la selección
+  const handleRemoveCalibre = (calibre: string) => {
+    const newCalibres = selectedCalibres.filter((c) => c.calibre !== calibre);
+    onSelectionChange(newCalibres);
   };
 
-  const handlePalletClick = (palletCode: string) => {
-    setSelectedPallet(palletCode);
+  // Calcular total de cajas
+  const totalBoxes = useMemo(() => {
+    return selectedCalibres.reduce((sum, cal) => sum + cal.boxCount, 0);
+  }, [selectedCalibres]);
+
+  // Agrupar calibres por tipo (Blanco, Color, Otros)
+  const groupedCalibres = useMemo(() => {
+    const blancos: string[] = [];
+    const color: string[] = [];
+    const otros: string[] = [];
+
+    ALL_CALIBRE_CODES.forEach((code) => {
+      const name = CALIBRE_MAP[code];
+      if (name.includes('BCO')) {
+        blancos.push(code);
+      } else if (name.includes('COLOR')) {
+        color.push(code);
+      } else {
+        otros.push(code);
+      }
+    });
+
+    return { blancos, color, otros };
+  }, []);
+
+  const isCalibreSelected = (calibre: string) => {
+    return calibreMap.has(calibre);
+  };
+
+  const getCalibreQuantity = (calibre: string) => {
+    return calibreMap.get(calibre) || 0;
   };
 
   return (
     <Card className="box-selection-step p-6" variant="elevated">
       <div className="mb-6">
         <h2 className="text-xl font-medium mb-2">
-          {selectedPallet
-            ? `Seleccionar Cajas - Pallet ${selectedPallet}`
-            : 'Seleccionar Pallets'}
+          Seleccionar Calibres y Cantidades
         </h2>
         <p className="text-sm text-gray-500">
-          {selectedPallet
-            ? 'Selecciona las cajas que deseas incluir en la venta'
-            : 'Selecciona los pallets de bodega y luego las cajas que deseas incluir en la venta'}
+          Primero selecciona los calibres que necesitas, luego ingresa la
+          cantidad de cajas para cada uno
         </p>
       </div>
 
-      {selectedPallet && (
-        <div className="mb-4">
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={handleBackToPallets}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeft size={16} /> Volver a Pallets
-          </Button>
+      {/* Resumen de selección */}
+      {totalBoxes > 0 && (
+        <div className="mb-6 bg-blue-50 rounded-md p-4">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-blue-700 font-medium">
+              Total: {totalBoxes} caja{totalBoxes !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedCalibres.map((cal) => (
+              <div
+                key={cal.calibre}
+                className="flex items-center gap-2 bg-white px-3 py-1 rounded-md border border-blue-200"
+              >
+                <span className="text-sm font-medium">
+                  {CALIBRE_MAP[cal.calibre as keyof typeof CALIBRE_MAP] ||
+                    cal.calibre}
+                  : {cal.boxCount} cajas
+                </span>
+                <button
+                  onClick={() => handleRemoveCalibre(cal.calibre)}
+                  className="text-red-500 hover:text-red-700"
+                  type="button"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Selection Counter */}
-      <div className="mb-4 bg-blue-50 rounded-md p-3 text-center">
-        <span className="text-blue-700 font-medium">
-          {selectedBoxCodes.length} caja
-          {selectedBoxCodes.length !== 1 ? 's' : ''} seleccionada
-          {selectedBoxCodes.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
-      {/* Show either pallets or boxes depending on selection */}
-      {!selectedPallet ? (
-        // Pallet Selection View
-        <div className="pallets-section">
-          {palletGroups.length === 0 ? (
-            <Card className="p-8 text-center" variant="flat">
-              <p className="text-gray-500">
-                No hay pallets disponibles en bodega.
-              </p>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {palletGroups.map((group) => {
-                const { pallet } = group;
-                const isFullySelected = getPalletBoxes(pallet).every((boxId) =>
-                  selectedBoxCodes.includes(boxId)
-                );
-                // We'll use the selectedBoxIds count directly instead of a separate variable
+      {/* Selección de calibres por tipo */}
+      <div className="space-y-6">
+        {/* Huevos Blancos */}
+        {groupedCalibres.blancos.length > 0 && (
+          <div className="calibre-group">
+            <div className="mb-4 pb-2 border-b-2 border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Huevos Blancos
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {groupedCalibres.blancos.map((calibre) => {
+                const selected = isCalibreSelected(calibre);
+                const quantity = getCalibreQuantity(calibre);
+                const calibreName =
+                  CALIBRE_MAP[calibre as keyof typeof CALIBRE_MAP] || calibre;
 
                 return (
-                  <Card key={pallet.codigo} className="h-full" variant="flat">
-                    <div className="pallet-header">
-                      <h3>Pallet {pallet.codigo}</h3>
-                      <span className={`pallet-location ${pallet.ubicacion}`}>
-                        {pallet.ubicacion}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-around p-4 border-b border-gray-100">
-                      <div className="p-4 border-b border-gray-100">
-                        <span className="text-lg font-medium block">
-                          Pallet {pallet.codigo}
-                        </span>
-                      </div>
-                      <div className="text-center">
-                        <span className="block text-2xl font-bold text-blue-600">
-                          {group.selectedBoxIds.length}
-                        </span>
-                        <span className="block text-sm text-gray-500">
-                          Cajas Total
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-4 border-b border-gray-100">
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <span className="text-sm text-gray-500 block">
-                            Calibre:
-                          </span>
-                          <span className="font-medium">{pallet.calibre}</span>
-                        </div>
-                        <div>
-                          <span className="text-sm text-gray-500 block">
-                            Estado:
-                          </span>
-                          <span
-                            className={`inline-block px-2 py-1 rounded-md text-sm ${pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}
-                          >
-                            {pallet.estado}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 flex flex-col gap-2">
+                  <Card
+                    key={calibre}
+                    className={`p-4 ${
+                      selected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                    }`}
+                    variant={selected ? 'elevated' : 'flat'}
+                  >
+                    <div className="flex flex-col gap-3">
                       <Button
-                        variant="secondary"
-                        onClick={() => handlePalletClick(pallet.codigo)}
+                        variant={selected ? 'primary' : 'secondary'}
+                        onClick={() => handleCalibreToggle(calibre)}
                         className="w-full"
+                        size="small"
                       >
-                        Ver Cajas ({getPalletBoxes(pallet).length})
+                        <div className="flex items-center justify-center gap-2">
+                          {selected && <Check size={16} />}
+                          <span className="font-medium">{calibreName}</span>
+                        </div>
                       </Button>
-                      <Button
-                        variant={isFullySelected ? 'danger' : 'primary'}
-                        onClick={() => handlePalletToggle(pallet.codigo)}
-                        className="w-full"
-                      >
-                        {isFullySelected
-                          ? 'Deseleccionar Todo'
-                          : 'Seleccionar Todo'}
-                      </Button>
+
+                      {selected && (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs text-gray-600">
+                            Cantidad de cajas:
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={quantity}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                calibre,
+                                parseInt(e.target.value, 10) || 0
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0"
+                          />
+                        </div>
+                      )}
                     </div>
                   </Card>
                 );
               })}
             </div>
-          )}
-        </div>
-      ) : (
-        // Box Selection View for Selected Pallet
-        <div className="boxes-section">
-          {selectedPalletGroup && (
-            <>
-              <Card className="mb-4" variant="flat">
-                <div className="p-4">
-                  <h3 className="text-lg font-medium mb-2">
-                    Pallet {selectedPalletGroup.pallet.codigo}
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                    <div className="flex flex-col">
-                      <span className="text-gray-500">Ubicación:</span>
-                      <span className="font-medium">
-                        {selectedPalletGroup.pallet.ubicacion}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500">Calibre:</span>
-                      <span className="font-medium">
-                        {selectedPalletGroup.pallet.calibre}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500">Estado:</span>
-                      <span
-                        className={`inline-block px-2 py-1 rounded-md text-xs ${selectedPalletGroup.pallet.estado.toLowerCase() === 'cerrado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}
-                      >
-                        {selectedPalletGroup.pallet.estado}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500">Total:</span>
-                      <span className="font-medium">
-                        {getPalletBoxes(selectedPalletGroup.pallet).length}{' '}
-                        cajas
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-gray-500">Seleccionadas:</span>
-                      <span className="font-medium text-blue-600">
-                        {selectedPalletGroup.selectedBoxIds.length} cajas
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
+          </div>
+        )}
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {getPalletBoxes(selectedPalletGroup.pallet).map((boxId) => (
+        {/* Huevos de Color */}
+        {groupedCalibres.color.length > 0 && (
+          <div className="calibre-group">
+            <div className="mb-4 pb-2 border-b-2 border-orange-200">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Huevos de Color
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {groupedCalibres.color.map((calibre) => {
+                const selected = isCalibreSelected(calibre);
+                const quantity = getCalibreQuantity(calibre);
+                const calibreName =
+                  CALIBRE_MAP[calibre as keyof typeof CALIBRE_MAP] || calibre;
+
+                return (
                   <Card
-                    key={boxId}
-                    className={`cursor-pointer transition-all ${selectedBoxCodes.includes(boxId) ? 'ring-2 ring-blue-500' : 'hover:bg-gray-50'}`}
-                    variant={
-                      selectedBoxCodes.includes(boxId) ? 'elevated' : 'flat'
-                    }
-                    isPressable={true}
-                    isHoverable={true}
-                    isSelected={selectedBoxCodes.includes(boxId)}
-                    onClick={() => handleBoxToggle(boxId)}
+                    key={calibre}
+                    className={`p-4 ${
+                      selected ? 'ring-2 ring-orange-500 bg-orange-50' : ''
+                    }`}
+                    variant={selected ? 'elevated' : 'flat'}
                   >
-                    <div className="p-3 flex justify-between items-center">
-                      <span className="font-medium">{boxId}</span>
-                      <div className="w-5 h-5 flex items-center justify-center">
-                        {selectedBoxCodes.includes(boxId) ? (
-                          <Check size={16} className="text-blue-500" />
-                        ) : (
-                          <Circle size={16} className="text-gray-300" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="px-3 pb-3 pt-0 text-xs text-gray-500">
-                      <span>Pallet: {selectedPalletGroup.pallet.codigo}</span>
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        variant={selected ? 'primary' : 'secondary'}
+                        onClick={() => handleCalibreToggle(calibre)}
+                        className="w-full"
+                        size="small"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          {selected && <Check size={16} />}
+                          <span className="font-medium">{calibreName}</span>
+                        </div>
+                      </Button>
+
+                      {selected && (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs text-gray-600">
+                            Cantidad de cajas:
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={quantity}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                calibre,
+                                parseInt(e.target.value, 10) || 0
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            placeholder="0"
+                          />
+                        </div>
+                      )}
                     </div>
                   </Card>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Otros */}
+        {groupedCalibres.otros.length > 0 && (
+          <div className="calibre-group">
+            <div className="mb-4 pb-2 border-b-2 border-gray-300">
+              <h3 className="text-lg font-semibold text-gray-800">Otros</h3>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {groupedCalibres.otros.map((calibre) => {
+                const selected = isCalibreSelected(calibre);
+                const quantity = getCalibreQuantity(calibre);
+                const calibreName =
+                  CALIBRE_MAP[calibre as keyof typeof CALIBRE_MAP] || calibre;
+
+                return (
+                  <Card
+                    key={calibre}
+                    className={`p-4 ${
+                      selected ? 'ring-2 ring-gray-500 bg-gray-50' : ''
+                    }`}
+                    variant={selected ? 'elevated' : 'flat'}
+                  >
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        variant={selected ? 'primary' : 'secondary'}
+                        onClick={() => handleCalibreToggle(calibre)}
+                        className="w-full"
+                        size="small"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          {selected && <Check size={16} />}
+                          <span className="font-medium">{calibreName}</span>
+                        </div>
+                      </Button>
+
+                      {selected && (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs text-gray-600">
+                            Cantidad de cajas:
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={quantity}
+                            onChange={(e) =>
+                              handleQuantityChange(
+                                calibre,
+                                parseInt(e.target.value, 10) || 0
+                              )
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-500 focus:border-transparent"
+                            placeholder="0"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mensaje si no hay calibres seleccionados */}
+      {selectedCalibres.length === 0 && (
+        <Card className="p-8 text-center mt-6" variant="flat">
+          <p className="text-gray-500">
+            Selecciona al menos un calibre para continuar
+          </p>
+        </Card>
       )}
     </Card>
   );

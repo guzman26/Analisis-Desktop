@@ -299,10 +299,17 @@ export interface SaleItem {
   totalEggs?: number;
 }
 
+// Nueva estructura para selección por calibre y cantidad
+export interface CalibreSelection {
+  calibre: string;
+  boxCount: number;
+}
+
 export interface SaleRequest {
   customerId: string;
   type: SaleType;
-  items: SaleItem[];
+  items?: SaleItem[]; // Opcional para mantener compatibilidad
+  calibres?: CalibreSelection[]; // Nueva estructura para selección por calibre
   notes?: string;
   metadata?: {
     deliveryDate?: string;

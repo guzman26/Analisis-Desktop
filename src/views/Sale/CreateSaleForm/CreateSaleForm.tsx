@@ -1,9 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { useFilteredPallets, usePalletContext } from '@/contexts/PalletContext';
+import { usePalletContext } from '@/contexts/PalletContext';
 import { SalesContext } from '@/contexts/SalesContext';
-import { Customer, Pallet, Sale, SaleRequest, SaleItem } from '@/types';
-import { getPalletBoxes } from '@/utils/palletHelpers';
-import { createSale, validateInventory } from '@/api/endpoints';
+import { Customer, Sale, SaleRequest, CalibreSelection } from '@/types';
+import { createSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
@@ -20,7 +19,7 @@ interface CreateSaleFormState {
   step: number;
   selectedSaleType: SaleType | null;
   selectedCustomer: Customer | null;
-  selectedBoxCodes: string[];
+  selectedCalibres: CalibreSelection[];
   isSubmitting: boolean;
   saleResult: Sale | null;
 }
@@ -30,12 +29,11 @@ const CreateSaleForm: React.FC = () => {
     step: 0,
     selectedSaleType: null,
     selectedCustomer: null,
-    selectedBoxCodes: [],
+    selectedCalibres: [],
     isSubmitting: false,
     saleResult: null,
   });
 
-  const { pallets: closedPalletsInBodegaPaginated } = useFilteredPallets();
   const { fetchClosedPalletsInBodega } = usePalletContext();
   const { refreshAllSales } = useContext(SalesContext);
   const { showSuccess, showError } = useNotifications();
@@ -52,111 +50,41 @@ const CreateSaleForm: React.FC = () => {
     setState((prev) => ({ ...prev, selectedCustomer: customer }));
   };
 
-  const handleBoxCodesSelect = (boxCodes: string[]) => {
-    setState((prev) => ({ ...prev, selectedBoxCodes: boxCodes }));
+  const handleCalibresSelect = (calibres: CalibreSelection[]) => {
+    setState((prev) => ({ ...prev, selectedCalibres: calibres }));
   };
 
   const handleSubmit = async (notes?: string) => {
+    // Validar que haya al menos un calibre con cantidad > 0
+    const hasValidCalibres = state.selectedCalibres.some(
+      (cal) => cal.boxCount > 0
+    );
+
     if (
       !state.selectedSaleType ||
       !state.selectedCustomer ||
-      state.selectedBoxCodes.length === 0
+      !hasValidCalibres
     ) {
-      showError('Datos incompletos para crear la venta');
+      showError('Datos incompletos para crear la venta. Debe seleccionar al menos un calibre con cantidad mayor a 0.');
       return;
     }
 
     setState((prev) => ({ ...prev, isSubmitting: true }));
 
     try {
-      // Step 1: Group selected boxes by their pallets first
-      const palletGroupedBoxes = new Map<string, string[]>();
-
-      closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
-        // Ensure pallet is in BODEGA
-        if (pallet.ubicacion !== 'BODEGA') {
-          return;
-        }
-
-        const selectedBoxesInPallet = getPalletBoxes(pallet).filter((boxId) =>
-          state.selectedBoxCodes.includes(boxId)
-        );
-
-        if (selectedBoxesInPallet.length > 0) {
-          palletGroupedBoxes.set(pallet.codigo, selectedBoxesInPallet);
-        }
-      });
-
-      if (palletGroupedBoxes.size === 0) {
-        showError('No se pudieron agrupar las cajas por pallets. Asegúrese de que los pallets estén en BODEGA.');
-        setState((prev) => ({ ...prev, isSubmitting: false }));
-        return;
-      }
-
-      // Step 2: Create items array with pallets containing their boxes
-      const items: SaleItem[] = Array.from(palletGroupedBoxes.entries()).map(
-        ([palletId, boxIds]) => ({
-          palletId,
-          boxIds,
-        })
+      // Filtrar solo calibres con cantidad > 0
+      const validCalibres = state.selectedCalibres.filter(
+        (cal) => cal.boxCount > 0
       );
-
-      // Step 3: Validate inventory availability (pallets and boxes in BODEGA)
-      showSuccess('Validando inventario...');
-      const validationResult = await validateInventory(items);
-
-      if (!validationResult.valid) {
-        // Build comprehensive error message
-        const errorMessages: string[] = [];
-
-        if (validationResult.palletErrors && validationResult.palletErrors.length > 0) {
-          const palletErrors = validationResult.palletErrors
-            .slice(0, 3)
-            .map((err) => `Pallet ${err.palletId}: ${err.reason}`)
-            .join('; ');
-          const morePallets = validationResult.palletErrors.length > 3
-            ? ` y ${validationResult.palletErrors.length - 3} pallet(s) más`
-            : '';
-          errorMessages.push(`${validationResult.palletErrors.length} pallet(s) con errores: ${palletErrors}${morePallets}`);
-        }
-
-        if (validationResult.boxErrors && validationResult.boxErrors.length > 0) {
-          const boxErrors = validationResult.boxErrors
-            .slice(0, 3)
-            .map((err) => `Caja ${err.boxId}: ${err.reason}`)
-            .join('; ');
-          const moreBoxes = validationResult.boxErrors.length > 3
-            ? ` y ${validationResult.boxErrors.length - 3} caja(s) más`
-            : '';
-          errorMessages.push(`${validationResult.boxErrors.length} caja(s) con errores: ${boxErrors}${moreBoxes}`);
-        }
-
-        // Fallback to old format if new format not available
-        if (validationResult.unavailableBoxes && validationResult.unavailableBoxes.length > 0) {
-          const reasons = validationResult.unavailableBoxes
-            .slice(0, 3)
-            .map((box) => `${box.boxId}: ${box.reason}`)
-            .join(', ');
-          errorMessages.push(`${validationResult.unavailableBoxes.length} caja(s) no disponible(s): ${reasons}`);
-        }
-
-        const finalMessage = errorMessages.length > 0
-          ? errorMessages.join('. ')
-          : 'El inventario no está disponible para la venta. Por favor, actualice la selección.';
-
-        showError(finalMessage);
-        setState((prev) => ({ ...prev, isSubmitting: false }));
-        return;
-      }
 
       const saleRequest: SaleRequest = {
         customerId: state.selectedCustomer.customerId,
         type: state.selectedSaleType,
-        items,
+        calibres: validCalibres,
         notes,
       };
 
-      // Step 4: Create the sale (backend will re-validate for transaction safety)
+      // Crear la venta con solo la información de calibres y cantidades
       showSuccess('Creando venta...');
       const sale = await createSale(saleRequest);
 
@@ -226,7 +154,8 @@ const CreateSaleForm: React.FC = () => {
       case 1:
         return state.selectedCustomer !== null;
       case 2:
-        return state.selectedBoxCodes.length > 0;
+        // Validar que haya al menos un calibre con cantidad > 0
+        return state.selectedCalibres.some((cal) => cal.boxCount > 0);
       case 3:
         return true;
       default:
@@ -234,27 +163,9 @@ const CreateSaleForm: React.FC = () => {
     }
   };
 
-  // Get selected box data for rendering in summary
-  const getSelectedBoxData = () => {
-    const selectedBoxData: {
-      boxId: string;
-      palletCode: string;
-      calibre: string;
-    }[] = [];
-
-    closedPalletsInBodegaPaginated.forEach((pallet: Pallet) => {
-      getPalletBoxes(pallet).forEach((boxId: string) => {
-        if (state.selectedBoxCodes.includes(boxId)) {
-          selectedBoxData.push({
-            boxId,
-            palletCode: pallet.codigo,
-            calibre: pallet.calibre,
-          });
-        }
-      });
-    });
-
-    return selectedBoxData;
+  // Get selected calibres data for rendering in summary
+  const getSelectedCalibresData = () => {
+    return state.selectedCalibres.filter((cal) => cal.boxCount > 0);
   };
 
   const renderStepContent = () => {
@@ -278,8 +189,8 @@ const CreateSaleForm: React.FC = () => {
       case 2:
         return (
           <BoxSelectionStep
-            selectedBoxCodes={state.selectedBoxCodes}
-            onSelectionChange={handleBoxCodesSelect}
+            selectedCalibres={state.selectedCalibres}
+            onSelectionChange={handleCalibresSelect}
           />
         );
       case 3:
@@ -287,7 +198,7 @@ const CreateSaleForm: React.FC = () => {
           <SaleSummaryStep
             customer={state.selectedCustomer!}
             saleType={state.selectedSaleType!}
-            boxes={getSelectedBoxData()}
+            calibres={getSelectedCalibresData()}
             onConfirm={handleSubmit}
             isSubmitting={state.isSubmitting}
           />
@@ -306,7 +217,7 @@ const CreateSaleForm: React.FC = () => {
       case 1:
         return 'Seleccionar Cliente';
       case 2:
-        return 'Seleccionar Cajas';
+        return 'Seleccionar Calibres y Cantidades';
       case 3:
         return 'Confirmar Venta';
       case 4:

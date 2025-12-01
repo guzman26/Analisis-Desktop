@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sale, Customer, Box, SaleItem } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import { getBoxByCode, getCustomerById } from '@/api/endpoints';
+import { getOperarioFromCodigo } from '@/utils/getParamsFromCodigo';
 import BoxDetailModal from './BoxDetailModal';
 import Button from '@/components/design-system/Button';
 import { Modal } from './design-system';
@@ -97,6 +98,56 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const handleCloseBoxModal = () => {
     setShowBoxModal(false);
     setSelectedBox(null);
+  };
+
+  // Helper function to group boxes by operario and sort by counter
+  const groupBoxesByOperario = (boxIds: string[] | undefined) => {
+    if (!boxIds || boxIds.length === 0) return [];
+    
+    const groups = new Map<string, Array<{ code: string; counter: number }>>();
+    
+    boxIds.forEach((boxId: string) => {
+      try {
+        // Normalize code to last 16 digits if longer
+        const normalizedCode = boxId.length >= 16 ? boxId.slice(-16) : boxId;
+        
+        const operario = getOperarioFromCodigo(normalizedCode) || 'Sin operario';
+        // Extract counter from positions 13-16 (last 3 digits)
+        const counterStr = normalizedCode.length >= 16 
+          ? normalizedCode.slice(13, 16) 
+          : normalizedCode.slice(-3);
+        const counter = parseInt(counterStr || '0', 10);
+        
+        if (!groups.has(operario)) {
+          groups.set(operario, []);
+        }
+        groups.get(operario)!.push({ code: boxId, counter });
+      } catch {
+        // If parsing fails, add to "Sin operario" group
+        const operario = 'Sin operario';
+        if (!groups.has(operario)) {
+          groups.set(operario, []);
+        }
+        groups.get(operario)!.push({ code: boxId, counter: 0 });
+      }
+    });
+    
+    // Sort boxes within each group by counter
+    groups.forEach((boxes) => {
+      boxes.sort((a, b) => a.counter - b.counter);
+    });
+    
+    // Convert to array and sort by operario number
+    return Array.from(groups.entries())
+      .map(([operario, boxes]) => ({
+        operario,
+        boxes: boxes.map(b => b.code),
+      }))
+      .sort((a, b) => {
+        const numA = parseInt(a.operario, 10) || 999;
+        const numB = parseInt(b.operario, 10) || 999;
+        return numA - numB;
+      });
   };
 
   // No longer needed - removed print view modal
@@ -275,26 +326,46 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                           <span className="boxes-label">CAJAS INCLUIDAS</span>
                           <span className="boxes-count">{item.boxIds?.length || 0} caja{item.boxIds?.length !== 1 ? 's' : ''}</span>
                         </div>
-                        <div className="boxes-grid">
-                          {item.boxIds?.map((boxId: string, boxIndex: number) => (
-                            <div
-                              key={boxIndex}
-                              className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
-                              onClick={() => handleBoxClick(boxId)}
-                              title="Clic para ver detalles de la caja"
-                            >
-                              {loadingBox === boxId ? (
-                                <span className="loading-text">Cargando...</span>
-                              ) : (
-                                <span className="box-code">{boxId}</span>
-                              )}
+                        {(() => {
+                          const groupedBoxes = groupBoxesByOperario(item.boxIds);
+                          
+                          if (groupedBoxes.length === 0) {
+                            return (
+                              <span className="no-boxes">
+                                No hay cajas asignadas
+                              </span>
+                            );
+                          }
+                          
+                          return (
+                            <div className="boxes-grouped-by-operario">
+                              {groupedBoxes.map((group) => (
+                                <div key={group.operario} className="operario-group">
+                                  <div className="operario-header">
+                                    <span className="operario-label">Operario {group.operario}</span>
+                                    <span className="operario-count">{group.boxes.length} caja{group.boxes.length !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <div className="boxes-grid">
+                                    {group.boxes.map((boxId: string) => (
+                                      <div
+                                        key={boxId}
+                                        className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
+                                        onClick={() => handleBoxClick(boxId)}
+                                        title="Clic para ver detalles de la caja"
+                                      >
+                                        {loadingBox === boxId ? (
+                                          <span className="loading-text">Cargando...</span>
+                                        ) : (
+                                          <span className="box-code">{boxId}</span>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          )) || (
-                            <span className="no-boxes">
-                              No hay cajas asignadas
-                            </span>
-                          )}
-                        </div>
+                          );
+                        })()}
                       </div>
                     </div>
                   ))}
