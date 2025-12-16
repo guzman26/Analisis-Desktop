@@ -75,7 +75,7 @@ export const api = async <T = any>(
             message = rawData.error;
           }
         }
-        
+
         // Fallback: buscar message directamente
         if (!message || message.startsWith('Error HTTP')) {
           if (rawData.message && typeof rawData.message === 'string') {
@@ -88,7 +88,7 @@ export const api = async <T = any>(
           errorDetails = rawData.data;
         }
       }
-      
+
       // Determinar el status basado en el código HTTP o el código de error
       let status: 'success' | 'fail' | 'error' = 'error';
       if (response.status >= 400 && response.status < 500) {
@@ -96,7 +96,7 @@ export const api = async <T = any>(
       } else if (response.status >= 500) {
         status = 'error';
       }
-      
+
       // Si rawData tiene status, usarlo (formato unificado)
       if (rawData && rawData.status) {
         status = rawData.status as 'success' | 'fail' | 'error';
@@ -120,13 +120,19 @@ export const api = async <T = any>(
     // Always return standardized wrapper when present
     if (rawData && typeof rawData === 'object' && 'status' in rawData) {
       const status = (rawData as any).status;
-      if (status && status !== 'success') {
+      // Si status es 'error' o 'fail', lanzar error
+      if (status === 'error' || status === 'fail') {
         throw new ApiError({
           message: (rawData as any).message || 'Error de API',
           status,
           meta: (rawData as any).meta,
         });
       }
+      // Si tiene 'data', devolver solo data (formato { status, message, data })
+      if ('data' in rawData && rawData.data !== undefined) {
+        return rawData.data as T;
+      }
+      // Si no tiene 'data', devolver el objeto completo (compatibilidad con formato antiguo)
       return rawData as T;
     }
 
@@ -165,5 +171,3 @@ export const put = <T = any>(endpoint: string, body?: any) =>
 
 export const del = <T = any>(endpoint: string) =>
   api<T>(endpoint, { method: 'DELETE' });
-
-

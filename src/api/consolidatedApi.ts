@@ -1,7 +1,9 @@
 import { post } from './client';
 
 interface ConsolidatedResponse<T = any> {
-  success: boolean;
+  success?: boolean;
+  status?: string;
+  message?: string;
   data: T;
   error?: {
     code: string;
@@ -24,7 +26,20 @@ export const inventory = async <T = any>(
     params,
   });
 
-  if (!response.success) {
+  // Manejar formato nuevo: { status, message, data }
+  if (response.status !== undefined) {
+    if (response.status === 'success' || response.status === '') {
+      return response.data;
+    } else {
+      // Error en formato nuevo
+      const error = new Error(response.message || 'API Error');
+      (error as any).error = { message: response.message };
+      throw error;
+    }
+  }
+
+  // Manejar formato antiguo: { success, data, error? }
+  if (response.success === false || !response.success) {
     // Lanzar el error completo con toda la estructura para mejor manejo
     const error = new Error(response.error?.message || 'API Error');
     (error as any).error = response.error; // Preservar estructura completa del error
@@ -50,7 +65,20 @@ export const sales = async <T = any>(
     params,
   });
 
-  if (!response.success) {
+  // Manejar formato nuevo: { status, message, data }
+  if (response.status !== undefined) {
+    if (response.status === 'success' || response.status === '') {
+      return response.data;
+    } else {
+      // Error en formato nuevo
+      const error = new Error(response.message || 'API Error');
+      (error as any).error = { message: response.message };
+      throw error;
+    }
+  }
+
+  // Manejar formato antiguo: { success, data, error? }
+  if (response.success === false || !response.success) {
     // Lanzar el error completo con toda la estructura para mejor manejo
     const error = new Error(response.error?.message || 'API Error');
     (error as any).error = response.error; // Preservar estructura completa del error
@@ -76,7 +104,20 @@ export const admin = async <T = any>(
     params,
   });
 
-  if (!response.success) {
+  // Manejar formato nuevo: { status, message, data }
+  if (response.status !== undefined) {
+    if (response.status === 'success' || response.status === '') {
+      return response.data;
+    } else {
+      // Error en formato nuevo
+      const error = new Error(response.message || 'API Error');
+      (error as any).error = { message: response.message };
+      throw error;
+    }
+  }
+
+  // Manejar formato antiguo: { success, data, error? }
+  if (response.success === false || !response.success) {
     // Lanzar el error completo con toda la estructura para mejor manejo
     const error = new Error(response.error?.message || 'API Error');
     (error as any).error = response.error; // Preservar estructura completa del error
