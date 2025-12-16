@@ -2,10 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
+import ScanBoxToFindPalletModal from '@/components/ScanBoxToFindPalletModal';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { Card, Button } from '@/components/design-system';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+import { ScanLine } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const BodegaPallets = () => {
@@ -18,6 +20,7 @@ const BodegaPallets = () => {
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
 
   // Agrupar pallets por calibre
   const palletsByCalibre = useMemo(() => {
@@ -66,9 +69,19 @@ const BodegaPallets = () => {
           >
             Pallets en Bodega
           </h1>
-          <Button variant="secondary" size="medium" onClick={refresh}>
-            Refrescar
-          </Button>
+          <div style={{ display: 'flex', gap: 'var(--macos-space-2)' }}>
+            <Button
+              variant="primary"
+              size="medium"
+              onClick={() => setIsScanModalOpen(true)}
+              leftIcon={<ScanLine size={16} />}
+            >
+              Buscar por Caja
+            </Button>
+            <Button variant="secondary" size="medium" onClick={refresh}>
+              Refrescar
+            </Button>
+          </div>
         </div>
         <p
           className="macos-text-body"
@@ -244,6 +257,11 @@ const BodegaPallets = () => {
             console.error('Error al mover pallet:', error);
           }
         }}
+      />
+
+      <ScanBoxToFindPalletModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
       />
     </div>
   );
