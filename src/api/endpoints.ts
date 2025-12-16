@@ -93,6 +93,36 @@ export const moveAllPalletsFromTransitToBodega = () =>
     }>;
   }>('move-all-from-transit', 'pallet', {});
 
+export const moveAllPalletsFromBodegaToVenta = () =>
+  inventory<{
+    success: boolean;
+    palletsMoved: number;
+    boxesMoved: number;
+    totalPallets: number;
+    message: string;
+    errors?: Array<{ palletCode: string; error: string }>;
+    details?: Array<{
+      palletCode: string;
+      boxesMoved: number;
+      success: boolean;
+    }>;
+  }>('move-all-from-bodega-to-venta', 'pallet', {});
+
+export const moveAllPalletsFromTransitToVenta = () =>
+  inventory<{
+    success: boolean;
+    palletsMoved: number;
+    boxesMoved: number;
+    totalPallets: number;
+    message: string;
+    errors?: Array<{ palletCode: string; error: string }>;
+    details?: Array<{
+      palletCode: string;
+      boxesMoved: number;
+      success: boolean;
+    }>;
+  }>('move-all-from-transit-to-venta', 'pallet', {});
+
 export const auditPallet = (palletCode: string, scannedBoxes: string[] = []) =>
   admin<PalletAuditResult>('create', 'audit', { palletCode, scannedBoxes });
 

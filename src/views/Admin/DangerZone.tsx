@@ -9,6 +9,9 @@ import {
   deleteBoxesByLocationAsync,
   backfillMetrics,
   calculateMetricsForDate,
+  moveAllPalletsFromBodegaToVenta,
+  moveAllPalletsFromTransitToVenta,
+  moveAllPalletsFromTransitToBodega,
 } from '@/api/endpoints';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
@@ -19,6 +22,7 @@ import {
   AlertCircle,
   MapPin,
   Database,
+  ArrowRight,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import styles from './DangerZone.module.css';
@@ -131,7 +135,8 @@ const DangerZone: React.FC = () => {
             if (!metricsDate) {
               return {
                 success: false,
-                message: 'Por favor selecciona una fecha válida en formato YYYY-MM-DD (ej: 2025-11-12)',
+                message:
+                  'Por favor selecciona una fecha válida en formato YYYY-MM-DD (ej: 2025-11-12)',
               };
             }
             // Validar formato de fecha
@@ -155,10 +160,14 @@ const DangerZone: React.FC = () => {
             }
             // Validar formato de fechas
             const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!dateRegex.test(metricsStartDate) || !dateRegex.test(metricsEndDate)) {
+            if (
+              !dateRegex.test(metricsStartDate) ||
+              !dateRegex.test(metricsEndDate)
+            ) {
               return {
                 success: false,
-                message: 'Formato de fecha inválido. Usa YYYY-MM-DD (ej: 2025-11-12)',
+                message:
+                  'Formato de fecha inválido. Usa YYYY-MM-DD (ej: 2025-11-12)',
               };
             }
             result = await calculateMetricsForDate({
@@ -167,13 +176,14 @@ const DangerZone: React.FC = () => {
               markAsFinal: true,
             });
           }
-          
+
           if (result.success) {
             return {
               success: true,
-              message: metricsMode === 'single'
-                ? `Métricas calculadas para ${result.date}. Tiempo: ${result.executionTime}`
-                : `Backfill completado: ${result.successCount} éxitos, ${result.failedCount} errores (${result.totalDays} días totales)`,
+              message:
+                metricsMode === 'single'
+                  ? `Métricas calculadas para ${result.date}. Tiempo: ${result.executionTime}`
+                  : `Backfill completado: ${result.successCount} éxitos, ${result.failedCount} errores (${result.totalDays} días totales)`,
             };
           } else {
             return {
@@ -373,6 +383,108 @@ const DangerZone: React.FC = () => {
         '¿Confirmas iniciar la eliminación ASÍNCRONA de TODAS las cajas del sistema? Esta acción no se puede deshacer.',
       dangerLevel: 'critical',
     },
+    {
+      id: 'moveAllPalletsFromBodegaToVenta',
+      title: 'Mover todos los pallets de BODEGA a VENTA',
+      description:
+        'Mueve todos los pallets cerrados actualmente en BODEGA a la ubicación VENTA. Esta acción afecta todos los pallets en bodega.',
+      icon: <ArrowRight className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await moveAllPalletsFromBodegaToVenta();
+          if (result.success) {
+            return {
+              success: true,
+              message: `Se movieron exitosamente ${result.palletsMoved} pallets y ${result.boxesMoved} cajas de BODEGA a VENTA.`,
+            };
+          } else {
+            return {
+              success: false,
+              message:
+                result.message || 'Error al mover pallets de BODEGA a VENTA',
+            };
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al mover pallets: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Estás seguro de que deseas mover TODOS los pallets de BODEGA a VENTA? Esta acción moverá todos los pallets cerrados en bodega.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'moveAllPalletsFromTransitToBodega',
+      title: 'Mover todos los pallets de TRANSITO a BODEGA',
+      description:
+        'Mueve todos los pallets cerrados actualmente en TRANSITO a la ubicación BODEGA. Esta acción afecta todos los pallets en tránsito.',
+      icon: <ArrowRight className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await moveAllPalletsFromTransitToBodega();
+          if (result.success) {
+            return {
+              success: true,
+              message: `Se movieron exitosamente ${result.palletsMoved} pallets y ${result.boxesMoved} cajas de TRANSITO a BODEGA.`,
+            };
+          } else {
+            return {
+              success: false,
+              message:
+                result.message || 'Error al mover pallets de TRANSITO a BODEGA',
+            };
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al mover pallets: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Estás seguro de que deseas mover TODOS los pallets de TRANSITO a BODEGA? Esta acción moverá todos los pallets cerrados en tránsito.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'moveAllPalletsFromTransitToVenta',
+      title: 'Mover todos los pallets de TRANSITO a VENTA',
+      description:
+        'Mueve todos los pallets cerrados actualmente en TRANSITO a la ubicación VENTA. Esta acción afecta todos los pallets en tránsito.',
+      icon: <ArrowRight className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await moveAllPalletsFromTransitToVenta();
+          if (result.success) {
+            return {
+              success: true,
+              message: `Se movieron exitosamente ${result.palletsMoved} pallets y ${result.boxesMoved} cajas de TRANSITO a VENTA.`,
+            };
+          } else {
+            return {
+              success: false,
+              message:
+                result.message || 'Error al mover pallets de TRANSITO a VENTA',
+            };
+          }
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al mover pallets: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Estás seguro de que deseas mover TODOS los pallets de TRANSITO a VENTA? Esta acción moverá todos los pallets cerrados en tránsito.',
+      dangerLevel: 'high',
+    },
   ];
 
   const openConfirmationModal = (action: DangerAction) => {
@@ -481,9 +593,15 @@ const DangerZone: React.FC = () => {
               </div>
               <div className={styles.actionButton}>
                 <Button
-                  variant="danger"
+                  variant={action.id.includes('move') ? 'primary' : 'danger'}
                   size="medium"
-                  leftIcon={<Trash2 size={16} />}
+                  leftIcon={
+                    action.id.includes('move') ? (
+                      <ArrowRight size={16} />
+                    ) : (
+                      <Trash2 size={16} />
+                    )
+                  }
                   onClick={() => openConfirmationModal(action)}
                 >
                   Ejecutar
@@ -564,97 +682,107 @@ const DangerZone: React.FC = () => {
               )}
 
               {/* Date Selection for Calculate Metrics */}
-              {selectedAction?.id === 'calculateMetricsForDate' && !executionResult && (
-                <div className={styles.locationSection}>
-                  <div className={styles.locationHeader}>
-                    <Database className="w-5 h-5" />
-                    <h4>Seleccionar Fecha(s)</h4>
-                  </div>
-                  
-                  {/* Mode Selection */}
-                  <div className={styles.locationGrid}>
-                    <button
-                      type="button"
-                      className={clsx(
-                        styles.locationButton,
-                        metricsMode === 'single' && styles.locationButtonActive
-                      )}
-                      onClick={() => setMetricsMode('single')}
-                      disabled={isExecuting}
-                    >
-                      <span>Fecha Única</span>
-                      {metricsMode === 'single' && <CheckCircle className="w-4 h-4" />}
-                    </button>
-                    <button
-                      type="button"
-                      className={clsx(
-                        styles.locationButton,
-                        metricsMode === 'range' && styles.locationButtonActive
-                      )}
-                      onClick={() => setMetricsMode('range')}
-                      disabled={isExecuting}
-                    >
-                      <span>Rango de Fechas</span>
-                      {metricsMode === 'range' && <CheckCircle className="w-4 h-4" />}
-                    </button>
-                  </div>
-
-                  {/* Date Input(s) */}
-                  {metricsMode === 'single' ? (
-                    <div className="mt-3">
-                      <label className="text-sm text-gray-600 mb-2 block">
-                        Fecha (YYYY-MM-DD):
-                      </label>
-                      <input
-                        type="date"
-                        className="w-full border border-gray-300 rounded px-3 py-2"
-                        value={metricsDate}
-                        onChange={(e) => setMetricsDate(e.target.value)}
-                        disabled={isExecuting}
-                        max={new Date().toISOString().split('T')[0]}
-                        placeholder="2025-11-12"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Usa el selector de fecha o escribe en formato YYYY-MM-DD (ej: 2025-11-12)
-                      </p>
+              {selectedAction?.id === 'calculateMetricsForDate' &&
+                !executionResult && (
+                  <div className={styles.locationSection}>
+                    <div className={styles.locationHeader}>
+                      <Database className="w-5 h-5" />
+                      <h4>Seleccionar Fecha(s)</h4>
                     </div>
-                  ) : (
-                    <div className="mt-3 space-y-3">
-                      <div>
+
+                    {/* Mode Selection */}
+                    <div className={styles.locationGrid}>
+                      <button
+                        type="button"
+                        className={clsx(
+                          styles.locationButton,
+                          metricsMode === 'single' &&
+                            styles.locationButtonActive
+                        )}
+                        onClick={() => setMetricsMode('single')}
+                        disabled={isExecuting}
+                      >
+                        <span>Fecha Única</span>
+                        {metricsMode === 'single' && (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        className={clsx(
+                          styles.locationButton,
+                          metricsMode === 'range' && styles.locationButtonActive
+                        )}
+                        onClick={() => setMetricsMode('range')}
+                        disabled={isExecuting}
+                      >
+                        <span>Rango de Fechas</span>
+                        {metricsMode === 'range' && (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Date Input(s) */}
+                    {metricsMode === 'single' ? (
+                      <div className="mt-3">
                         <label className="text-sm text-gray-600 mb-2 block">
-                          Fecha Inicio:
+                          Fecha (YYYY-MM-DD):
                         </label>
                         <input
                           type="date"
                           className="w-full border border-gray-300 rounded px-3 py-2"
-                          value={metricsStartDate}
-                          onChange={(e) => setMetricsStartDate(e.target.value)}
-                          disabled={isExecuting}
-                          max={new Date().toISOString().split('T')[0]}
-                          placeholder="2025-11-01"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm text-gray-600 mb-2 block">
-                          Fecha Fin:
-                        </label>
-                        <input
-                          type="date"
-                          className="w-full border border-gray-300 rounded px-3 py-2"
-                          value={metricsEndDate}
-                          onChange={(e) => setMetricsEndDate(e.target.value)}
+                          value={metricsDate}
+                          onChange={(e) => setMetricsDate(e.target.value)}
                           disabled={isExecuting}
                           max={new Date().toISOString().split('T')[0]}
                           placeholder="2025-11-12"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Usa el selector de fecha o escribe en formato
+                          YYYY-MM-DD (ej: 2025-11-12)
+                        </p>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        Usa el selector de fecha o escribe en formato YYYY-MM-DD
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <div className="mt-3 space-y-3">
+                        <div>
+                          <label className="text-sm text-gray-600 mb-2 block">
+                            Fecha Inicio:
+                          </label>
+                          <input
+                            type="date"
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            value={metricsStartDate}
+                            onChange={(e) =>
+                              setMetricsStartDate(e.target.value)
+                            }
+                            disabled={isExecuting}
+                            max={new Date().toISOString().split('T')[0]}
+                            placeholder="2025-11-01"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm text-gray-600 mb-2 block">
+                            Fecha Fin:
+                          </label>
+                          <input
+                            type="date"
+                            className="w-full border border-gray-300 rounded px-3 py-2"
+                            value={metricsEndDate}
+                            onChange={(e) => setMetricsEndDate(e.target.value)}
+                            disabled={isExecuting}
+                            max={new Date().toISOString().split('T')[0]}
+                            placeholder="2025-11-12"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Usa el selector de fecha o escribe en formato
+                          YYYY-MM-DD
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Execution Result */}
               {executionResult && (
