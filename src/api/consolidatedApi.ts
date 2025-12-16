@@ -29,11 +29,12 @@ export const inventory = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      // Devolver data si existe, de lo contrario devolver el objeto completo
-      if (response.data !== undefined) {
+      // Siempre devolver data si está presente (incluso si es null)
+      // El backend siempre devuelve data en el formato nuevo
+      if ('data' in response) {
         return response.data;
       }
-      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      // Fallback: si por alguna razón no hay data, devolver el objeto completo
       return response as T;
     } else {
       // Error en formato nuevo
@@ -73,11 +74,12 @@ export const sales = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      // Devolver data si existe, de lo contrario devolver el objeto completo
-      if (response.data !== undefined) {
+      // Siempre devolver data si está presente (incluso si es null)
+      // El backend siempre devuelve data en el formato nuevo
+      if ('data' in response) {
         return response.data;
       }
-      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      // Fallback: si por alguna razón no hay data, devolver el objeto completo
       return response as T;
     } else {
       // Error en formato nuevo
@@ -117,11 +119,12 @@ export const admin = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      // Devolver data si existe, de lo contrario devolver el objeto completo
-      if (response.data !== undefined) {
+      // Siempre devolver data si está presente (incluso si es null)
+      // El backend siempre devuelve data en el formato nuevo
+      if ('data' in response) {
         return response.data;
       }
-      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      // Fallback: si por alguna razón no hay data, devolver el objeto completo
       return response as T;
     } else {
       // Error en formato nuevo
