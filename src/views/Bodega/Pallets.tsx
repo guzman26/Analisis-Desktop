@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { Card, Button } from '@/components/design-system';
+import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import '../../styles/designSystem.css';
 
 const BodegaPallets = () => {
@@ -17,6 +18,31 @@ const BodegaPallets = () => {
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Agrupar pallets por calibre
+  const palletsByCalibre = useMemo(() => {
+    const grouped: Record<string, Pallet[]> = {};
+
+    closedPalletsInBodega.forEach((pallet) => {
+      const calibre = getCalibreFromCodigo(pallet.codigo) || 'Sin Calibre';
+      if (!grouped[calibre]) {
+        grouped[calibre] = [];
+      }
+      grouped[calibre].push(pallet);
+    });
+
+    // Ordenar calibres alfabéticamente
+    const sortedCalibres = Object.keys(grouped).sort((a, b) => {
+      if (a === 'Sin Calibre') return 1;
+      if (b === 'Sin Calibre') return -1;
+      return a.localeCompare(b);
+    });
+
+    return sortedCalibres.map((calibre) => ({
+      calibre,
+      pallets: grouped[calibre],
+    }));
+  }, [closedPalletsInBodega]);
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -120,20 +146,71 @@ const BodegaPallets = () => {
         </Card>
       ) : (
         <div
-          className="macos-grid"
           style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--macos-space-7)',
           }}
         >
-          {closedPalletsInBodega.map((pallet: Pallet) => (
-            <PalletCard
-              key={pallet.codigo}
-              pallet={pallet}
-              setSelectedPallet={setSelectedPallet}
-              setIsModalOpen={setIsModalOpen}
-              closePallet={closePallet}
-              fetchActivePallets={refresh}
-            />
+          {palletsByCalibre.map(({ calibre, pallets }) => (
+            <div key={calibre}>
+              {/* Header del grupo de calibre */}
+              <div
+                style={{
+                  marginBottom: 'var(--macos-space-4)',
+                  paddingBottom: 'var(--macos-space-2)',
+                  borderBottom: '1px solid var(--macos-separator)',
+                }}
+              >
+                <div
+                  className="macos-hstack"
+                  style={{
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <h2
+                    className="macos-text-title-2"
+                    style={{
+                      color: 'var(--macos-text-primary)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Calibre {calibre}
+                  </h2>
+                  <span
+                    className="macos-text-callout"
+                    style={{
+                      color: 'var(--macos-text-secondary)',
+                      backgroundColor: 'var(--macos-gray-transparentize-6)',
+                      padding: 'var(--macos-space-1) var(--macos-space-3)',
+                      borderRadius: 'var(--macos-radius-2)',
+                    }}
+                  >
+                    {pallets.length} pallet{pallets.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+
+              {/* Grid de pallets para este calibre */}
+              <div
+                className="macos-grid"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                }}
+              >
+                {pallets.map((pallet: Pallet) => (
+                  <PalletCard
+                    key={pallet.codigo}
+                    pallet={pallet}
+                    setSelectedPallet={setSelectedPallet}
+                    setIsModalOpen={setIsModalOpen}
+                    closePallet={closePallet}
+                    fetchActivePallets={refresh}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
