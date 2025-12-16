@@ -33,6 +33,8 @@ export function useErrorHandler() {
           code: apiError.code,
           httpStatus: apiError.httpStatus,
           details: apiError.meta?.errorDetails,
+          field: errorInfo.field,
+          suggestion: errorInfo.suggestion,
           requestId: apiError.meta?.requestId,
         });
       }
@@ -40,7 +42,18 @@ export function useErrorHandler() {
       // Mostrar notificación si está habilitado
       if (options?.showNotification !== false) {
         const title = options?.title || errorInfo.title;
-        const message = `${title}: ${errorInfo.message}`;
+        let message = `${title}: ${errorInfo.message}`;
+        
+        // Agregar información del campo si está disponible (errores de validación)
+        if (errorInfo.field) {
+          message += `\n\nCampo: ${errorInfo.field}`;
+        }
+        
+        // Agregar sugerencia del backend si está disponible
+        if (errorInfo.suggestion) {
+          message += `\n\n💡 ${errorInfo.suggestion}`;
+        }
+        
         showError(message, options?.duration || 6000);
       }
 

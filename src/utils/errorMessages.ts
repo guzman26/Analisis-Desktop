@@ -2,6 +2,7 @@ import { ApiError } from './apiErrors';
 
 /**
  * Mapeo de códigos de error del backend a mensajes user-friendly en español
+ * Nota: Las sugerencias del backend tienen prioridad sobre estas
  */
 const ERROR_CODE_MESSAGES: Record<string, { title: string; message: string; suggestion?: string }> = {
   // Errores de validación
@@ -10,6 +11,51 @@ const ERROR_CODE_MESSAGES: Record<string, { title: string; message: string; sugg
     message: 'Los datos proporcionados no son válidos',
     suggestion: 'Por favor, revisa los campos marcados y corrige los errores',
   },
+  INVALID_BOX_CODE: {
+    title: 'Código de Caja Inválido',
+    message: 'El código de caja debe tener exactamente 16 dígitos',
+    suggestion: 'Verifica que hayas escaneado el código completo',
+  },
+  INVALID_PALLET_CODE: {
+    title: 'Código de Tarja Inválido',
+    message: 'El código de tarja debe tener exactamente 14 dígitos',
+    suggestion: 'Verifica que hayas escaneado el código completo',
+  },
+  INVALID_LOCATION: {
+    title: 'Ubicación Inválida',
+    message: 'La ubicación proporcionada no es válida',
+    suggestion: 'Verifica que la ubicación sea correcta',
+  },
+  INVALID_CALIBRE: {
+    title: 'Calibre Inválido',
+    message: 'El calibre no coincide con lo solicitado',
+    suggestion: 'El calibre de la caja/pallet no está en los calibres solicitados para esta venta',
+  },
+  BOX_COUNT_EXCEEDED: {
+    title: 'Cantidad Excedida',
+    message: 'Excede la cantidad de cajas solicitadas',
+    suggestion: 'Has escaneado más cajas de las solicitadas para este calibre. Remueve algunas cajas',
+  },
+  EGGS_EXCEEDED: {
+    title: 'Cantidad de Huevos Excedida',
+    message: 'Excede la cantidad de huevos permitida',
+    suggestion: 'La cantidad de huevos excede el límite permitido',
+  },
+  EGGS_INCOMPLETE: {
+    title: 'Venta Incompleta',
+    message: 'Faltan cajas para completar la venta',
+    suggestion: 'Aún faltan cajas por escanear. Continúa escaneando hasta completar todas las cajas solicitadas',
+  },
+  NO_REQUESTED_CALIBRES: {
+    title: 'Sin Calibres Solicitados',
+    message: 'Esta venta no tiene calibres solicitados',
+    suggestion: 'Esta venta no se puede despachar porque no tiene calibres definidos',
+  },
+  SALE_NOT_DRAFT: {
+    title: 'Venta No Modificable',
+    message: 'La venta no se puede modificar',
+    suggestion: 'Solo se pueden modificar ventas en borrador (DRAFT). Esta venta ya fue confirmada',
+  },
   
   // Errores de no encontrado
   NOT_FOUND: {
@@ -17,12 +63,77 @@ const ERROR_CODE_MESSAGES: Record<string, { title: string; message: string; sugg
     message: 'El recurso solicitado no existe',
     suggestion: 'Verifica que el identificador sea correcto o que el recurso no haya sido eliminado',
   },
+  BOX_NOT_FOUND: {
+    title: 'Caja No Encontrada',
+    message: 'La caja no fue encontrada en el sistema',
+    suggestion: 'El código de caja no existe en el sistema. Verifica que hayas escaneado correctamente',
+  },
+  PALLET_NOT_FOUND: {
+    title: 'Tarja No Encontrada',
+    message: 'La tarja no fue encontrada en el sistema',
+    suggestion: 'El código de tarja no existe en el sistema. Verifica que hayas escaneado correctamente',
+  },
+  CUSTOMER_NOT_FOUND: {
+    title: 'Cliente No Encontrado',
+    message: 'El cliente no fue encontrado',
+    suggestion: 'El cliente con el ID proporcionado no existe en el sistema',
+  },
+  SALE_NOT_FOUND: {
+    title: 'Venta No Encontrada',
+    message: 'La venta no fue encontrada',
+    suggestion: 'La venta con el ID proporcionado no existe en el sistema',
+  },
+  BOX_NOT_IN_SALE: {
+    title: 'Caja No Está en la Venta',
+    message: 'La caja no está en esta venta',
+    suggestion: 'Esta caja no está en la venta actual. Verifica el código',
+  },
+  PALLET_NOT_IN_SALE: {
+    title: 'Pallet No Está en la Venta',
+    message: 'El pallet no está en esta venta',
+    suggestion: 'Este pallet no está en la venta actual. Verifica el código',
+  },
   
   // Errores de conflicto
   CONFLICT: {
     title: 'Conflicto',
     message: 'Ya existe un recurso con estos datos',
     suggestion: 'Verifica que no estés intentando crear un duplicado',
+  },
+  BOX_ALREADY_EXISTS: {
+    title: 'Caja Ya Existe',
+    message: 'La caja ya existe en el sistema',
+    suggestion: 'Esta caja ya fue registrada anteriormente',
+  },
+  BOX_ALREADY_IN_SALE: {
+    title: 'Caja Ya Agregada',
+    message: 'La caja ya está en esta venta',
+    suggestion: 'Esta caja ya fue agregada. Verifica que no hayas escaneado el mismo código dos veces',
+  },
+  PALLET_ALREADY_IN_SALE: {
+    title: 'Pallet Ya Agregado',
+    message: 'El pallet ya está en esta venta',
+    suggestion: 'Este pallet ya fue agregado. Verifica que no hayas escaneado el mismo código dos veces',
+  },
+  CUSTOMER_ALREADY_EXISTS: {
+    title: 'Cliente Ya Existe',
+    message: 'El cliente ya existe en el sistema',
+    suggestion: 'Ya existe un cliente con el email proporcionado',
+  },
+  BOX_NOT_IN_BODEGA: {
+    title: 'Caja No Está en BODEGA',
+    message: 'La caja no está en BODEGA',
+    suggestion: 'Solo se pueden agregar cajas que estén en BODEGA. Verifica la ubicación de la caja',
+  },
+  PALLET_NOT_IN_BODEGA: {
+    title: 'Pallet No Está en BODEGA',
+    message: 'El pallet no está en BODEGA',
+    suggestion: 'Solo se pueden agregar pallets que estén en BODEGA. Verifica la ubicación del pallet',
+  },
+  PALLET_NO_BOXES_IN_BODEGA: {
+    title: 'Pallet Sin Cajas en BODEGA',
+    message: 'El pallet no tiene cajas en BODEGA',
+    suggestion: 'El pallet no tiene cajas disponibles en BODEGA para agregar a la venta',
   },
   
   // Errores de dominio
@@ -37,6 +148,28 @@ const ERROR_CODE_MESSAGES: Record<string, { title: string; message: string; sugg
     title: 'Error del Servidor',
     message: 'Ocurrió un error inesperado en el servidor',
     suggestion: 'Por favor, intenta nuevamente en unos momentos. Si el problema persiste, contacta al soporte',
+  },
+  DATABASE_ERROR: {
+    title: 'Error de Base de Datos',
+    message: 'Error de base de datos',
+    suggestion: 'Error al acceder a la base de datos. Intenta nuevamente en unos momentos',
+  },
+  SERVICE_UNAVAILABLE: {
+    title: 'Servicio No Disponible',
+    message: 'Servicio no disponible',
+    suggestion: 'El servicio está temporalmente no disponible. Intenta nuevamente más tarde',
+  },
+  
+  // Errores de rate limit
+  RATE_LIMIT_EXCEEDED: {
+    title: 'Demasiadas Solicitudes',
+    message: 'Demasiadas solicitudes',
+    suggestion: 'Has excedido el límite de solicitudes. Por favor, espera unos momentos e intenta nuevamente',
+  },
+  THROTTLING_ERROR: {
+    title: 'Servicio SobreCargado',
+    message: 'Servicio temporalmente sobrecargado',
+    suggestion: 'El servicio está temporalmente sobrecargado. Por favor, intente nuevamente',
   },
   
   // Errores de red
@@ -137,6 +270,7 @@ export function getErrorMessage(error: ApiError | Error | unknown): {
   suggestion?: string;
   details?: any;
   requestId?: string;
+  field?: string;
 } {
   // Normalizar el error
   let apiError: ApiError;
@@ -156,6 +290,9 @@ export function getErrorMessage(error: ApiError | Error | unknown): {
     });
   }
 
+  // Prioridad 1: Usar sugerencia del backend si está disponible
+  const backendSuggestion = apiError.meta?.errorSuggestion;
+
   // Intentar obtener mensaje por código de error
   if (apiError.code && typeof apiError.code === 'string') {
     const codeMessage = ERROR_CODE_MESSAGES[apiError.code];
@@ -163,9 +300,11 @@ export function getErrorMessage(error: ApiError | Error | unknown): {
       return {
         title: codeMessage.title,
         message: apiError.message || codeMessage.message,
-        suggestion: codeMessage.suggestion,
+        // Priorizar sugerencia del backend sobre la local
+        suggestion: backendSuggestion || codeMessage.suggestion,
         details: apiError.meta?.errorDetails,
         requestId: apiError.meta?.requestId,
+        field: apiError.meta?.errorField,
       };
     }
   }
@@ -177,9 +316,11 @@ export function getErrorMessage(error: ApiError | Error | unknown): {
       return {
         title: httpMessage.title,
         message: apiError.message || httpMessage.message,
-        suggestion: httpMessage.suggestion,
+        // Priorizar sugerencia del backend sobre la local
+        suggestion: backendSuggestion || httpMessage.suggestion,
         details: apiError.meta?.errorDetails,
         requestId: apiError.meta?.requestId,
+        field: apiError.meta?.errorField,
       };
     }
   }
@@ -188,9 +329,11 @@ export function getErrorMessage(error: ApiError | Error | unknown): {
   return {
     title: 'Error',
     message: apiError.message || 'Ocurrió un error inesperado',
-    suggestion: 'Por favor, intenta nuevamente. Si el problema persiste, contacta al soporte',
+    // Priorizar sugerencia del backend
+    suggestion: backendSuggestion || 'Por favor, intenta nuevamente. Si el problema persiste, contacta al soporte',
     details: apiError.meta?.errorDetails,
     requestId: apiError.meta?.requestId,
+    field: apiError.meta?.errorField,
   };
 }
 

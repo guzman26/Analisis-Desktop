@@ -114,17 +114,70 @@ const SalesCard: React.FC<SalesCardProps> = ({
 
       <div className="sale-secondary-info">
         <div className="sale-id-secondary">
-          <span className="label">ID Venta</span>
+          <span className="label">
+            {sale.saleNumber ? 'N° Venta' : 'ID Venta'}
+          </span>
           <span className="value" title={sale.saleId}>
-            {formatSaleId(sale.saleId)}
+            {sale.saleNumber || formatSaleId(sale.saleId)}
           </span>
         </div>
 
         <div className="sale-boxes-info">
           <span className="label">Total Cajas</span>
-          <span className="value">{getTotalBoxes(sale)}</span>
+          <span className="value">
+            {getTotalBoxes(sale)}
+            {sale.metadata?.totalRequestedBoxes && (
+              <span className="requested-info">
+                {' '}/ {sale.metadata.totalRequestedBoxes} solicitadas
+              </span>
+            )}
+          </span>
         </div>
+
+        {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+          <div className="sale-eggs-info">
+            <span className="label">Total Huevos</span>
+            <span className="value">{sale.totalEggs.toLocaleString()}</span>
+          </div>
+        )}
       </div>
+
+      {/* Show progress by calibre for request format sales */}
+      {sale.metadata?.requestedBoxesByCalibre &&
+        sale.metadata.requestedBoxesByCalibre.length > 0 && (
+          <div className="sale-calibre-progress">
+            <span className="label">Progreso por Calibre:</span>
+            <div className="calibre-progress-list">
+              {sale.metadata.requestedBoxesByCalibre.map((req: any) => {
+                const current =
+                  sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
+                const percentage = Math.round(
+                  (current / req.boxCount) * 100
+                );
+                const isComplete = current >= req.boxCount;
+                return (
+                  <div
+                    key={req.calibre}
+                    className={`calibre-progress-item ${
+                      isComplete ? 'complete' : ''
+                    }`}
+                  >
+                    <span className="calibre-label">Calibre {req.calibre}:</span>
+                    <span className="calibre-count">
+                      {current} / {req.boxCount}
+                    </span>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{ width: `${Math.min(percentage, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       <div className="sale-items">
         <span className="items-label">

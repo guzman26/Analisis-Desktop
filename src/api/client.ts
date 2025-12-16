@@ -48,14 +48,25 @@ export const api = async <T = any>(
     }
 
     if (!response.ok) {
-      // Extraer información de error del backend de forma estructurada
+      // Extraer información de error del backend usando formato unificado
+      // Formato unificado: { status: 'fail'|'error', message: string, error: { code, message, field?, details?, suggestion? }, meta }
       let message = `Error HTTP ${response.status}`;
       let errorCode: string | undefined;
       let errorDetails: any = null;
+      let errorField: string | undefined;
+      let errorSuggestion: string | undefined;
 
       if (rawData && typeof rawData === 'object') {
-        // Estructura estándar del backend: { success: false, error: { code, message }, meta }
-        if (rawData.error) {
+        // Nuevo formato unificado: { status, message, error: { code, message, field?, details?, suggestion? }, meta }
+        if (rawData.error && typeof rawData.error === 'object') {
+          errorCode = rawData.error.code;
+          message = rawData.error.message || rawData.message || message;
+          errorDetails = rawData.error.details || null;
+          errorField = rawData.error.field;
+          errorSuggestion = rawData.error.suggestion;
+        }
+        // Fallback: formato antiguo { success: false, error: { code, message }, meta }
+        else if (rawData.error) {
           if (typeof rawData.error === 'object') {
             errorCode = rawData.error.code;
             message = rawData.error.message || message;
@@ -73,7 +84,7 @@ export const api = async <T = any>(
         }
 
         // Extraer detalles adicionales si existen
-        if (rawData.data && typeof rawData.data === 'object') {
+        if (rawData.data && typeof rawData.data === 'object' && !errorDetails) {
           errorDetails = rawData.data;
         }
       }
@@ -86,7 +97,7 @@ export const api = async <T = any>(
         status = 'error';
       }
       
-      // Si rawData tiene status, usarlo
+      // Si rawData tiene status, usarlo (formato unificado)
       if (rawData && rawData.status) {
         status = rawData.status as 'success' | 'fail' | 'error';
       }
@@ -99,6 +110,8 @@ export const api = async <T = any>(
         meta: {
           ...(rawData && (rawData.meta as any)),
           errorDetails,
+          errorField,
+          errorSuggestion,
           responseStatus: response.status,
         },
       });

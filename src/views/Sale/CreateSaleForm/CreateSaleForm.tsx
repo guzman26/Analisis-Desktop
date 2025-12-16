@@ -84,8 +84,8 @@ const CreateSaleForm: React.FC = () => {
         notes,
       };
 
-      // Crear la venta con solo la información de calibres y cantidades
-      showSuccess('Creando venta...');
+      // Crear la solicitud de venta con solo la información de calibres y cantidades
+      showSuccess('Creando solicitud de venta...');
       const sale = await createSale(saleRequest);
 
       setState((prev) => ({
@@ -99,8 +99,12 @@ const CreateSaleForm: React.FC = () => {
       refreshAllSales();
       fetchClosedPalletsInBodega();
 
+      const totalRequestedBoxes = validCalibres.reduce((sum, cal) => sum + cal.boxCount, 0);
+      const saleNumberText = sale.saleNumber ? ` (${sale.saleNumber})` : '';
       showSuccess(
-        `Venta creada exitosamente: ${sale.totalBoxes} cajas${sale.totalEggs ? ` (${sale.totalEggs.toLocaleString()} huevos)` : ''}`
+        `Solicitud de venta creada exitosamente${saleNumberText}. ` +
+        `Total solicitado: ${totalRequestedBoxes} cajas. ` +
+        `Las cajas se asignarán durante el despacho en la aplicación móvil.`
       );
     } catch (error) {
       console.error('Error creating sale:', error);

@@ -143,6 +143,7 @@ export interface Customer {
 
 export interface Sale {
   saleId: string;
+  saleNumber?: string; // Número único de venta (ej: V-2024-0001)
   customerId: string;
   type: SaleType;
   state?: SaleState;
@@ -165,6 +166,9 @@ export interface Sale {
     priority?: Priority;
     returnHistory?: ReturnRecord[];
     additionHistory?: AdditionRecord[];
+    requestedBoxesByCalibre?: Array<{ calibre: string; boxCount: number }>; // Cajas solicitadas por calibre
+    totalRequestedBoxes?: number; // Total de cajas solicitadas
+    boxesByCalibre?: Record<string, number>; // Cajas actuales por calibre
     [key: string]: any;
   };
   confirmedAt?: string;
