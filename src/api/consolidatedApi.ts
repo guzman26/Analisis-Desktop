@@ -29,7 +29,12 @@ export const inventory = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      return response.data;
+      // Devolver data si existe, de lo contrario devolver el objeto completo
+      if (response.data !== undefined) {
+        return response.data;
+      }
+      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      return response as T;
     } else {
       // Error en formato nuevo
       const error = new Error(response.message || 'API Error');
@@ -68,7 +73,12 @@ export const sales = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      return response.data;
+      // Devolver data si existe, de lo contrario devolver el objeto completo
+      if (response.data !== undefined) {
+        return response.data;
+      }
+      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      return response as T;
     } else {
       // Error en formato nuevo
       const error = new Error(response.message || 'API Error');
@@ -107,7 +117,12 @@ export const admin = async <T = any>(
   // Manejar formato nuevo: { status, message, data }
   if (response.status !== undefined) {
     if (response.status === 'success' || response.status === '') {
-      return response.data;
+      // Devolver data si existe, de lo contrario devolver el objeto completo
+      if (response.data !== undefined) {
+        return response.data;
+      }
+      // Si no hay data, devolver el objeto completo (puede ser que data sea null)
+      return response as T;
     } else {
       // Error en formato nuevo
       const error = new Error(response.message || 'API Error');

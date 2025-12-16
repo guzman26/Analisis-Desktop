@@ -118,6 +118,8 @@ export const api = async <T = any>(
     }
 
     // Always return standardized wrapper when present
+    // NO extraer data aquí - dejar que consolidatedApi.ts lo maneje
+    // Solo lanzar error si status es 'error' o 'fail'
     if (rawData && typeof rawData === 'object' && 'status' in rawData) {
       const status = (rawData as any).status;
       // Si status es 'error' o 'fail', lanzar error
@@ -128,11 +130,8 @@ export const api = async <T = any>(
           meta: (rawData as any).meta,
         });
       }
-      // Si tiene 'data', devolver solo data (formato { status, message, data })
-      if ('data' in rawData && rawData.data !== undefined) {
-        return rawData.data as T;
-      }
-      // Si no tiene 'data', devolver el objeto completo (compatibilidad con formato antiguo)
+      // Si status es 'success' o vacío, devolver el objeto completo
+      // para que consolidatedApi.ts pueda extraer data
       return rawData as T;
     }
 

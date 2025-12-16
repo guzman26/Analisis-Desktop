@@ -86,10 +86,19 @@ const ScanBoxToFindPalletModal = ({
       setShowPalletDetail(true);
     } catch (err: any) {
       console.error('Error al buscar pallet:', err);
-      setError(
-        err?.message ||
-          'Error al buscar el pallet. Verifique el código e intente nuevamente.'
-      );
+      // Extraer mensaje de error de diferentes formatos
+      let errorMessage =
+        'Error al buscar el pallet. Verifique el código e intente nuevamente.';
+
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.error?.message) {
+        errorMessage = err.error.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

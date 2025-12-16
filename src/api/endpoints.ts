@@ -86,7 +86,11 @@ export const moveAllPalletsFromTransitToBodega = () =>
     totalPallets: number;
     message: string;
     errors?: Array<{ palletCode: string; error: string }>;
-    details?: Array<{ palletCode: string; boxesMoved: number; success: boolean }>;
+    details?: Array<{
+      palletCode: string;
+      boxesMoved: number;
+      success: boolean;
+    }>;
   }>('move-all-from-transit', 'pallet', {});
 
 export const auditPallet = (palletCode: string, scannedBoxes: string[] = []) =>
@@ -105,21 +109,25 @@ export const deletePallet = (codigo: string) =>
 export const getPalletByCode = (codigo: string) =>
   inventory<any>('get', 'pallet', { codigo }).then((res) => {
     let pallet = null;
-    
+
+    // Si res es directamente el pallet (formato nuevo: data es el pallet)
+    if (res && res.codigo) {
+      pallet = res;
+    }
     // La API devuelve { pallet: {...} } cuando se busca por código específico
-    if (res.pallet) {
+    else if (res.pallet) {
       pallet = res.pallet;
     }
     // Si devuelve formato paginado, tomar el primer item
     else if (res.items && res.items.length > 0) {
       pallet = res.items[0];
     }
-    
+
     // Asegurar que cantidadCajas esté disponible
     if (pallet && !pallet.cantidadCajas && pallet.boxes) {
       pallet.cantidadCajas = pallet.boxes.length;
     }
-    
+
     return pallet;
   });
 
@@ -188,10 +196,7 @@ export const unassignBox = (codigo: string) =>
 /**
  * Mover una sola caja entre pallets
  */
-export const moveBoxBetweenPallets = (
-  boxCode: string,
-  palletCode: string
-) =>
+export const moveBoxBetweenPallets = (boxCode: string, palletCode: string) =>
   inventory<any>('move-between-pallets', 'box', {
     boxCode,
     palletCode,
@@ -290,7 +295,9 @@ export const getCustomers = (params?: GetCustomersParams) =>
   }).then((res) => res.items || []);
 
 export const getCustomerById = (id: string) =>
-  sales<{ customer: Customer }>('get', 'customer', { id }).then((res) => res.customer);
+  sales<{ customer: Customer }>('get', 'customer', { id }).then(
+    (res) => res.customer
+  );
 
 // Get customer by email - use GET with email filter
 export const getCustomerByEmail = (email: string) =>
@@ -314,12 +321,12 @@ export const getSalesOrders = (params?: GetSalesOrdersParamsPaginated) => {
   const filters: any = {
     ...params?.filters,
   };
-  
+
   // If state is passed directly (not in filters), add it to filters
   if (params?.state && !filters.state) {
     filters.state = params.state;
   }
-  
+
   return sales<PaginatedResponse<Sale>>('get', 'order', {
     filters,
     pagination: { limit: params?.limit, lastKey: params?.lastKey },
@@ -345,8 +352,9 @@ export const completeSale = (id: string, notes?: string) =>
  * Checks if all boxes and pallets are still available for sale (in BODEGA)
  * @param items - Array of items with palletId and boxIds
  */
-export const validateInventory = (items: Array<{ palletId: string; boxIds: string[] }>) =>
-  sales<InventoryValidationResult>('validate-inventory', 'order', { items });
+export const validateInventory = (
+  items: Array<{ palletId: string; boxIds: string[] }>
+) => sales<InventoryValidationResult>('validate-inventory', 'order', { items });
 
 /**
  * Get customer purchase preferences based on history
@@ -444,7 +452,12 @@ export const closeAllOpenPallets = (ubicacion?: string | string[]) =>
     success: boolean;
     closedPallets: number;
     totalProcessed: number;
-    errors?: Array<{ type: string; codigo?: string; location?: string; error: string }>;
+    errors?: Array<{
+      type: string;
+      codigo?: string;
+      location?: string;
+      error: string;
+    }>;
     executionTime: string;
     timestamp: string;
   }>('close-all-pallets', 'bulk', {
@@ -475,9 +488,9 @@ export const backfillMetrics = (params?: {
 
 // Calculate metrics for specific date or date range
 export const calculateMetricsForDate = (params: {
-  date?: string;           // Single date (YYYY-MM-DD)
-  startDate?: string;      // Date range start
-  endDate?: string;        // Date range end
+  date?: string; // Single date (YYYY-MM-DD)
+  startDate?: string; // Date range start
+  endDate?: string; // Date range end
   markAsFinal?: boolean;
 }) =>
   admin<{
@@ -493,7 +506,12 @@ export const calculateMetricsForDate = (params: {
     totalDays?: number;
     successCount?: number;
     failedCount?: number;
-    details?: Array<{ date: string; status: string; metrics?: any; error?: string }>;
+    details?: Array<{
+      date: string;
+      status: string;
+      metrics?: any;
+      error?: string;
+    }>;
   }>('calculateMetrics', 'report', params);
 
 // Get metrics with filtering
