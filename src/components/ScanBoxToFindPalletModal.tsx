@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Box, Pallet } from '@/types';
 import { getBoxByCode, getPalletByCode } from '@/api/endpoints';
 import { Modal, Button, Card } from './design-system';
 import PalletDetailModal from './PalletDetailModal';
-import { Search, X, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, AlertCircle, Loader2 } from 'lucide-react';
 
 interface ScanBoxToFindPalletModalProps {
   isOpen: boolean;
@@ -15,7 +14,6 @@ const ScanBoxToFindPalletModal = ({
   isOpen,
   onClose,
 }: ScanBoxToFindPalletModalProps) => {
-  const navigate = useNavigate();
   const [boxCode, setBoxCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,13 +98,6 @@ const ScanBoxToFindPalletModal = ({
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !loading) {
       handleScan();
-    }
-  };
-
-  const handlePrintLabel = () => {
-    if (foundPallet) {
-      navigate(`/pallet/label/${foundPallet.codigo}`);
-      onClose();
     }
   };
 
