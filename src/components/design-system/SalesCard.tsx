@@ -77,11 +77,16 @@ const SalesCard: React.FC<SalesCardProps> = ({
       return sale.items;
     }
     // Reconstruct from pallets and boxes arrays
-    if (sale.pallets && sale.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+    if (
+      sale.pallets &&
+      sale.boxes &&
+      Array.isArray(sale.pallets) &&
+      Array.isArray(sale.boxes)
+    ) {
       const items: any[] = [];
       const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
       let boxIndex = 0;
-      
+
       for (const palletId of sale.pallets) {
         const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
         if (boxIds.length > 0) {
@@ -89,7 +94,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
         }
         boxIndex += boxesPerPallet;
       }
-      
+
       return items;
     }
     return [];
@@ -107,7 +112,9 @@ const SalesCard: React.FC<SalesCardProps> = ({
         <div className="sale-date-primary">{formatDate(sale.createdAt)}</div>
         <div className="sale-customer-primary">
           <span className="customer-name">
-            {sale.customerInfo?.name || 'Cliente sin nombre'}
+            {sale.customerName ||
+              sale.customerInfo?.name ||
+              'Cliente sin nombre'}
           </span>
         </div>
       </div>
@@ -128,19 +135,20 @@ const SalesCard: React.FC<SalesCardProps> = ({
             {getTotalBoxes(sale)}
             {sale.metadata?.totalRequestedBoxes && (
               <span className="requested-info">
-                {' '}/ {sale.metadata.totalRequestedBoxes} solicitadas
+                {' '}
+                / {sale.metadata.totalRequestedBoxes} solicitadas
               </span>
             )}
           </span>
         </div>
-
-        {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
-          <div className="sale-eggs-info">
-            <span className="label">Total Huevos</span>
-            <span className="value">{sale.totalEggs.toLocaleString()}</span>
-          </div>
-        )}
       </div>
+
+      {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+        <div className="sale-eggs-info">
+          <span className="label">Total Huevos</span>
+          <span className="value">{sale.totalEggs.toLocaleString()}</span>
+        </div>
+      )}
 
       {/* Show progress by calibre for request format sales */}
       {sale.metadata?.requestedBoxesByCalibre &&
@@ -151,9 +159,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
               {sale.metadata.requestedBoxesByCalibre.map((req: any) => {
                 const current =
                   sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
-                const percentage = Math.round(
-                  (current / req.boxCount) * 100
-                );
+                const percentage = Math.round((current / req.boxCount) * 100);
                 const isComplete = current >= req.boxCount;
                 return (
                   <div
@@ -162,7 +168,9 @@ const SalesCard: React.FC<SalesCardProps> = ({
                       isComplete ? 'complete' : ''
                     }`}
                   >
-                    <span className="calibre-label">Calibre {req.calibre}:</span>
+                    <span className="calibre-label">
+                      Calibre {req.calibre}:
+                    </span>
                     <span className="calibre-count">
                       {current} / {req.boxCount}
                     </span>
@@ -180,20 +188,21 @@ const SalesCard: React.FC<SalesCardProps> = ({
         )}
 
       <div className="sale-items">
-        <span className="items-label">
-          Pallets ({getPalletsCount(sale)})
-        </span>
+        <span className="items-label">Pallets ({getPalletsCount(sale)})</span>
         <div className="pallets-list">
           {(() => {
             const items = getItems(sale);
             if (items.length === 0) {
-              return <span className="no-items">No hay pallets disponibles</span>;
+              return (
+                <span className="no-items">No hay pallets disponibles</span>
+              );
             }
             return items.map((item: any, index: number) => (
               <div key={index} className="pallet-item">
                 <span className="pallet-id">{item.palletId}</span>
                 <span className="box-count">
-                  {item.boxIds?.length || 0} caja{item.boxIds?.length !== 1 ? 's' : ''}
+                  {item.boxIds?.length || 0} caja
+                  {item.boxIds?.length !== 1 ? 's' : ''}
                 </span>
               </div>
             ));
