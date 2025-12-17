@@ -244,6 +244,12 @@ export interface GetPalletsParamsPaginated
 // New types for closed and active pallets
 export interface GetClosedPalletsParams extends PaginationParams {
   ubicacion: Location;
+  fechaDesde?: string;
+  fechaHasta?: string;
+  calibre?: string;
+  empresa?: string;
+  turno?: string;
+  searchTerm?: string;
 }
 
 export interface GetActivePalletsParams extends PaginationParams {

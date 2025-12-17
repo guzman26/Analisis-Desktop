@@ -106,117 +106,111 @@ const SalesCard: React.FC<SalesCardProps> = ({
     return id.length > 12 ? `${id.substring(0, 8)}...` : id;
   };
 
+  const items = getItems(sale);
+  const hasPallets = items.length > 0;
+  const requestedBoxesByCalibre =
+    sale.metadata?.requestedBoxesByCalibre &&
+    sale.metadata.requestedBoxesByCalibre.length > 0
+      ? sale.metadata.requestedBoxesByCalibre
+      : null;
+
   return (
     <div className={`sales-card ${className || ''}`}>
-      <div className="sale-main-info">
-        <div className="sale-date-primary">{formatDate(sale.createdAt)}</div>
-        <div className="sale-customer-primary">
+      {/* Header: Date, Customer, Sale ID in one line */}
+      <div className="sale-header">
+        <div className="sale-header-left">
+          <span className="sale-date">{formatDate(sale.createdAt)}</span>
           <span className="customer-name">
             {sale.customerName ||
               sale.customerInfo?.name ||
               'Cliente sin nombre'}
           </span>
         </div>
+        <div className="sale-id-badge" title={sale.saleId}>
+          {sale.saleNumber || formatSaleId(sale.saleId)}
+        </div>
       </div>
 
-      <div className="sale-secondary-info">
-        <div className="sale-id-secondary">
-          <span className="label">
-            {sale.saleNumber ? 'N° Venta' : 'ID Venta'}
-          </span>
-          <span className="value" title={sale.saleId}>
-            {sale.saleNumber || formatSaleId(sale.saleId)}
-          </span>
-        </div>
-
-        <div className="sale-boxes-info">
-          <span className="label">Total Cajas</span>
-          <span className="value">
+      {/* Key Metrics: Boxes, Pallets, Eggs in compact badges */}
+      <div className="sale-metrics">
+        <div className="metric-badge boxes-badge">
+          <span className="metric-label">Cajas</span>
+          <span className="metric-value">
             {getTotalBoxes(sale)}
             {sale.metadata?.totalRequestedBoxes && (
-              <span className="requested-info">
-                {' '}
-                / {sale.metadata.totalRequestedBoxes} solicitadas
+              <span className="metric-suffix">
+                /{sale.metadata.totalRequestedBoxes}
               </span>
             )}
           </span>
         </div>
-      </div>
 
-      {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
-        <div className="sale-eggs-info">
-          <span className="label">Total Huevos</span>
-          <span className="value">{sale.totalEggs.toLocaleString()}</span>
-        </div>
-      )}
-
-      {/* Show progress by calibre for request format sales */}
-      {sale.metadata?.requestedBoxesByCalibre &&
-        sale.metadata.requestedBoxesByCalibre.length > 0 && (
-          <div className="sale-calibre-progress">
-            <span className="label">Progreso por Calibre:</span>
-            <div className="calibre-progress-list">
-              {sale.metadata.requestedBoxesByCalibre.map((req: any) => {
-                const current =
-                  sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
-                const percentage = Math.round((current / req.boxCount) * 100);
-                const isComplete = current >= req.boxCount;
-                return (
-                  <div
-                    key={req.calibre}
-                    className={`calibre-progress-item ${
-                      isComplete ? 'complete' : ''
-                    }`}
-                  >
-                    <span className="calibre-label">
-                      Calibre {req.calibre}:
-                    </span>
-                    <span className="calibre-count">
-                      {current} / {req.boxCount}
-                    </span>
-                    <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        {hasPallets && (
+          <div className="metric-badge pallets-badge">
+            <span className="metric-label">Pallets</span>
+            <span className="metric-value">{getPalletsCount(sale)}</span>
           </div>
         )}
 
-      <div className="sale-items">
-        <span className="items-label">Pallets ({getPalletsCount(sale)})</span>
-        <div className="pallets-list">
-          {(() => {
-            const items = getItems(sale);
-            if (items.length === 0) {
-              return (
-                <span className="no-items">No hay pallets disponibles</span>
-              );
-            }
-            return items.map((item: any, index: number) => (
-              <div key={index} className="pallet-item">
-                <span className="pallet-id">{item.palletId}</span>
-                <span className="box-count">
-                  {item.boxIds?.length || 0} caja
-                  {item.boxIds?.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-            ));
-          })()}
-        </div>
+        {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+          <div className="metric-badge eggs-badge">
+            <span className="metric-label">Huevos</span>
+            <span className="metric-value">
+              {sale.totalEggs.toLocaleString()}
+            </span>
+          </div>
+        )}
       </div>
 
-      {sale.notes && (
-        <div className="sale-notes">
-          <span className="label">Notas:</span>
-          <p className="notes-text">{sale.notes}</p>
+      {/* Calibre Progress: Compact inline badges */}
+      {requestedBoxesByCalibre && (
+        <div className="calibre-progress-compact">
+          {requestedBoxesByCalibre.map((req: any) => {
+            const current = sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
+            const isComplete = current >= req.boxCount;
+            return (
+              <div
+                key={req.calibre}
+                className={`calibre-badge ${isComplete ? 'complete' : ''}`}
+                title={`Calibre ${req.calibre}: ${current} / ${req.boxCount}`}
+              >
+                <span className="calibre-number">{req.calibre}</span>
+                <span className="calibre-ratio">
+                  {current}/{req.boxCount}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
 
+      {/* Pallets: Compact inline chips */}
+      {hasPallets && (
+        <div className="pallets-compact">
+          {items.map((item: any, index: number) => (
+            <div key={index} className="pallet-chip" title={item.palletId}>
+              <span className="pallet-id-short">
+                {item.palletId.length > 12
+                  ? `${item.palletId.substring(0, 8)}...`
+                  : item.palletId}
+              </span>
+              <span className="pallet-box-count">
+                {item.boxIds?.length || 0}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Notes: Only if present */}
+      {sale.notes && (
+        <div className="sale-notes-compact">
+          <span className="notes-icon">📝</span>
+          <span className="notes-text">{sale.notes}</span>
+        </div>
+      )}
+
+      {/* Actions */}
       {(onViewDetails ||
         onPrint ||
         onConfirm ||

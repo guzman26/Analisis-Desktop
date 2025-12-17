@@ -1,109 +1,103 @@
 import React from 'react';
-import { Pallet } from '@/types';
 import { Button, Card, Input } from '@/components/design-system';
-import { Filter, X, Package, Search, Clock } from 'lucide-react';
-import {
-  getCalibreFromCodigo,
-  getTurnoFromCodigo,
-} from '@/utils/getParamsFromCodigo';
+import { Filter, X, Package, Search, Clock, Building2 } from 'lucide-react';
 
-type ServerFilters = {
+export type Filters = {
   fechaDesde?: string;
   fechaHasta?: string;
-};
-
-type LocalFilters = {
-  calibre: string;
-  searchTerm: string;
-  dateFrom: string;
-  dateTo: string;
-  turno: string;
+  calibre?: string;
+  empresa?: string;
+  turno?: string;
+  searchTerm?: string;
 };
 
 interface ClosedPalletsFiltersProps {
-  pallets: Pallet[];
-  onLocalFiltersChange: (filtered: Pallet[]) => void;
-  onServerFiltersChange?: (filters: ServerFilters) => void;
+  filters: Filters;
+  onFiltersChange: (filters: Filters) => void;
   disabled?: boolean;
 }
 
 const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
-  pallets,
-  onLocalFiltersChange,
-  onServerFiltersChange,
+  filters,
+  onFiltersChange,
   disabled = false,
 }) => {
   const [expanded, setExpanded] = React.useState<boolean>(false);
-  const [local, setLocal] = React.useState<LocalFilters>({
-    calibre: '',
-    searchTerm: '',
-    dateFrom: '',
-    dateTo: '',
-    turno: '',
+  const [localState, setLocalState] = React.useState<{
+    calibre: string;
+    searchTerm: string;
+    dateFrom: string;
+    dateTo: string;
+    turno: string;
+    empresa: string;
+  }>({
+    calibre: filters.calibre || '',
+    searchTerm: filters.searchTerm || '',
+    dateFrom: filters.fechaDesde || '',
+    dateTo: filters.fechaHasta || '',
+    turno: filters.turno || '',
+    empresa: filters.empresa || '',
   });
-  const [server, setServer] = React.useState<ServerFilters>({});
 
-  // Unique calibres from pallet code
-  const calibres = React.useMemo(() => {
-    const values = Array.from(
-      new Set(
-        pallets.map((p) => getCalibreFromCodigo(p.codigo)).filter(Boolean)
-      )
-    );
-    return values.sort();
-  }, [pallets]);
-
-  // Apply local filters to current list
+  // Sincronizar estado local cuando cambian los filtros desde fuera
   React.useEffect(() => {
-    let filtered = [...pallets];
-    if (local.calibre) {
-      filtered = filtered.filter(
-        (p) => getCalibreFromCodigo(p.codigo) === local.calibre
-      );
-    }
-    if (local.searchTerm) {
-      const q = local.searchTerm.toLowerCase();
-      filtered = filtered.filter((p) =>
-        [p.codigo, p.baseCode, getCalibreFromCodigo(p.codigo)]
-          .join(' ')
-          .toLowerCase()
-          .includes(q)
-      );
-    }
-    if (local.turno) {
-      filtered = filtered.filter((p) =>
-        p.baseCode ? getTurnoFromCodigo(p.baseCode) === local.turno : false
-      );
-    }
-    onLocalFiltersChange(filtered);
-  }, [local, pallets, onLocalFiltersChange]);
+    setLocalState({
+      calibre: filters.calibre || '',
+      searchTerm: filters.searchTerm || '',
+      dateFrom: filters.fechaDesde || '',
+      dateTo: filters.fechaHasta || '',
+      turno: filters.turno || '',
+      empresa: filters.empresa || '',
+    });
+  }, [filters]);
 
-  // Debounce server filters
+  // Debounce para searchTerm
   React.useEffect(() => {
-    const t = setTimeout(() => onServerFiltersChange?.(server), 350);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => {
+      const currentSearchTerm = localState.searchTerm || undefined;
+      // Solo actualizar si el valor cambió
+      if (currentSearchTerm !== filters.searchTerm) {
+        onFiltersChange({
+          ...filters,
+          searchTerm: currentSearchTerm,
+        });
+      }
+    }, 350);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server]);
+  }, [localState.searchTerm]);
+
+  // Actualizar filtros inmediatamente para otros campos
+  const updateFilter = React.useCallback(
+    (key: keyof Filters, value: string) => {
+      onFiltersChange({
+        ...filters,
+        [key]: value || undefined,
+      });
+    },
+    [filters, onFiltersChange]
+  );
 
   const clearAll = () => {
-    setLocal({
+    setLocalState({
       calibre: '',
       searchTerm: '',
       dateFrom: '',
       dateTo: '',
       turno: '',
+      empresa: '',
     });
-    setServer({});
+    onFiltersChange({});
   };
 
-  const hasActive =
-    Boolean(
-      local.calibre ||
-        local.searchTerm ||
-        local.dateFrom ||
-        local.dateTo ||
-        local.turno
-    ) || Boolean(server.fechaDesde || server.fechaHasta);
+  const hasActive = Boolean(
+    filters.calibre ||
+      filters.searchTerm ||
+      filters.fechaDesde ||
+      filters.fechaHasta ||
+      filters.turno ||
+      filters.empresa
+  );
 
   return (
     <Card variant="flat">
@@ -141,7 +135,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
       </div>
 
       {expanded && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
           {/* Búsqueda */}
           <div className="space-y-1">
             <label className="text-xs text-macos-text-secondary flex items-center gap-1">
@@ -149,10 +143,30 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             </label>
             <Input
               placeholder="Buscar…"
-              value={local.searchTerm}
+              value={localState.searchTerm}
               onChange={(e) =>
-                setLocal((prev) => ({ ...prev, searchTerm: e.target.value }))
+                setLocalState((prev) => ({
+                  ...prev,
+                  searchTerm: e.target.value,
+                }))
               }
+              disabled={disabled}
+            />
+          </div>
+
+          {/* Empresa */}
+          <div className="space-y-1">
+            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+              <Building2 size={14} /> Empresa
+            </label>
+            <Input
+              placeholder="Nombre de empresa"
+              value={localState.empresa}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalState((prev) => ({ ...prev, empresa: value }));
+                updateFilter('empresa', value);
+              }}
               disabled={disabled}
             />
           </div>
@@ -162,21 +176,16 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             <label className="text-xs text-macos-text-secondary flex items-center gap-1">
               <Package size={14} /> Calibre
             </label>
-            <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
-              value={local.calibre}
-              onChange={(e) =>
-                setLocal((prev) => ({ ...prev, calibre: e.target.value }))
-              }
+            <Input
+              placeholder="Calibre (ej: M, G, J)"
+              value={localState.calibre}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalState((prev) => ({ ...prev, calibre: value }));
+                updateFilter('calibre', value);
+              }}
               disabled={disabled}
-            >
-              <option value="">Todos</option>
-              {calibres.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           {/* Turno (client-side) */}
@@ -186,10 +195,12 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             </label>
             <select
               className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
-              value={local.turno}
-              onChange={(e) =>
-                setLocal((prev) => ({ ...prev, turno: e.target.value }))
-              }
+              value={localState.turno}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalState((prev) => ({ ...prev, turno: value }));
+                updateFilter('turno', value);
+              }}
               disabled={disabled}
             >
               <option value="">Todos</option>
@@ -207,21 +218,21 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="date"
-                value={local.dateFrom}
+                value={localState.dateFrom}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setLocal((p) => ({ ...p, dateFrom: v }));
-                  setServer((p) => ({ ...p, fechaDesde: v || undefined }));
+                  setLocalState((p) => ({ ...p, dateFrom: v }));
+                  updateFilter('fechaDesde', v);
                 }}
                 disabled={disabled}
               />
               <Input
                 type="date"
-                value={local.dateTo}
+                value={localState.dateTo}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setLocal((p) => ({ ...p, dateTo: v }));
-                  setServer((p) => ({ ...p, fechaHasta: v || undefined }));
+                  setLocalState((p) => ({ ...p, dateTo: v }));
+                  updateFilter('fechaHasta', v);
                 }}
                 disabled={disabled}
               />
@@ -234,3 +245,4 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
 };
 
 export default ClosedPalletsFilters;
+export type { Filters as ClosedPalletsFiltersType };

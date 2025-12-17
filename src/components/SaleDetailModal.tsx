@@ -103,21 +103,23 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   // Helper function to group boxes by operario and sort by counter
   const groupBoxesByOperario = (boxIds: string[] | undefined) => {
     if (!boxIds || boxIds.length === 0) return [];
-    
+
     const groups = new Map<string, Array<{ code: string; counter: number }>>();
-    
+
     boxIds.forEach((boxId: string) => {
       try {
         // Normalize code to last 16 digits if longer
         const normalizedCode = boxId.length >= 16 ? boxId.slice(-16) : boxId;
-        
-        const operario = getOperarioFromCodigo(normalizedCode) || 'Sin operario';
+
+        const operario =
+          getOperarioFromCodigo(normalizedCode) || 'Sin operario';
         // Extract counter from positions 13-16 (last 3 digits)
-        const counterStr = normalizedCode.length >= 16 
-          ? normalizedCode.slice(13, 16) 
-          : normalizedCode.slice(-3);
+        const counterStr =
+          normalizedCode.length >= 16
+            ? normalizedCode.slice(13, 16)
+            : normalizedCode.slice(-3);
         const counter = parseInt(counterStr || '0', 10);
-        
+
         if (!groups.has(operario)) {
           groups.set(operario, []);
         }
@@ -131,17 +133,17 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
         groups.get(operario)!.push({ code: boxId, counter: 0 });
       }
     });
-    
+
     // Sort boxes within each group by counter
     groups.forEach((boxes) => {
       boxes.sort((a, b) => a.counter - b.counter);
     });
-    
+
     // Convert to array and sort by operario number
     return Array.from(groups.entries())
       .map(([operario, boxes]) => ({
         operario,
-        boxes: boxes.map(b => b.code),
+        boxes: boxes.map((b) => b.code),
       }))
       .sort((a, b) => {
         const numA = parseInt(a.operario, 10) || 999;
@@ -187,13 +189,18 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
       return sale.items;
     }
     // Reconstruct from pallets and boxes arrays
-    if (sale?.pallets && sale?.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+    if (
+      sale?.pallets &&
+      sale?.boxes &&
+      Array.isArray(sale.pallets) &&
+      Array.isArray(sale.boxes)
+    ) {
       // Group boxes by pallet - simplified: distribute boxes evenly
       // For accurate grouping, we'd need to query each box's palletId
       const items: SaleItem[] = [];
       const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
       let boxIndex = 0;
-      
+
       for (const palletId of sale.pallets) {
         const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
         if (boxIds.length > 0) {
@@ -201,7 +208,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
         }
         boxIndex += boxesPerPallet;
       }
-      
+
       return items;
     }
     return [];
@@ -220,91 +227,108 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
-          <div>
-            <h2 className="modal-title">Orden de Venta {sale.saleId}</h2>
-            <div className="modal-badges">
-              <span className={`status-badge ${sale.state === 'COMPLETED' ? 'success' : sale.state === 'CONFIRMED' ? 'info' : sale.state === 'DISPATCHED' ? 'warning' : 'secondary'}`}>
-                {sale.state || 'DRAFT'}
-              </span>
-              <span className="date-badge">{formatDate(sale.createdAt)}</span>
+          <div className="modal-header-content">
+            <div className="modal-title-group">
+              <h2 className="modal-title">
+                {sale.saleNumber || `Venta ${sale.saleId.substring(0, 8)}...`}
+              </h2>
+              <div className="modal-badges">
+                <span
+                  className={`status-badge ${sale.state === 'COMPLETED' ? 'success' : sale.state === 'CONFIRMED' ? 'info' : sale.state === 'DISPATCHED' ? 'warning' : 'secondary'}`}
+                >
+                  {sale.state || 'DRAFT'}
+                </span>
+                <span className="date-badge">{formatDate(sale.createdAt)}</span>
+              </div>
             </div>
+            <button
+              className="modal-close"
+              onClick={onClose}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
           </div>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
         </div>
 
         {/* Content */}
         <div className="modal-body">
           {/* Sale Summary */}
-          <div className="modal-section">
-            <h3 className="section-title">Resumen de la Venta</h3>
-            <div className="info-grid">
-              <div className="info-item total-amount-item">
-                <span className="info-label">Total de Cajas</span>
-                <span className="info-value large total-amount-text">
-                  {getTotalBoxes()}
-                </span>
+          <div className="modal-section summary-section">
+            <div className="summary-metrics">
+              <div className="metric-item">
+                <span className="metric-label">Total Cajas</span>
+                <span className="metric-value">{getTotalBoxes()}</span>
               </div>
-              <div className="info-item total-amount-item">
-                <span className="info-label">Total de Pallets</span>
-                <span className="info-value large total-amount-text">
-                  {getTotalPallets()}
-                </span>
+              <div className="metric-item">
+                <span className="metric-label">Total Pallets</span>
+                <span className="metric-value">{getTotalPallets()}</span>
               </div>
-
-              <div className="info-item">
-                <span className="info-label">Fecha de Creación</span>
-                <span className="info-value">{formatDate(sale.createdAt)}</span>
-              </div>
+              {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+                <div className="metric-item">
+                  <span className="metric-label">Total Huevos</span>
+                  <span className="metric-value">
+                    {sale.totalEggs.toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Customer Information */}
-          <div className="modal-section">
-            <h3 className="section-title">Información del Cliente</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">ID Cliente</span>
-                <span className="info-value">{sale.customerId}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Nombre</span>
-                <span className="info-value">
-                  {sale.customerInfo?.name || sale.customerName || customer?.name || 'Cargando...'}
+          <div className="modal-section customer-section">
+            <h3 className="section-title">Cliente</h3>
+            <div className="customer-info-compact">
+              <div className="customer-main">
+                <span className="customer-name-display">
+                  {sale.customerInfo?.name ||
+                    sale.customerName ||
+                    customer?.name ||
+                    'Cargando...'}
                 </span>
+                <span className="customer-id">{sale.customerId}</span>
               </div>
-              {(sale.customerInfo?.email || customer?.email) && (
-                <div className="info-item">
-                  <span className="info-label">Email</span>
-                  <span className="info-value">
-                    {sale.customerInfo?.email || customer?.email}
-                  </span>
+              {sale.customerInfo?.email ||
+              customer?.email ||
+              sale.customerInfo?.phone ||
+              customer?.phone ? (
+                <div className="customer-contact">
+                  {sale.customerInfo?.email || customer?.email ? (
+                    <a
+                      href={`mailto:${sale.customerInfo?.email || customer?.email}`}
+                      className="contact-link"
+                    >
+                      {sale.customerInfo?.email || customer?.email}
+                    </a>
+                  ) : null}
+                  {sale.customerInfo?.phone || customer?.phone ? (
+                    <a
+                      href={`tel:${sale.customerInfo?.phone || customer?.phone}`}
+                      className="contact-link"
+                    >
+                      {sale.customerInfo?.phone || customer?.phone}
+                    </a>
+                  ) : null}
                 </div>
-              )}
-              {(sale.customerInfo?.phone || customer?.phone) && (
-                <div className="info-item">
-                  <span className="info-label">Teléfono</span>
-                  <span className="info-value">
-                    {sale.customerInfo?.phone || customer?.phone}
-                  </span>
-                </div>
-              )}
+              ) : null}
             </div>
           </div>
 
           {/* Items Details */}
           <div className="modal-section pallets-detail-section">
-            <div className="section-header">
-              <h3 className="section-title">Detalle de Pallets</h3>
-              <span className="section-subtitle">
-                {getTotalPallets()} pallet{getTotalPallets() !== 1 ? 's' : ''} • {getTotalBoxes()} caja{getTotalBoxes() !== 1 ? 's' : ''} en total
+            <div className="section-header-compact">
+              <h3 className="section-title">Pallets</h3>
+              <span className="section-subtitle-compact">
+                {getTotalPallets()} pallet{getTotalPallets() !== 1 ? 's' : ''} •{' '}
+                {getTotalBoxes()} caja{getTotalBoxes() !== 1 ? 's' : ''}
               </span>
             </div>
             {(() => {
               const items = getItems();
               if (!items || items.length === 0) {
-                return <div className="items-empty">No hay items en esta venta</div>;
+                return (
+                  <div className="items-empty">No hay items en esta venta</div>
+                );
               }
               return (
                 <div className="items-container">
@@ -313,10 +337,14 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                       <div className="item-header pallet-header">
                         <div className="pallet-title-group">
                           <span className="pallet-number">#{index + 1}</span>
-                          <h4 className="item-title pallet-id">Pallet {item.palletId}</h4>
+                          <h4 className="item-title pallet-id">
+                            Pallet {item.palletId}
+                          </h4>
                         </div>
                         <div className="pallet-count-badge">
-                          <span className="count-number">{item.boxIds?.length || 0}</span>
+                          <span className="count-number">
+                            {item.boxIds?.length || 0}
+                          </span>
                           <span className="count-label">cajas</span>
                         </div>
                       </div>
@@ -324,11 +352,16 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                       <div className="item-boxes pallet-boxes">
                         <div className="boxes-header">
                           <span className="boxes-label">CAJAS INCLUIDAS</span>
-                          <span className="boxes-count">{item.boxIds?.length || 0} caja{item.boxIds?.length !== 1 ? 's' : ''}</span>
+                          <span className="boxes-count">
+                            {item.boxIds?.length || 0} caja
+                            {item.boxIds?.length !== 1 ? 's' : ''}
+                          </span>
                         </div>
                         {(() => {
-                          const groupedBoxes = groupBoxesByOperario(item.boxIds);
-                          
+                          const groupedBoxes = groupBoxesByOperario(
+                            item.boxIds
+                          );
+
                           if (groupedBoxes.length === 0) {
                             return (
                               <span className="no-boxes">
@@ -336,14 +369,22 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                               </span>
                             );
                           }
-                          
+
                           return (
                             <div className="boxes-grouped-by-operario">
                               {groupedBoxes.map((group) => (
-                                <div key={group.operario} className="operario-group">
+                                <div
+                                  key={group.operario}
+                                  className="operario-group"
+                                >
                                   <div className="operario-header">
-                                    <span className="operario-label">Operario {group.operario}</span>
-                                    <span className="operario-count">{group.boxes.length} caja{group.boxes.length !== 1 ? 's' : ''}</span>
+                                    <span className="operario-label">
+                                      Operario {group.operario}
+                                    </span>
+                                    <span className="operario-count">
+                                      {group.boxes.length} caja
+                                      {group.boxes.length !== 1 ? 's' : ''}
+                                    </span>
                                   </div>
                                   <div className="boxes-grid">
                                     {group.boxes.map((boxId: string) => (
@@ -354,9 +395,13 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                                         title="Clic para ver detalles de la caja"
                                       >
                                         {loadingBox === boxId ? (
-                                          <span className="loading-text">Cargando...</span>
+                                          <span className="loading-text">
+                                            Cargando...
+                                          </span>
                                         ) : (
-                                          <span className="box-code">{boxId}</span>
+                                          <span className="box-code">
+                                            {boxId}
+                                          </span>
                                         )}
                                       </div>
                                     ))}
@@ -376,10 +421,10 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
           {/* Notes */}
           {sale.notes && (
-            <div className="modal-section">
+            <div className="modal-section notes-section">
               <h3 className="section-title">Notas</h3>
-              <div className="notes-box">
-                <p>{sale.notes}</p>
+              <div className="notes-compact">
+                <span className="notes-text">{sale.notes}</span>
               </div>
             </div>
           )}
@@ -387,7 +432,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           {/* Actions */}
           <div className="modal-actions">
             <Button variant="primary" onClick={handleShowPrintView}>
-              📄 Ver Guía de Despacho
+              Ver Guía de Despacho
             </Button>
             {sale.reportUrl && (
               <a

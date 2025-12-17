@@ -1,94 +1,100 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import { closePallet, movePallet, deletePallet, getClosedPallets } from '@/api/endpoints';
+import {
+  closePallet,
+  movePallet,
+  deletePallet,
+  getClosedPallets,
+} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import ClosedPalletsFilters from '@/components/ClosedPalletsFilters';
+import ClosedPalletsFilters, {
+  Filters,
+} from '@/components/ClosedPalletsFilters';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
 import { Building2 } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
-  const { closedPalletsInPacking, fetchClosedPalletsInPacking, loading } =
-    usePalletContext();
+  const { loading } = usePalletContext();
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filtered, setFiltered] = useState<Pallet[]>([]);
   const [allPallets, setAllPallets] = useState<Pallet[]>([]);
   const [nextKey, setNextKey] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [filters, setFilters] = useState<Filters>({});
 
-  // Create refresh function
-  const refresh = () => {
-    setAllPallets([]);
-    setNextKey(null);
-    setHasMore(true);
-    fetchClosedPalletsInPacking();
-  };
+  // Función para cargar pallets con filtros
+  const loadPallets = useCallback(
+    async (resetPagination = false, currentNextKey?: string | null) => {
+      setLoadingMore(true);
 
-  useEffect(() => {
-    const loadInitialPallets = async () => {
       try {
-        const response = await getClosedPallets({
-          ubicacion: 'PACKING',
+        const params = {
+          ubicacion: 'PACKING' as const,
           limit: 50,
-        });
-        
+          lastKey: resetPagination ? undefined : currentNextKey || undefined,
+          ...filters,
+        };
+
+        const response = await getClosedPallets(params);
         const pallets = response.items || [];
-        setAllPallets(pallets);
-        setFiltered(pallets);
+
+        if (resetPagination) {
+          setAllPallets(pallets);
+        } else {
+          setAllPallets((prev) => [...prev, ...pallets]);
+        }
+
         setNextKey(response.nextKey || null);
         setHasMore(!!response.nextKey);
       } catch (error) {
         console.error('Error al cargar pallets:', error);
+      } finally {
+        setLoadingMore(false);
       }
-    };
-    
-    loadInitialPallets();
+    },
+    [filters]
+  );
+
+  // Cargar pallets iniciales
+  useEffect(() => {
+    loadPallets(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Mantener sincronizado con el contexto cuando se refresca
+  // Cuando cambian los filtros, resetear paginado y recargar
   useEffect(() => {
-    if (closedPalletsInPacking.length > 0 && allPallets.length === 0) {
-      setAllPallets(closedPalletsInPacking);
-      setFiltered(closedPalletsInPacking);
-    }
-  }, [closedPalletsInPacking, allPallets.length]);
+    setNextKey(null);
+    setAllPallets([]);
+    setHasMore(true);
+    loadPallets(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
-  // Función para cargar más pallets
-  const loadMore = async () => {
+  // Función para cargar más pallets (con filtros activos)
+  const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return;
-    
-    setLoadingMore(true);
-    try {
-      const response = await getClosedPallets({
-        ubicacion: 'PACKING',
-        limit: 50,
-        lastKey: nextKey || undefined,
-      });
-      
-      const newPallets = response.items || [];
-      const updatedPallets = [...allPallets, ...newPallets];
-      
-      setAllPallets(updatedPallets);
-      setFiltered(updatedPallets);
-      setNextKey(response.nextKey || null);
-      setHasMore(!!response.nextKey);
-    } catch (error) {
-      console.error('Error al cargar más pallets:', error);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+    await loadPallets(false, nextKey);
+  }, [hasMore, loadingMore, loadPallets, nextKey]);
+
+  // Create refresh function
+  const refresh = useCallback(() => {
+    setFilters({});
+    setNextKey(null);
+    setAllPallets([]);
+    setHasMore(true);
+    loadPallets(true);
+  }, [loadPallets]);
 
   // Agrupar pallets por empresa
   const palletsByCompany = useMemo(() => {
     const groups: Record<string, Pallet[]> = {};
-    
-    filtered.forEach((pallet) => {
+
+    allPallets.forEach((pallet) => {
       const empresa = getEmpresaNombre(pallet.codigo);
       if (!groups[empresa]) {
         groups[empresa] = [];
@@ -97,12 +103,12 @@ const ClosedPallets = () => {
     });
 
     // Ordenar las empresas alfabéticamente
-    const sortedEntries = Object.entries(groups).sort(([a], [b]) => 
+    const sortedEntries = Object.entries(groups).sort(([a], [b]) =>
       a.localeCompare(b, 'es')
     );
 
     return sortedEntries;
-  }, [filtered]);
+  }, [allPallets]);
 
   return (
     <div className="macos-animate-fade-in">
@@ -136,15 +142,9 @@ const ClosedPallets = () => {
 
       {/* Filtros */}
       <ClosedPalletsFilters
-        pallets={closedPalletsInPacking}
-        onLocalFiltersChange={setFiltered}
-        onServerFiltersChange={(f) =>
-          fetchClosedPalletsInPacking({
-            fechaDesde: f.fechaDesde,
-            fechaHasta: f.fechaHasta,
-          })
-        }
-        disabled={loading}
+        filters={filters}
+        onFiltersChange={setFilters}
+        disabled={loading || loadingMore}
       />
 
       {/* Stats */}
@@ -174,7 +174,7 @@ const ClosedPallets = () => {
                 fontWeight: 700,
               }}
             >
-              {filtered.length}
+              {allPallets.length}
             </p>
           </div>
         </Card>
@@ -196,7 +196,7 @@ const ClosedPallets = () => {
                 fontWeight: 700,
               }}
             >
-              {filtered.reduce(
+              {allPallets.reduce(
                 (sum, pallet) => sum + (pallet.cantidadCajas || 0),
                 0
               )}
@@ -206,7 +206,7 @@ const ClosedPallets = () => {
       </div>
 
       {/* Pallets agrupados por empresa */}
-      {closedPalletsInPacking.length === 0 ? (
+      {allPallets.length === 0 && !loadingMore && !loading ? (
         <Card>
           <p
             className="macos-text-body"
@@ -220,7 +220,13 @@ const ClosedPallets = () => {
           </p>
         </Card>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-6)' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--macos-space-6)',
+          }}
+        >
           {palletsByCompany.map(([empresa, pallets]) => (
             <div key={empresa}>
               {/* Encabezado del grupo */}
@@ -234,10 +240,7 @@ const ClosedPallets = () => {
                   borderBottom: '1px solid var(--macos-separator)',
                 }}
               >
-                <Building2
-                  size={20}
-                  style={{ color: 'var(--macos-blue)' }}
-                />
+                <Building2 size={20} style={{ color: 'var(--macos-blue)' }} />
                 <h2
                   className="macos-text-title-2"
                   style={{
@@ -260,7 +263,7 @@ const ClosedPallets = () => {
                   {pallets.length} {pallets.length === 1 ? 'pallet' : 'pallets'}
                 </span>
               </div>
-              
+
               {/* Grid de pallets de esta empresa */}
               <div
                 className="macos-grid"
@@ -303,7 +306,13 @@ const ClosedPallets = () => {
           >
             {loadingMore ? 'Cargando...' : 'Cargar más pallets'}
           </Button>
-          <p className="macos-text-footnote" style={{ color: 'var(--macos-text-secondary)', marginTop: 'var(--macos-space-2)' }}>
+          <p
+            className="macos-text-footnote"
+            style={{
+              color: 'var(--macos-text-secondary)',
+              marginTop: 'var(--macos-space-2)',
+            }}
+          >
             Mostrando {allPallets.length} pallets
           </p>
         </div>

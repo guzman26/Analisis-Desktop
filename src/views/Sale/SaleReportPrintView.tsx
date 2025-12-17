@@ -9,6 +9,7 @@ import {
   getCompanyRUT,
   getContactPhone,
 } from '@/utils/company';
+import { getOperarioFromCodigo } from '@/utils/getParamsFromCodigo';
 import '@/styles/SaleReportPrintView.css';
 import { WindowContainer } from '@/components/design-system';
 import { Button } from '@/components/design-system';
@@ -99,11 +100,16 @@ const SaleReportPrintView: React.FC = () => {
       return sale.metadata.items;
     }
     // Reconstruct from pallets and boxes
-    if (sale?.pallets && sale?.boxes && Array.isArray(sale.pallets) && Array.isArray(sale.boxes)) {
+    if (
+      sale?.pallets &&
+      sale?.boxes &&
+      Array.isArray(sale.pallets) &&
+      Array.isArray(sale.boxes)
+    ) {
       const items: Array<{ palletId: string; boxIds: string[] }> = [];
       const boxesPerPallet = Math.ceil(sale.boxes.length / sale.pallets.length);
       let boxIndex = 0;
-      
+
       for (const palletId of sale.pallets) {
         const boxIds = sale.boxes.slice(boxIndex, boxIndex + boxesPerPallet);
         if (boxIds.length > 0) {
@@ -111,29 +117,55 @@ const SaleReportPrintView: React.FC = () => {
         }
         boxIndex += boxesPerPallet;
       }
-      
+
       return items;
     }
     return [];
   };
 
-  // Función para mostrar códigos de cajas de manera más eficiente
-  const formatBoxCodes = (boxIds: string[], maxVisible: number = 6) => {
-    if (!boxIds || boxIds.length === 0) return 'Sin cajas';
+  // Helper function to group boxes by operario
+  const groupBoxesByOperario = (boxIds: string[] | undefined) => {
+    if (!boxIds || boxIds.length === 0) return [];
 
-    if (boxIds.length <= maxVisible) {
-      return boxIds;
-    }
+    const groups = new Map<string, string[]>();
 
-    return {
-      visible: boxIds.slice(0, maxVisible),
-      remaining: boxIds.length - maxVisible,
-      total: boxIds.length,
-    };
+    boxIds.forEach((boxId: string) => {
+      try {
+        const normalizedCode = boxId.length >= 16 ? boxId.slice(-16) : boxId;
+        const operario =
+          getOperarioFromCodigo(normalizedCode) || 'Sin operario';
+
+        if (!groups.has(operario)) {
+          groups.set(operario, []);
+        }
+        groups.get(operario)!.push(boxId);
+      } catch {
+        const operario = 'Sin operario';
+        if (!groups.has(operario)) {
+          groups.set(operario, []);
+        }
+        groups.get(operario)!.push(boxId);
+      }
+    });
+
+    return Array.from(groups.entries())
+      .map(([operario, boxes]) => ({ operario, boxes }))
+      .sort((a, b) => {
+        const numA = parseInt(a.operario, 10) || 999;
+        const numB = parseInt(b.operario, 10) || 999;
+        return numA - numB;
+      });
   };
 
   // Determinar si usar vista compacta (muchos pallets)
   const useCompactView = getItems().length > 10;
+
+  // Get calibre progress info if available
+  const requestedBoxesByCalibre =
+    sale?.metadata?.requestedBoxesByCalibre &&
+    sale.metadata.requestedBoxesByCalibre.length > 0
+      ? sale.metadata.requestedBoxesByCalibre
+      : null;
 
   const handlePrint = () => {
     // Simply print the current preview directly
@@ -205,7 +237,7 @@ const SaleReportPrintView: React.FC = () => {
           <div className="document-info">
             <h2 className="document-title">FICHA INTERNA</h2>
             <div className="document-number">
-              <strong>N° {sale.saleId}</strong>
+              <strong>N° {sale.saleNumber || sale.saleId}</strong>
             </div>
             <div className="document-date">
               <p>
@@ -274,155 +306,183 @@ const SaleReportPrintView: React.FC = () => {
             </div>
             <div className="info-field">
               <span className="field-label">Total Cajas:</span>
-              <span className="field-value">{getTotalBoxes()}</span>
+              <span className="field-value">
+                {getTotalBoxes()}
+                {sale.metadata?.totalRequestedBoxes && (
+                  <span className="requested-info">
+                    {' '}
+                    / {sale.metadata.totalRequestedBoxes} solicitadas
+                  </span>
+                )}
+              </span>
             </div>
+            {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+              <div className="info-field">
+                <span className="field-label">Total Huevos:</span>
+                <span className="field-value">
+                  {sale.totalEggs.toLocaleString()}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* Calibre Progress Section */}
+          {requestedBoxesByCalibre && (
+            <div className="calibre-progress-section">
+              <h4 className="calibre-progress-title">Progreso por Calibre:</h4>
+              <div className="calibre-progress-grid">
+                {requestedBoxesByCalibre.map((req: any) => {
+                  const current =
+                    sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
+                  const isComplete = current >= req.boxCount;
+                  return (
+                    <div
+                      key={req.calibre}
+                      className={`calibre-progress-item ${isComplete ? 'complete' : ''}`}
+                    >
+                      <span className="calibre-label">
+                        Calibre {req.calibre}:
+                      </span>
+                      <span className="calibre-count">
+                        {current} / {req.boxCount}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Items Detail */}
         <div className="items-section">
           <h3 className="section-title">DETALLE DE PRODUCTOS</h3>
-          {useCompactView ? (
-            // Vista compacta para muchos pallets
-            <div className="compact-items-container">
-              <div className="compact-summary">
-                <p>
-                  <strong>Resumen:</strong> {getItems().length} pallets
-                  con {getTotalBoxes()} cajas en total
-                </p>
+          {(() => {
+            const items = getItems();
+            if (!items || items.length === 0) {
+              return (
+                <div className="items-empty-state">
+                  <p>No hay productos asignados a esta venta</p>
+                  {requestedBoxesByCalibre && (
+                    <p className="empty-state-note">
+                      Esta venta fue creada por calibre. Las cajas se asignarán
+                      según el progreso por calibre.
+                    </p>
+                  )}
+                </div>
+              );
+            }
+
+            return useCompactView ? (
+              // Vista compacta para muchos pallets
+              <div className="compact-items-container">
+                <table className="items-table compact">
+                  <thead>
+                    <tr>
+                      <th>N°</th>
+                      <th>Pallet ID</th>
+                      <th>Cajas</th>
+                      <th>Operarios</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item, index) => {
+                      const groupedBoxes = groupBoxesByOperario(item.boxIds);
+                      return (
+                        <tr key={index}>
+                          <td className="item-number">{index + 1}</td>
+                          <td className="pallet-id">{item.palletId}</td>
+                          <td className="box-count">
+                            {item.boxIds?.length || 0}
+                          </td>
+                          <td className="operarios-summary">
+                            {groupedBoxes.length > 0 ? (
+                              <div className="operarios-list">
+                                {groupedBoxes.map((group, gIndex) => (
+                                  <span key={gIndex} className="operario-badge">
+                                    Op {group.operario}: {group.boxes.length}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="no-operarios">
+                                Sin operarios
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              <table className="items-table compact">
-                <thead>
-                  <tr>
-                    <th>N°</th>
-                    <th>Pallet ID</th>
-                    <th>Cajas</th>
-                    <th>Primeras Cajas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getItems().map((item, index) => {
-                    const boxCodesData = formatBoxCodes(item.boxIds || [], 4);
-                    return (
-                      <tr key={index}>
-                        <td className="item-number">{index + 1}</td>
-                        <td className="pallet-id">{item.palletId}</td>
-                        <td className="box-count">
-                          {item.boxIds?.length || 0}
-                        </td>
-                        <td className="box-codes">
-                          {typeof boxCodesData === 'string' ? (
-                            <span className="no-boxes">{boxCodesData}</span>
-                          ) : Array.isArray(boxCodesData) ? (
-                            <div className="box-codes-grid">
-                              {boxCodesData.map((boxId, boxIndex) => (
-                                <span key={boxIndex} className="box-code">
-                                  {boxId}
+            ) : (
+              // Vista normal para pocos pallets
+              <div className="items-detailed-container">
+                {items.map((item, index) => {
+                  const groupedBoxes = groupBoxesByOperario(item.boxIds);
+                  return (
+                    <div key={index} className="pallet-detail-card">
+                      <div className="pallet-detail-header">
+                        <div className="pallet-header-left">
+                          <span className="pallet-number">#{index + 1}</span>
+                          <span className="pallet-id-display">
+                            {item.palletId}
+                          </span>
+                        </div>
+                        <span className="pallet-box-count">
+                          {item.boxIds?.length || 0} caja
+                          {item.boxIds?.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      {groupedBoxes.length > 0 ? (
+                        <div className="pallet-boxes-by-operario">
+                          {groupedBoxes.map((group) => (
+                            <div
+                              key={group.operario}
+                              className="operario-box-group"
+                            >
+                              <div className="operario-group-header">
+                                <span className="operario-label">
+                                  Operario {group.operario}
                                 </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="box-codes-compact">
+                                <span className="operario-box-count">
+                                  {group.boxes.length} caja
+                                  {group.boxes.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
                               <div className="box-codes-grid">
-                                {boxCodesData.visible.map((boxId, boxIndex) => (
+                                {group.boxes.map((boxId, boxIndex) => (
                                   <span key={boxIndex} className="box-code">
                                     {boxId}
                                   </span>
                                 ))}
                               </div>
-                              <span className="remaining-count">
-                                +{boxCodesData.remaining} más
-                              </span>
                             </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            // Vista normal para pocos pallets
-            <table className="items-table">
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Pallet ID</th>
-                  <th>Cantidad Cajas</th>
-                  <th>Códigos de Cajas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getItems().map((item, index) => {
-                  const boxCodesData = formatBoxCodes(item.boxIds || [], 8);
-                  return (
-                    <tr key={index}>
-                      <td className="item-number">{index + 1}</td>
-                      <td className="pallet-id">{item.palletId}</td>
-                      <td className="box-count">{item.boxIds?.length || 0}</td>
-                      <td className="box-codes">
-                        {typeof boxCodesData === 'string' ? (
-                          <span className="no-boxes">{boxCodesData}</span>
-                        ) : Array.isArray(boxCodesData) ? (
-                          <div className="box-codes-grid">
-                            {boxCodesData.map((boxId, boxIndex) => (
-                              <span key={boxIndex} className="box-code">
-                                {boxId}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="box-codes-detailed">
-                            <div className="box-codes-grid">
-                              {boxCodesData.visible.map((boxId, boxIndex) => (
-                                <span key={boxIndex} className="box-code">
-                                  {boxId}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="remaining-info">
-                              <span className="remaining-count">
-                                +{boxCodesData.remaining} cajas adicionales
-                              </span>
-                              <small>(Total: {boxCodesData.total} cajas)</small>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="no-boxes-message">
+                          No hay cajas asignadas a este pallet
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
-          )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Summary */}
-        <div className="summary-section">
-          <div className="summary-grid">
-            <div className="summary-left">
-              {sale.notes && (
-                <div className="notes-section">
-                  <h4>Observaciones:</h4>
-                  <p className="notes-text">{sale.notes}</p>
-                </div>
-              )}
-            </div>
-            <div className="summary-right">
-              <div className="totals-box">
-                <div className="total-row">
-                  <span className="total-label">Total Pallets:</span>
-                  <span className="total-value">{getItems().length}</span>
-                </div>
-                <div className="total-row">
-                  <span className="total-label">Total Cajas:</span>
-                  <span className="total-value">{getTotalBoxes()}</span>
-                </div>
-              </div>
+        {sale.notes && (
+          <div className="summary-section">
+            <div className="notes-section">
+              <h4>Observaciones:</h4>
+              <p className="notes-text">{sale.notes}</p>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Footer */}
         <div className="report-footer">

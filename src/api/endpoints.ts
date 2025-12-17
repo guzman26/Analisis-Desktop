@@ -41,12 +41,29 @@ export const getClosedPallets = (params: {
   ubicacion: Location;
   limit?: number;
   lastKey?: string;
-}) =>
-  inventory<PaginatedResponse<Pallet>>('get', 'pallet', {
+  fechaDesde?: string;
+  fechaHasta?: string;
+  calibre?: string;
+  empresa?: string;
+  turno?: string;
+  searchTerm?: string;
+}) => {
+  // Construir objeto de filtros
+  const filters: any = {};
+  if (params.fechaDesde) filters.fechaDesde = params.fechaDesde;
+  if (params.fechaHasta) filters.fechaHasta = params.fechaHasta;
+  if (params.calibre) filters.calibre = params.calibre;
+  if (params.empresa) filters.empresa = params.empresa;
+  if (params.turno) filters.turno = params.turno;
+  if (params.searchTerm) filters.searchTerm = params.searchTerm;
+
+  return inventory<PaginatedResponse<Pallet>>('get', 'pallet', {
     estado: 'closed',
     ubicacion: params.ubicacion,
+    filters: Object.keys(filters).length > 0 ? filters : undefined,
     pagination: { limit: params.limit, lastKey: params.lastKey },
   });
+};
 
 export const getActivePallets = (params: {
   ubicacion: Location;
