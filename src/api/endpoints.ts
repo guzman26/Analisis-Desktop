@@ -602,24 +602,35 @@ export const getCarts = (params?: GetCartsParams): Promise<PaginatedResponse<Car
   if (params?.filters?.empresa) filters.empresa = params.filters.empresa;
   if (params?.filters?.turno) filters.turno = params.filters.turno;
 
-  return inventory<PaginatedResponse<Cart>>('get', 'cart', {
+  return inventory<PaginatedResponse<Cart> | { data: PaginatedResponse<Cart> } | Cart[]>('get', 'cart', {
     ubicacion: params?.ubicacion,
     filters: Object.keys(filters).length > 0 ? filters : undefined,
     pagination: { limit: params?.limit, lastKey: params?.lastKey },
-  }).then((res) => {
+  }).then((res): PaginatedResponse<Cart> => {
     // La API devuelve { success: true, data: { items, count, nextKey } }
     // Pero inventory ya extrae el data, así que res debería ser PaginatedResponse<Cart>
     if (res && typeof res === 'object' && 'items' in res) {
       return res as PaginatedResponse<Cart>;
     }
     // Si viene envuelto en data, extraerlo
-    if (res && typeof res === 'object' && 'data' in res && res.data) {
-      return (res as any).data as PaginatedResponse<Cart>;
+    if (res && typeof res === 'object' && 'data' in res) {
+      const dataRes = res as { data: PaginatedResponse<Cart> };
+      if (dataRes.data) {
+        return dataRes.data;
+      }
+    }
+    // Si es un array directo, convertirlo
+    if (Array.isArray(res)) {
+      return {
+        items: res,
+        count: res.length,
+        nextKey: null,
+      };
     }
     // Fallback: crear estructura mínima
     return {
-      items: Array.isArray(res) ? res : [],
-      count: Array.isArray(res) ? res.length : 0,
+      items: [],
+      count: 0,
       nextKey: null,
     };
   });

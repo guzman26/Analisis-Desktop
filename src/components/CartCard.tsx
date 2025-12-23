@@ -13,7 +13,6 @@ import '../styles/designSystem.css';
 import styles from './PalletCard.module.css';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
-import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
 
 interface CartCardProps {
   cart: Cart;
