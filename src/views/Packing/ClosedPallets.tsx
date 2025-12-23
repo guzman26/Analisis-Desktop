@@ -12,13 +12,16 @@ import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters, {
   Filters,
 } from '@/components/ClosedPalletsFilters';
+import SelectDestinationModal from '@/components/SelectDestinationModal';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
-import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Building2, ChevronDown, ChevronUp, CheckSquare, Square, Trash2, MoveRight } from 'lucide-react';
+import { useNotifications } from '@/components/Notification/Notification';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
   const { loading } = usePalletContext();
+  const { showSuccess, showError } = useNotifications();
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [allPallets, setAllPallets] = useState<Pallet[]>([]);
@@ -29,6 +32,13 @@ const ClosedPallets = () => {
   const [collapsedCompanies, setCollapsedCompanies] = useState<Set<string>>(
     new Set()
   );
+  
+  // Estados para selección múltiple
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(new Set());
+  const [isMovingSelected, setIsMovingSelected] = useState(false);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [showDestinationModal, setShowDestinationModal] = useState(false);
 
   // Función para alternar el estado de colapso de una empresa
   const toggleCompany = useCallback((empresa: string) => {
@@ -126,6 +136,118 @@ const ClosedPallets = () => {
     return sortedEntries;
   }, [allPallets]);
 
+  // Handlers para selección múltiple
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      // Limpiar selección al salir del modo
+      setSelectedPalletCodes(new Set());
+    }
+  };
+
+  const handleSelectionChange = (codigo: string, selected: boolean) => {
+    setSelectedPalletCodes(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(codigo);
+      } else {
+        newSet.delete(codigo);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPalletCodes.size === allPallets.length) {
+      // Deseleccionar todos
+      setSelectedPalletCodes(new Set());
+    } else {
+      // Seleccionar todos
+      setSelectedPalletCodes(new Set(allPallets.map(p => p.codigo)));
+    }
+  };
+
+  const handleMoveSelectedPallets = async (destination: 'TRANSITO' | 'BODEGA' | 'VENTA') => {
+    if (selectedPalletCodes.size === 0) return;
+
+    setShowDestinationModal(false);
+    setIsMovingSelected(true);
+
+    let movedCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const codigo of selectedPalletCodes) {
+        try {
+          await movePallet(codigo, destination);
+          movedCount++;
+        } catch (error) {
+          console.error(`Error al mover pallet ${codigo}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (movedCount > 0) {
+        showSuccess(`Se movieron exitosamente ${movedCount} pallet(s) a ${destination}`);
+      }
+      if (errorCount > 0) {
+        showError(`No se pudieron mover ${errorCount} pallet(s)`);
+      }
+
+      // Limpiar selección y refrescar
+      setSelectedPalletCodes(new Set());
+      setIsSelectionMode(false);
+      refresh();
+    } catch (error: any) {
+      showError(error.message || 'Error al mover los pallets seleccionados');
+    } finally {
+      setIsMovingSelected(false);
+    }
+  };
+
+  const handleDeleteSelectedPallets = async () => {
+    if (selectedPalletCodes.size === 0) return;
+
+    const confirmed = window.confirm(
+      `¿Estás seguro que deseas eliminar los ${selectedPalletCodes.size} pallets seleccionados?\n\n` +
+        `Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    setIsDeletingSelected(true);
+    let deletedCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const codigo of selectedPalletCodes) {
+        try {
+          await deletePallet(codigo);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Error al eliminar pallet ${codigo}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (deletedCount > 0) {
+        showSuccess(`Se eliminaron exitosamente ${deletedCount} pallet(s)`);
+      }
+      if (errorCount > 0) {
+        showError(`No se pudieron eliminar ${errorCount} pallet(s)`);
+      }
+
+      // Limpiar selección y refrescar
+      setSelectedPalletCodes(new Set());
+      setIsSelectionMode(false);
+      refresh();
+    } catch (error: any) {
+      showError(error.message || 'Error al eliminar los pallets seleccionados');
+    } finally {
+      setIsDeletingSelected(false);
+    }
+  };
+
   return (
     <div className="macos-animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
@@ -144,9 +266,56 @@ const ClosedPallets = () => {
           >
             Pallets Cerrados
           </h1>
-          <Button variant="secondary" size="medium" onClick={refresh}>
-            Refrescar
-          </Button>
+          <div className="macos-hstack">
+            {/* Botones de selección múltiple */}
+            <Button
+              leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
+              variant={isSelectionMode ? 'primary' : 'secondary'}
+              size="medium"
+              onClick={handleToggleSelectionMode}
+              disabled={allPallets.length === 0}
+            >
+              {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}
+            </Button>
+            
+            {isSelectionMode && (
+              <>
+                <Button
+                  leftIcon={<CheckSquare style={{ width: '16px', height: '16px' }} />}
+                  variant="secondary"
+                  size="medium"
+                  onClick={handleSelectAll}
+                  disabled={allPallets.length === 0}
+                >
+                  {selectedPalletCodes.size === allPallets.length ? 'Deseleccionar Todos' : 'Seleccionar Todos'}
+                </Button>
+                <Button
+                  leftIcon={<MoveRight style={{ width: '16px', height: '16px' }} />}
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setShowDestinationModal(true)}
+                  disabled={isMovingSelected || selectedPalletCodes.size === 0}
+                >
+                  {isMovingSelected ? 'Moviendo...' : `Mover (${selectedPalletCodes.size})`}
+                </Button>
+                <Button
+                  leftIcon={<Trash2 style={{ width: '16px', height: '16px' }} />}
+                  variant="danger"
+                  size="medium"
+                  onClick={handleDeleteSelectedPallets}
+                  disabled={isDeletingSelected || selectedPalletCodes.size === 0}
+                >
+                  {isDeletingSelected ? 'Eliminando...' : `Eliminar (${selectedPalletCodes.size})`}
+                </Button>
+              </>
+            )}
+
+            {!isSelectionMode && (
+              <Button variant="secondary" size="medium" onClick={refresh}>
+                Refrescar
+              </Button>
+            )}
+          </div>
         </div>
         <p
           className="macos-text-body"
@@ -323,6 +492,9 @@ const ClosedPallets = () => {
                             console.error('Error al eliminar pallet:', error);
                           }
                         }}
+                        showSelection={isSelectionMode}
+                        isSelected={selectedPalletCodes.has(pallet.codigo)}
+                        onSelectionChange={handleSelectionChange}
                       />
                     ))}
                   </div>
@@ -376,6 +548,14 @@ const ClosedPallets = () => {
             console.error('Error al mover pallet:', error);
           }
         }}
+      />
+
+      <SelectDestinationModal
+        isOpen={showDestinationModal}
+        onClose={() => setShowDestinationModal(false)}
+        onConfirm={handleMoveSelectedPallets}
+        currentLocation="PACKING"
+        palletCount={selectedPalletCodes.size}
       />
     </div>
   );
