@@ -67,6 +67,22 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localState.searchTerm]);
 
+  // Debounce para empresa
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentEmpresa = localState.empresa || undefined;
+      // Solo actualizar si el valor cambió
+      if (currentEmpresa !== filters.empresa) {
+        onFiltersChange({
+          ...filters,
+          empresa: currentEmpresa,
+        });
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localState.empresa]);
+
   // Actualizar filtros inmediatamente para otros campos
   const updateFilter = React.useCallback(
     (key: keyof Filters, value: string) => {
@@ -165,7 +181,6 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               onChange={(e) => {
                 const value = e.target.value;
                 setLocalState((prev) => ({ ...prev, empresa: value }));
-                updateFilter('empresa', value);
               }}
               disabled={disabled}
             />

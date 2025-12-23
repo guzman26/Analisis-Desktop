@@ -54,7 +54,7 @@ const initialState: BoxesState = {
   error: null,
   lastUpdated: undefined,
   nextKey: null,
-  limit: 50,
+  limit: 1000, // Límite alto para cargar todas las cajas por defecto (paginar si hay más de 50)
   filterParams: {},
 };
 
@@ -221,6 +221,10 @@ const { Provider, useContext } = createContextFactory<
         const { limit = 50, lastKey, reset = false, ...filters } = opts || {};
         // Persist filters in state so loadMore/refresh reuse them
         dispatch(boxesActions.setFilters(filters));
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/fbe37bc7-f783-41de-b239-5600ef89f56b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BoxesContext.tsx:224',message:'Fetching unassigned boxes - REQUEST',data:{location,limit,lastKey:lastKey?'provided':'none',filters},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+
         const response: PaginatedResponse<Box> =
           await getUnassignedBoxesByLocation({
             ubicacion: location,
@@ -233,6 +237,10 @@ const { Provider, useContext } = createContextFactory<
           ? response.items
           : [];
         const nextKey = response?.nextKey ?? null;
+
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/fbe37bc7-f783-41de-b239-5600ef89f56b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BoxesContext.tsx:235',message:'Fetching unassigned boxes - RESPONSE',data:{location,itemsCount:items.length,hasCustomBoxes:items.some(b=>b.customInfo&&b.customInfo.length>0),customBoxesCount:items.filter(b=>b.customInfo&&b.customInfo.length>0).length,nextKey:nextKey?'provided':'none'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
 
         if (reset) {
           dispatch(boxesActions.fetchSuccess(items));
@@ -309,6 +317,9 @@ export const useUnassignedBoxes = (location: Location) => {
   };
 
   const refresh = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/fbe37bc7-f783-41de-b239-5600ef89f56b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'BoxesContext.tsx:319',message:'Refresh called',data:{location,filterParams:state.filterParams},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
     await api.fetchUnassignedBoxes(location, {
       limit: state.limit,
       reset: true,

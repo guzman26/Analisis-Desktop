@@ -262,3 +262,13 @@ const ScanBoxToFindPalletModal = ({
 };
 
 export default ScanBoxToFindPalletModal;
+
+
+
+
+
+
+
+
+
+

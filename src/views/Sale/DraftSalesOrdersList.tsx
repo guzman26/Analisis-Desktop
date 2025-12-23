@@ -2,7 +2,11 @@ import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SalesContext } from '../../contexts/SalesContext';
 import { Sale } from '@/types';
-import { Button, WindowContainer } from '../../components/design-system';
+import {
+  Button,
+  WindowContainer,
+  LoadingOverlay,
+} from '../../components/design-system';
 import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { useNotifications } from '../../components/Notification';
@@ -94,16 +98,17 @@ const SalesOrdersList: React.FC = () => {
   if (!salesOrdersDRAFTPaginated) {
     return (
       <div className="sales-orders-list">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Inicializando...</p>
-        </div>
+        <LoadingOverlay show={true} text="Inicializando…" />
       </div>
     );
   }
 
   return (
     <>
+      <LoadingOverlay
+        show={salesOrdersDRAFTPaginated.loading}
+        text="Cargando órdenes de venta…"
+      />
       <WindowContainer title="Órdenes de Venta">
         <div className="sales-orders-header">
           <h1>Órdenes de Venta</h1>
@@ -143,13 +148,6 @@ const SalesOrdersList: React.FC = () => {
                 isConfirming={confirmingStates[sale.saleId]}
               />
             ))}
-          </div>
-        )}
-
-        {salesOrdersDRAFTPaginated.loading && (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Cargando órdenes de venta...</p>
           </div>
         )}
 

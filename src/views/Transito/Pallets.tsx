@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import { closePallet, movePallet, moveAllPalletsFromTransitToBodega } from '@/api/endpoints';
+import {
+  closePallet,
+  movePallet,
+  moveAllPalletsFromTransitToBodega,
+} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import { Card, Button } from '@/components/design-system';
+import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { useNotifications } from '@/components/Notification/Notification';
 import '../../styles/designSystem.css';
 
 const TransitoPallets = () => {
-  const { closedPalletsInTransit, fetchClosedPalletsInTransit } =
+  const { closedPalletsInTransit, fetchClosedPalletsInTransit, loading } =
     usePalletContext();
   const { showSuccess, showError } = useNotifications();
 
@@ -41,23 +45,26 @@ const TransitoPallets = () => {
     setIsMovingAll(true);
     try {
       const result = await moveAllPalletsFromTransitToBodega();
-      
+
       if (result.success) {
         showSuccess(
           `Se movieron exitosamente ${result.palletsMoved} pallets y ${result.boxesMoved} cajas a bodega`
         );
       } else {
-        const errorMsg = result.errors && result.errors.length > 0
-          ? `${result.message}. Errores: ${result.errors.map(e => `${e.palletCode}: ${e.error}`).join(', ')}`
-          : result.message;
+        const errorMsg =
+          result.errors && result.errors.length > 0
+            ? `${result.message}. Errores: ${result.errors.map((e) => `${e.palletCode}: ${e.error}`).join(', ')}`
+            : result.message;
         showError(errorMsg);
       }
-      
+
       // Refrescar la lista
       await refresh();
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Error al mover pallets a bodega';
+        error instanceof Error
+          ? error.message
+          : 'Error al mover pallets a bodega';
       showError(errorMessage);
     } finally {
       setIsMovingAll(false);
@@ -66,6 +73,7 @@ const TransitoPallets = () => {
 
   return (
     <div className="macos-animate-fade-in">
+      <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
         <div
@@ -226,4 +234,3 @@ const TransitoPallets = () => {
 };
 
 export default TransitoPallets;
-

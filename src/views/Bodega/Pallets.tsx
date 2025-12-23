@@ -5,13 +5,13 @@ import PalletDetailModal from '@/components/PalletDetailModal';
 import ScanBoxToFindPalletModal from '@/components/ScanBoxToFindPalletModal';
 import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import { Card, Button } from '@/components/design-system';
+import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { ScanLine } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const BodegaPallets = () => {
-  const { closedPalletsInBodega, fetchClosedPalletsInBodega } =
+  const { closedPalletsInBodega, fetchClosedPalletsInBodega, loading } =
     usePalletContext();
 
   // Create refresh function
@@ -54,6 +54,7 @@ const BodegaPallets = () => {
 
   return (
     <div className="macos-animate-fade-in">
+      <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
         <div

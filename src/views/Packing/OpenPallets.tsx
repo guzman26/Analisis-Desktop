@@ -3,17 +3,30 @@ import { usePalletContext } from '@/contexts/PalletContext';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import PalletLooseEggsModal from '@/components/PalletLooseEggsModal';
-import { Card, Button, Input } from '@/components/design-system';
+import {
+  Card,
+  Button,
+  Input,
+  LoadingOverlay,
+} from '@/components/design-system';
 import { Search, Plus, Filter, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
-import { closePallet, movePallet, deletePallet, closeAllOpenPallets } from '@/api/endpoints';
+import {
+  closePallet,
+  movePallet,
+  deletePallet,
+  closeAllOpenPallets,
+} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { useNotifications } from '@/components/Notification/Notification';
 
 const OpenPallets = () => {
-  const { openPallets: activePalletsPaginated, fetchActivePallets } =
-    usePalletContext();
+  const {
+    openPallets: activePalletsPaginated,
+    fetchActivePallets,
+    loading,
+  } = usePalletContext();
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotifications();
 
@@ -61,8 +74,8 @@ const OpenPallets = () => {
   const handleCloseAllPallets = async () => {
     const confirmed = window.confirm(
       `¿Estás seguro que deseas cerrar TODOS los pallets abiertos en PACKING?\n\n` +
-      `Total de pallets a cerrar: ${filteredPallets.length}\n\n` +
-      `Esta acción no se puede deshacer.`
+        `Total de pallets a cerrar: ${filteredPallets.length}\n\n` +
+        `Esta acción no se puede deshacer.`
     );
 
     if (!confirmed) return;
@@ -70,7 +83,7 @@ const OpenPallets = () => {
     setIsClosingAll(true);
     try {
       const result = await closeAllOpenPallets('PACKING');
-      
+
       showSuccess(
         `Se cerraron exitosamente ${result.closedPallets} pallets en ${result.executionTime}s`
       );
@@ -86,6 +99,7 @@ const OpenPallets = () => {
 
   return (
     <div className="macos-animate-fade-in">
+      <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
       <div style={{ marginBottom: 'var(--macos-space-7)' }}>
         <div

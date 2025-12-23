@@ -14,8 +14,13 @@ import { RefreshCcw, Package } from 'lucide-react';
 import { LoadingOverlay } from '@/components/design-system';
 
 const UnassignedBoxes = () => {
-  const { unassignedBoxes: unassignedBoxesInBodega, refresh } =
-    useUnassignedBoxes('BODEGA');
+  const {
+    unassignedBoxes: unassignedBoxesInBodega,
+    hasMore,
+    loadMore,
+    refresh,
+    loading,
+  } = useUnassignedBoxes('BODEGA');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBox, setSelectedBox] = useState<Box | null>(null);
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
@@ -144,7 +149,7 @@ const UnassignedBoxes = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <LoadingOverlay show={false} text="Cargando cajas…" />
+      <LoadingOverlay show={loading} text="Cargando cajas…" />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <h1>Cajas sin asignar</h1>
@@ -153,7 +158,7 @@ const UnassignedBoxes = () => {
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={handleSearchCompatiblePalletsForAll}
-            disabled={searchingCompatiblePallets || unassignedBoxesInBodega.length === 0}
+            disabled={loading || searchingCompatiblePallets || unassignedBoxesInBodega.length === 0}
             title="Buscar pallets compatibles para todas las cajas sin asignar"
             style={{
               padding: '8px 12px',
@@ -169,6 +174,7 @@ const UnassignedBoxes = () => {
           </button>
           <button
             onClick={refresh}
+            disabled={loading}
             style={{
               padding: '8px 12px',
               backgroundColor: '#6c757d',
@@ -179,7 +185,7 @@ const UnassignedBoxes = () => {
             }}
           >
             <RefreshCcw size={16} style={{ marginRight: '4px' }} />
-            Refrescar
+            {loading ? 'Actualizando...' : 'Refrescar'}
           </button>
         </div>
       </div>
@@ -188,7 +194,7 @@ const UnassignedBoxes = () => {
       <BoxFilters
         boxes={unassignedBoxesInBodega}
         onFiltersChange={setFilteredBoxes}
-        disabled={false}
+        disabled={loading}
       />
 
       {/* Empty State */}
@@ -229,6 +235,31 @@ const UnassignedBoxes = () => {
               />
             ))}
           </div>
+
+          {hasMore && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 16,
+              }}
+            >
+              <button
+                onClick={loadMore}
+                disabled={loading}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {loading ? 'Cargando...' : 'Cargar más'}
+              </button>
+            </div>
+          )}
         </>
       )}
 

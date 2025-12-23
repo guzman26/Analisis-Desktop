@@ -6,7 +6,11 @@ import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import ReturnBoxesModal from '@/components/ReturnBoxesModal';
 import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
-import { WindowContainer, Button } from '../../components/design-system';
+import {
+  WindowContainer,
+  Button,
+  LoadingOverlay,
+} from '../../components/design-system';
 import { dispatchSale, completeSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 
@@ -110,16 +114,17 @@ const ConfirmedSalesOrdersList: React.FC = () => {
   if (!salesOrdersCONFIRMEDPaginated) {
     return (
       <div className="sales-orders-list">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Inicializando...</p>
-        </div>
+        <LoadingOverlay show={true} text="Inicializando…" />
       </div>
     );
   }
 
   return (
     <>
+      <LoadingOverlay
+        show={salesOrdersCONFIRMEDPaginated.loading}
+        text="Cargando órdenes de venta…"
+      />
       <WindowContainer title="Órdenes de Venta Confirmadas">
         <div className="sales-orders-header">
           <h1>Órdenes de Venta Confirmadas</h1>
@@ -163,13 +168,6 @@ const ConfirmedSalesOrdersList: React.FC = () => {
                 />
               );
             })}
-          </div>
-        )}
-
-        {salesOrdersCONFIRMEDPaginated.loading && (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Cargando órdenes de venta...</p>
           </div>
         )}
 

@@ -14,7 +14,7 @@ import ClosedPalletsFilters, {
 } from '@/components/ClosedPalletsFilters';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
-import { Building2 } from 'lucide-react';
+import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
@@ -26,6 +26,22 @@ const ClosedPallets = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
+  const [collapsedCompanies, setCollapsedCompanies] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Función para alternar el estado de colapso de una empresa
+  const toggleCompany = useCallback((empresa: string) => {
+    setCollapsedCompanies((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(empresa)) {
+        newSet.delete(empresa);
+      } else {
+        newSet.add(empresa);
+      }
+      return newSet;
+    });
+  }, []);
 
   // Función para cargar pallets con filtros
   const loadPallets = useCallback(
@@ -227,71 +243,93 @@ const ClosedPallets = () => {
             gap: 'var(--macos-space-6)',
           }}
         >
-          {palletsByCompany.map(([empresa, pallets]) => (
-            <div key={empresa}>
-              {/* Encabezado del grupo */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--macos-space-3)',
-                  marginBottom: 'var(--macos-space-4)',
-                  paddingBottom: 'var(--macos-space-2)',
-                  borderBottom: '1px solid var(--macos-separator)',
-                }}
-              >
-                <Building2 size={20} style={{ color: 'var(--macos-blue)' }} />
-                <h2
-                  className="macos-text-title-2"
+          {palletsByCompany.map(([empresa, pallets]) => {
+            const isCollapsed = collapsedCompanies.has(empresa);
+            return (
+              <div key={empresa}>
+                {/* Encabezado del grupo - clickeable para colapsar */}
+                <div
+                  onClick={() => toggleCompany(empresa)}
                   style={{
-                    color: 'var(--macos-text-primary)',
-                    fontWeight: 600,
-                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--macos-space-3)',
+                    marginBottom: isCollapsed ? 0 : 'var(--macos-space-4)',
+                    paddingBottom: 'var(--macos-space-2)',
+                    borderBottom: '1px solid var(--macos-separator)',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    transition: 'margin-bottom 0.2s ease',
                   }}
                 >
-                  {empresa}
-                </h2>
-                <span
-                  className="macos-text-footnote"
-                  style={{
-                    color: 'var(--macos-text-tertiary)',
-                    backgroundColor: 'var(--macos-fill-secondary)',
-                    padding: '2px 8px',
-                    borderRadius: 'var(--macos-radius-sm)',
-                  }}
-                >
-                  {pallets.length} {pallets.length === 1 ? 'pallet' : 'pallets'}
-                </span>
-              </div>
-
-              {/* Grid de pallets de esta empresa */}
-              <div
-                className="macos-grid"
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                }}
-              >
-                {pallets.map((pallet: Pallet) => (
-                  <PalletCard
-                    key={pallet.codigo}
-                    pallet={pallet}
-                    setSelectedPallet={setSelectedPallet}
-                    setIsModalOpen={setIsModalOpen}
-                    closePallet={closePallet}
-                    fetchActivePallets={refresh}
-                    onDelete={async (codigo) => {
-                      try {
-                        await deletePallet(codigo);
-                        refresh();
-                      } catch (error) {
-                        console.error('Error al eliminar pallet:', error);
-                      }
+                  {isCollapsed ? (
+                    <ChevronUp
+                      size={20}
+                      style={{ color: 'var(--macos-text-secondary)' }}
+                    />
+                  ) : (
+                    <ChevronDown
+                      size={20}
+                      style={{ color: 'var(--macos-text-secondary)' }}
+                    />
+                  )}
+                  <Building2 size={20} style={{ color: 'var(--macos-blue)' }} />
+                  <h2
+                    className="macos-text-title-2"
+                    style={{
+                      color: 'var(--macos-text-primary)',
+                      fontWeight: 600,
+                      margin: 0,
                     }}
-                  />
-                ))}
+                  >
+                    {empresa}
+                  </h2>
+                  <span
+                    className="macos-text-footnote"
+                    style={{
+                      color: 'var(--macos-text-tertiary)',
+                      backgroundColor: 'var(--macos-fill-secondary)',
+                      padding: '2px 8px',
+                      borderRadius: 'var(--macos-radius-sm)',
+                    }}
+                  >
+                    {pallets.length}{' '}
+                    {pallets.length === 1 ? 'pallet' : 'pallets'}
+                  </span>
+                </div>
+
+                {/* Grid de pallets de esta empresa - solo visible si no está colapsado */}
+                {!isCollapsed && (
+                  <div
+                    className="macos-grid"
+                    style={{
+                      gridTemplateColumns:
+                        'repeat(auto-fill, minmax(320px, 1fr))',
+                    }}
+                  >
+                    {pallets.map((pallet: Pallet) => (
+                      <PalletCard
+                        key={pallet.codigo}
+                        pallet={pallet}
+                        setSelectedPallet={setSelectedPallet}
+                        setIsModalOpen={setIsModalOpen}
+                        closePallet={closePallet}
+                        fetchActivePallets={refresh}
+                        onDelete={async (codigo) => {
+                          try {
+                            await deletePallet(codigo);
+                            refresh();
+                          } catch (error) {
+                            console.error('Error al eliminar pallet:', error);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

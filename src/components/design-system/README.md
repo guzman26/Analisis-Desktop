@@ -70,7 +70,7 @@ import { Card } from '@/components/design-system';
 
 ### Modal
 
-A dialog component with smooth animations and backdrop blur.
+A dialog component with smooth animations and backdrop blur, following macOS Human Interface Guidelines.
 
 ```tsx
 import { Modal } from '@/components/design-system';
@@ -98,6 +98,29 @@ import { Modal } from '@/components/design-system';
 - `description`: string
 - `size`: 'small' | 'medium' | 'large' | 'fullscreen'
 - `showCloseButton`: boolean
+- `showTrafficLights`: boolean (macOS window controls)
+
+**Modal Features:**
+
+- ✅ Authentic macOS window appearance
+- ✅ Traffic light controls (red, yellow, green)
+- ✅ Proper title bar with SF Pro typography
+- ✅ Enhanced backdrop blur (20px)
+- ✅ Window translucency with backdrop-filter
+- ✅ Smooth 200ms animations
+
+**When to Use Traffic Lights:**
+
+- ✅ Use for primary modal dialogs that represent a window or document
+- ✅ Use when minimize functionality is available
+- ❌ Don't use for simple confirmations or alerts
+- ❌ Don't use for form modals without window-like behavior
+
+**Size Guidelines:**
+
+- **Small (320px)**: Simple confirmations, alerts
+- **Medium (384px)**: Standard forms, information dialogs
+- **Large (448px)**: Complex forms, detailed content
 
 ### Input
 
@@ -154,7 +177,11 @@ The design system uses a carefully selected color palette that matches macOS aes
   --macos-text-secondary: #86868b // Medium gray
   // UI colors
   --macos-border: #d2d2d7 // Light border
-  --macos-sidebar: #f5f5f7; // Sidebar background
+  --macos-sidebar: #f5f5f7 // Sidebar background
+  // Modal/Traffic Light Controls
+  --close-button: linear-gradient(135deg, #ff6159 0%, #ff4d43 100%);
+--minimize-button: linear-gradient(135deg, #ffbd2e 0%, #ffab00 100%);
+--maximize-button: linear-gradient(135deg, #00ca4e 0%, #28cd41 100%);
 ```
 
 ## Typography
@@ -165,6 +192,15 @@ The design system uses the San Francisco font family (falls back to system fonts
 font-family:
   -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
   'Helvetica Neue', Arial, sans-serif;
+```
+
+**Modal Title Bar Typography:**
+
+```css
+font-size: 13px;
+font-weight: 600;
+letter-spacing: -0.01em;
+color: rgba(0, 0, 0, 0.85);
 ```
 
 ## Utility Classes
@@ -224,4 +260,37 @@ font-family:
     <TrendingUpIcon className="w-8 h-8 text-macos-success" />
   </div>
 </Card>
+```
+
+### Modal with Minimize
+
+```tsx
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  onMinimize={() => minimizeToTray()}
+  title="User Preferences"
+  size="large"
+  showTrafficLights={true}
+>
+  <form>...</form>
+</Modal>
+```
+
+## Browser Support
+
+- **Backdrop blur**: Requires modern browsers (Chrome 76+, Safari 9+, Firefox 103+)
+- **Fallbacks**: Background color opacity increased when backdrop-filter unavailable
+- **Performance**: GPU acceleration enabled for smooth animations
+
+## Dark Mode Support
+
+The components automatically adapt to system dark mode preferences:
+
+```css
+@media (prefers-color-scheme: dark) {
+  --window-background: rgba(40, 40, 40, 0.95);
+  --titlebar-background: rgba(50, 50, 50, 0.9);
+  --text-color: rgba(255, 255, 255, 0.9);
+}
 ```

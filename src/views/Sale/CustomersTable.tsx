@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { useNotifications } from '@/components/Notification/Notification';
 import { Customer, CustomerStatus } from '@/types';
-import DataTable, { DataTableColumn, SortDirection } from '@/components/design-system/DataTable';
-import Card from '@/components/design-system/Card';
-import Button from '@/components/design-system/Button';
+import DataTable, {
+  DataTableColumn,
+  SortDirection,
+} from '@/components/design-system/DataTable';
+import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import EditableCell from '@/components/CustomersTable/EditableCell';
 import { Search, Trash2, ShoppingCart, FileText, Download } from 'lucide-react';
 import './CustomersTable.css';
@@ -17,10 +19,14 @@ const CustomersTable: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<CustomerStatus | 'ALL'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<CustomerStatus | 'ALL'>(
+    'ALL'
+  );
   const [sortColumn, setSortColumn] = useState<string>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(
+    null
+  );
 
   // Cargar clientes al montar
   useEffect(() => {
@@ -115,7 +121,9 @@ const CustomersTable: React.FC = () => {
 
     // Aplicar filtro de estado
     if (statusFilter !== 'ALL') {
-      filtered = filtered.filter((customer) => customer.status === statusFilter);
+      filtered = filtered.filter(
+        (customer) => customer.status === statusFilter
+      );
     }
 
     return filtered;
@@ -158,7 +166,10 @@ const CustomersTable: React.FC = () => {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute(
+      'download',
+      `clientes_${new Date().toISOString().split('T')[0]}.csv`
+    );
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -178,7 +189,9 @@ const CustomersTable: React.FC = () => {
       renderCell: (customer) => (
         <EditableCell
           value={customer.name}
-          onUpdate={(newValue) => handleFieldUpdate(customer.customerId, 'name', newValue)}
+          onUpdate={(newValue) =>
+            handleFieldUpdate(customer.customerId, 'name', newValue)
+          }
           validate={validateName}
           placeholder="Nombre del cliente"
         />
@@ -193,7 +206,9 @@ const CustomersTable: React.FC = () => {
       renderCell: (customer) => (
         <EditableCell
           value={customer.email}
-          onUpdate={(newValue) => handleFieldUpdate(customer.customerId, 'email', newValue)}
+          onUpdate={(newValue) =>
+            handleFieldUpdate(customer.customerId, 'email', newValue)
+          }
           type="email"
           validate={validateEmail}
           placeholder="email@ejemplo.com"
@@ -209,7 +224,9 @@ const CustomersTable: React.FC = () => {
       renderCell: (customer) => (
         <EditableCell
           value={customer.phone}
-          onUpdate={(newValue) => handleFieldUpdate(customer.customerId, 'phone', newValue)}
+          onUpdate={(newValue) =>
+            handleFieldUpdate(customer.customerId, 'phone', newValue)
+          }
           type="tel"
           validate={validatePhone}
           placeholder="+56 9 1234 5678"
@@ -225,7 +242,9 @@ const CustomersTable: React.FC = () => {
       renderCell: (customer) => (
         <EditableCell
           value={customer.address || ''}
-          onUpdate={(newValue) => handleFieldUpdate(customer.customerId, 'address', newValue)}
+          onUpdate={(newValue) =>
+            handleFieldUpdate(customer.customerId, 'address', newValue)
+          }
           placeholder="Dirección"
         />
       ),
@@ -239,7 +258,9 @@ const CustomersTable: React.FC = () => {
       renderCell: (customer) => (
         <EditableCell
           value={customer.taxId || ''}
-          onUpdate={(newValue) => handleFieldUpdate(customer.customerId, 'taxId', newValue)}
+          onUpdate={(newValue) =>
+            handleFieldUpdate(customer.customerId, 'taxId', newValue)
+          }
           placeholder="RUT/NIT"
         />
       ),
@@ -270,7 +291,11 @@ const CustomersTable: React.FC = () => {
         <EditableCell
           value={customer.status}
           onUpdate={(newValue) =>
-            handleFieldUpdate(customer.customerId, 'status', newValue as CustomerStatus)
+            handleFieldUpdate(
+              customer.customerId,
+              'status',
+              newValue as CustomerStatus
+            )
           }
           type="select"
           options={[
@@ -334,11 +359,16 @@ const CustomersTable: React.FC = () => {
 
   return (
     <div className="customers-table-page">
+      <LoadingOverlay
+        show={status === 'loading' && customers.length === 0}
+        text="Cargando clientes…"
+      />
       <div className="customers-table-header">
         <div>
           <h1>Gestión de Clientes</h1>
           <p className="customers-table-subtitle">
-            Edite los campos directamente en la tabla. Los cambios se guardan automáticamente.
+            Edite los campos directamente en la tabla. Los cambios se guardan
+            automáticamente.
           </p>
         </div>
         <div className="customers-table-header-actions">
@@ -375,7 +405,9 @@ const CustomersTable: React.FC = () => {
             <select
               id="status-filter"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as CustomerStatus | 'ALL')}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as CustomerStatus | 'ALL')
+              }
               className="customers-table-status-select"
             >
               <option value="ALL">Todos</option>
@@ -385,14 +417,13 @@ const CustomersTable: React.FC = () => {
           </div>
         </div>
 
-        {status === 'loading' && customers.length === 0 ? (
-          <div className="customers-table-loading">
-            <p>Cargando clientes...</p>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="customers-table-error">
             <p>Error al cargar clientes: {error.message}</p>
-            <Button variant="secondary" onClick={() => customerAPI.fetchCustomers()}>
+            <Button
+              variant="secondary"
+              onClick={() => customerAPI.fetchCustomers()}
+            >
               Reintentar
             </Button>
           </div>
@@ -400,7 +431,8 @@ const CustomersTable: React.FC = () => {
           <>
             <div className="customers-table-info">
               <span>
-                Mostrando {filteredAndSortedCustomers.length} de {customers.length} cliente(s)
+                Mostrando {filteredAndSortedCustomers.length} de{' '}
+                {customers.length} cliente(s)
               </span>
             </div>
             <DataTable<Customer>
@@ -421,4 +453,3 @@ const CustomersTable: React.FC = () => {
 };
 
 export default CustomersTable;
-
