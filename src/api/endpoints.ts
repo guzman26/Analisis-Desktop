@@ -595,7 +595,7 @@ export const getMetrics = (params?: {
   }>('getMetrics', 'report', params || {});
 
 // Cart operations - using consolidated /inventory endpoint
-export const getCarts = (params?: GetCartsParams) => {
+export const getCarts = (params?: GetCartsParams): Promise<PaginatedResponse<Cart>> => {
   const filters: any = {};
   if (params?.filters?.calibre) filters.calibre = params.filters.calibre;
   if (params?.filters?.formato) filters.formato = params.filters.formato;
@@ -608,11 +608,20 @@ export const getCarts = (params?: GetCartsParams) => {
     pagination: { limit: params?.limit, lastKey: params?.lastKey },
   }).then((res) => {
     // La API devuelve { success: true, data: { items, count, nextKey } }
-    if (res && 'data' in res && res.data) {
-      return res.data;
+    // Pero inventory ya extrae el data, así que res debería ser PaginatedResponse<Cart>
+    if (res && typeof res === 'object' && 'items' in res) {
+      return res as PaginatedResponse<Cart>;
     }
-    // Fallback al formato directo
-    return res as PaginatedResponse<Cart>;
+    // Si viene envuelto en data, extraerlo
+    if (res && typeof res === 'object' && 'data' in res && res.data) {
+      return (res as any).data as PaginatedResponse<Cart>;
+    }
+    // Fallback: crear estructura mínima
+    return {
+      items: Array.isArray(res) ? res : [],
+      count: Array.isArray(res) ? res.length : 0,
+      nextKey: null,
+    };
   });
 };
 

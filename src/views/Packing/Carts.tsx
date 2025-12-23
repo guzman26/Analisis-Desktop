@@ -14,8 +14,6 @@ import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
 import '../../styles/designSystem.css';
 
 const Carts = () => {
-  const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [allCarts, setAllCarts] = useState<Cart[]>([]);
   const [nextKey, setNextKey] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -362,8 +360,8 @@ const Carts = () => {
                       <CartCard
                         key={cart.codigo}
                         cart={cart}
-                        setSelectedCart={setSelectedCart}
-                        setIsModalOpen={setIsModalOpen}
+                        setSelectedCart={() => {}}
+                        setIsModalOpen={() => {}}
                         onDelete={async (codigo) => {
                           try {
                             await deleteCart(codigo);

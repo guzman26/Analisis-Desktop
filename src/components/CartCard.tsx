@@ -37,7 +37,6 @@ const CartCard = ({
   };
 
   const calibre = getCalibreFromCodigo(cart.codigo);
-  const empresa = getEmpresaNombre(cart.codigo);
 
   // Función para eliminar el carro
   const handleDelete = async () => {
