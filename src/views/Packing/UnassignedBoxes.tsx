@@ -8,9 +8,10 @@ import {
   createSingleBoxPallet,
   getCompatiblePalletsForSingleBox,
   getCompatiblePalletsForAllUnassignedBoxes,
+  deleteBox,
 } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
-import { RefreshCcw, Package } from 'lucide-react';
+import { RefreshCcw, Package, CheckSquare, Square, Trash2 } from 'lucide-react';
 import { LoadingOverlay } from '@/components/design-system';
 import styles from './UnassignedBoxes.module.css';
 
@@ -35,6 +36,11 @@ const UnassignedBoxes = () => {
   const [searchingCompatiblePallets, setSearchingCompatiblePallets] =
     useState(false);
   const { showSuccess, showError, showWarning } = useNotifications();
+
+  // Estado para selección múltiple
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedBoxCodes, setSelectedBoxCodes] = useState<Set<string>>(new Set());
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
 
   // Data is automatically fetched by useUnassignedBoxes hook
   // Inicializar filteredBoxes con todas las cajas
@@ -149,6 +155,76 @@ const UnassignedBoxes = () => {
     }
   };
 
+  // Handlers para selección múltiple
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      setSelectedBoxCodes(new Set());
+    }
+  };
+
+  const handleSelectionToggle = (boxCode: string) => {
+    setSelectedBoxCodes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(boxCode)) {
+        newSet.delete(boxCode);
+      } else {
+        newSet.add(boxCode);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedBoxCodes.size === filteredBoxes.length) {
+      setSelectedBoxCodes(new Set());
+    } else {
+      setSelectedBoxCodes(new Set(filteredBoxes.map(b => b.codigo)));
+    }
+  };
+
+  const handleDeleteSelectedBoxes = async () => {
+    if (selectedBoxCodes.size === 0) return;
+
+    const confirmed = window.confirm(
+      `¿Estás seguro que deseas eliminar las ${selectedBoxCodes.size} cajas seleccionadas?\n\n` +
+        `Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    setIsDeletingSelected(true);
+    let deletedCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const codigo of selectedBoxCodes) {
+        try {
+          await deleteBox(codigo);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Error al eliminar caja ${codigo}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (deletedCount > 0) {
+        showSuccess(`Se eliminaron exitosamente ${deletedCount} caja(s)`);
+      }
+      if (errorCount > 0) {
+        showError(`No se pudieron eliminar ${errorCount} caja(s)`);
+      }
+
+      setSelectedBoxCodes(new Set());
+      setIsSelectionMode(false);
+      await refresh();
+    } catch (error: any) {
+      showError(error.message || 'Error al eliminar las cajas seleccionadas');
+    } finally {
+      setIsDeletingSelected(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <LoadingOverlay show={loading} text="Cargando cajas…" />
@@ -157,24 +233,64 @@ const UnassignedBoxes = () => {
           <h1 className={styles.title}>Cajas sin asignar</h1>
           <span className={styles.count}>{filteredBoxes.length} cajas</span>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Botón de selección */}
           <button
             className={styles.refreshButton}
-            onClick={handleSearchCompatiblePalletsForAll}
-            disabled={loading || searchingCompatiblePallets || unassignedBoxesInPacking.length === 0}
-            title="Buscar pallets compatibles para todas las cajas sin asignar"
+            onClick={handleToggleSelectionMode}
+            disabled={filteredBoxes.length === 0}
+            style={isSelectionMode ? { backgroundColor: 'var(--macos-blue)' } : undefined}
           >
-            <Package size={16} />
-            {searchingCompatiblePallets ? 'Buscando...' : 'Buscar Compatibles'}
+            {isSelectionMode ? <Square size={16} /> : <CheckSquare size={16} />}
+            {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}
           </button>
-          <button
-            className={styles.refreshButton}
-            onClick={refresh}
-            disabled={loading}
-          >
-            <RefreshCcw size={16} />
-            {loading ? 'Actualizando...' : 'Refrescar'}
-          </button>
+
+          {isSelectionMode && (
+            <>
+              <button
+                className={styles.refreshButton}
+                onClick={handleSelectAll}
+                disabled={filteredBoxes.length === 0}
+              >
+                <CheckSquare size={16} />
+                {selectedBoxCodes.size === filteredBoxes.length ? 'Deseleccionar Todas' : 'Seleccionar Todas'}
+              </button>
+              <button
+                className={styles.refreshButton}
+                onClick={handleDeleteSelectedBoxes}
+                disabled={isDeletingSelected || selectedBoxCodes.size === 0}
+                style={{
+                  backgroundColor: '#dc3545',
+                  opacity: selectedBoxCodes.size === 0 ? 0.6 : 1,
+                }}
+              >
+                <Trash2 size={16} />
+                {isDeletingSelected ? 'Eliminando...' : `Eliminar Seleccionadas (${selectedBoxCodes.size})`}
+              </button>
+            </>
+          )}
+
+          {!isSelectionMode && (
+            <>
+              <button
+                className={styles.refreshButton}
+                onClick={handleSearchCompatiblePalletsForAll}
+                disabled={loading || searchingCompatiblePallets || unassignedBoxesInPacking.length === 0}
+                title="Buscar pallets compatibles para todas las cajas sin asignar"
+              >
+                <Package size={16} />
+                {searchingCompatiblePallets ? 'Buscando...' : 'Buscar Compatibles'}
+              </button>
+              <button
+                className={styles.refreshButton}
+                onClick={refresh}
+                disabled={loading}
+              >
+                <RefreshCcw size={16} />
+                {loading ? 'Actualizando...' : 'Refrescar'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -209,8 +325,8 @@ const UnassignedBoxes = () => {
                 box={box}
                 setSelectedBox={setSelectedBox}
                 setIsModalOpen={setIsModalOpen}
-                showCreatePalletButton={true}
-                showSearchCompatibleButton={true}
+                showCreatePalletButton={!isSelectionMode}
+                showSearchCompatibleButton={!isSelectionMode}
                 isCreatingPallet={creatingPalletStates[box.codigo] || false}
                 isSearchingCompatible={searchingCompatibleStates[box.codigo] || false}
                 onCreateSinglePallet={
@@ -224,6 +340,9 @@ const UnassignedBoxes = () => {
                     : handleSearchCompatibleForSingleBox
                 }
                 onDeleted={refresh}
+                isSelectable={isSelectionMode}
+                isSelected={selectedBoxCodes.has(box.codigo)}
+                onSelectionToggle={handleSelectionToggle}
               />
             ))}
           </div>

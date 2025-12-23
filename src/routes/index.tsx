@@ -3,6 +3,7 @@ import { lazy } from 'react';
 const Dashboard = lazy(() => import('../views/Dashboard'));
 const OpenPallets = lazy(() => import('../views/Packing/OpenPallets'));
 const ClosedPallets = lazy(() => import('../views/Packing/ClosedPallets'));
+const Carts = lazy(() => import('../views/Packing/Carts'));
 const CreatePallet = lazy(() => import('../views/Packing/CreatePallet'));
 const PalletsInBodega = lazy(() => import('../views/Bodega/Pallets'));
 const UnassignedBoxesBodega = lazy(
@@ -49,6 +50,10 @@ export const routes = [
   {
     path: '/packing/closedPallets',
     element: <ClosedPallets />,
+  },
+  {
+    path: '/packing/carts',
+    element: <Carts />,
   },
   {
     path: '/packing/createPallet',

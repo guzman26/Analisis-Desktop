@@ -4,6 +4,7 @@ import { inventory, sales, admin } from './consolidatedApi';
 import {
   Pallet,
   Box,
+  Cart,
   Customer,
   CustomerFormData,
   Sale,
@@ -23,6 +24,7 @@ import {
   CustomerPreferences,
   ReturnBoxesRequest,
   AddBoxesToSaleRequest,
+  GetCartsParams,
 } from '@/types';
 
 // Pallet operations - now using consolidated /inventory endpoint
@@ -591,6 +593,43 @@ export const getMetrics = (params?: {
     metricType: string;
     timestamp: string;
   }>('getMetrics', 'report', params || {});
+
+// Cart operations - using consolidated /inventory endpoint
+export const getCarts = (params?: GetCartsParams) => {
+  const filters: any = {};
+  if (params?.filters?.calibre) filters.calibre = params.filters.calibre;
+  if (params?.filters?.formato) filters.formato = params.filters.formato;
+  if (params?.filters?.empresa) filters.empresa = params.filters.empresa;
+  if (params?.filters?.turno) filters.turno = params.filters.turno;
+
+  return inventory<PaginatedResponse<Cart>>('get', 'cart', {
+    ubicacion: params?.ubicacion,
+    filters: Object.keys(filters).length > 0 ? filters : undefined,
+    pagination: { limit: params?.limit, lastKey: params?.lastKey },
+  }).then((res) => {
+    // La API devuelve { success: true, data: { items, count, nextKey } }
+    if (res && 'data' in res && res.data) {
+      return res.data;
+    }
+    // Fallback al formato directo
+    return res as PaginatedResponse<Cart>;
+  });
+};
+
+export const getCartByCode = (codigo: string) =>
+  inventory<Cart>('get', 'cart', { codigo }).then((res) => {
+    // La API puede devolver { cart: {...} } o directamente el cart
+    if (res && 'cart' in res) {
+      return res.cart;
+    }
+    return res as Cart;
+  });
+
+export const moveCart = (codigo: string, ubicacion: Location) =>
+  inventory<Cart>('move', 'cart', { codigo, ubicacion });
+
+export const deleteCart = (codigo: string) =>
+  inventory<any>('delete', 'cart', { codigo });
 
 // Analytics operations
 export const exportPowerBIData = (dataType: string) =>

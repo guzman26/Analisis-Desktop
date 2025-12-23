@@ -26,6 +26,10 @@ interface PalletCardProps {
   closePallet: (codigo: string) => void;
   fetchActivePallets: () => void;
   onDelete?: (codigo: string) => Promise<void>;
+  // Props para selección múltiple
+  showSelection?: boolean;
+  isSelected?: boolean;
+  onSelectionChange?: (codigo: string, selected: boolean) => void;
 }
 
 const PalletCard = ({
@@ -35,6 +39,9 @@ const PalletCard = ({
   closePallet,
   fetchActivePallets,
   onDelete,
+  showSelection = false,
+  isSelected = false,
+  onSelectionChange,
 }: PalletCardProps) => {
   const realBoxCount = getPalletBoxCount(pallet);
   // Estados para auditoría
@@ -195,6 +202,12 @@ const PalletCard = ({
     ? formatDate(pallet.fechaCreacion)
     : 'N/A';
 
+  // Handler para el checkbox de selección
+  const handleSelectionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelectionChange?.(pallet.codigo, !isSelected);
+  };
+
   return (
     <>
       <Card
@@ -204,12 +217,40 @@ const PalletCard = ({
         onClick={handleDetails}
         padding="medium"
         className={styles.palletCard}
+        style={isSelected ? { outline: '2px solid var(--macos-blue)', outlineOffset: '-2px' } : undefined}
       >
+        {/* Checkbox de selección */}
+        {showSelection && (
+          <div
+            onClick={handleSelectionClick}
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              zIndex: 10,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => {}}
+              style={{
+                width: '18px',
+                height: '18px',
+                cursor: 'pointer',
+                accentColor: 'var(--macos-blue)',
+              }}
+            />
+          </div>
+        )}
+
         {/* Status Indicator */}
         <div
           className={styles.statusIndicator}
           style={{
             backgroundColor: getStatusColor(pallet.estado),
+            left: showSelection ? '36px' : '0',
           }}
         />
 

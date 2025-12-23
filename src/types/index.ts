@@ -125,6 +125,23 @@ export interface Box {
   customInfo?: EggInfo[];
 }
 
+export interface Cart {
+  codigo: string;
+  pkTipo: 'CART';
+  calibre: string;
+  formato: string; // '4' o '5' para carros
+  empresa: string;
+  operario: string;
+  empacadora: string;
+  turno: string;
+  ubicacion: Location;
+  cantidadBandejas: number;
+  cantidadHuevos: number;
+  formatId?: string | null;
+  fechaCreacion: string;
+  updatedAt: string;
+}
+
 export interface Customer {
   customerId: string;
   name: string;
@@ -254,6 +271,16 @@ export interface GetClosedPalletsParams extends PaginationParams {
 
 export interface GetActivePalletsParams extends PaginationParams {
   ubicacion: Location;
+}
+
+export interface GetCartsParams extends PaginationParams {
+  ubicacion?: Location;
+  filters?: {
+    calibre?: string;
+    formato?: string;
+    empresa?: string;
+    turno?: string;
+  };
 }
 
 export interface GetCustomersParams {

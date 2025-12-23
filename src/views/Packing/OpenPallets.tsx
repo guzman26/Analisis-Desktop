@@ -9,7 +9,7 @@ import {
   Input,
   LoadingOverlay,
 } from '@/components/design-system';
-import { Search, Plus, Filter, Lock } from 'lucide-react';
+import { Search, Plus, Filter, Lock, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/designSystem.css';
 import {
@@ -42,6 +42,10 @@ const OpenPallets = () => {
     activePalletsPaginated
   );
   const [isClosingAll, setIsClosingAll] = useState(false);
+  // Estado para selección múltiple
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(new Set());
+  const [isClosingSelected, setIsClosingSelected] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -97,6 +101,81 @@ const OpenPallets = () => {
     }
   };
 
+  // Handlers para selección múltiple
+  const handleToggleSelectionMode = () => {
+    setIsSelectionMode(!isSelectionMode);
+    if (isSelectionMode) {
+      // Limpiar selección al salir del modo
+      setSelectedPalletCodes(new Set());
+    }
+  };
+
+  const handleSelectionChange = (codigo: string, selected: boolean) => {
+    setSelectedPalletCodes(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(codigo);
+      } else {
+        newSet.delete(codigo);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPalletCodes.size === filteredPallets.length) {
+      // Deseleccionar todos
+      setSelectedPalletCodes(new Set());
+    } else {
+      // Seleccionar todos
+      setSelectedPalletCodes(new Set(filteredPallets.map(p => p.codigo)));
+    }
+  };
+
+  const handleCloseSelectedPallets = async () => {
+    if (selectedPalletCodes.size === 0) return;
+
+    const confirmed = window.confirm(
+      `¿Estás seguro que deseas cerrar los ${selectedPalletCodes.size} pallets seleccionados?\n\n` +
+        `Esta acción no se puede deshacer.`
+    );
+
+    if (!confirmed) return;
+
+    setIsClosingSelected(true);
+    let closedCount = 0;
+    let errorCount = 0;
+
+    try {
+      // Cerrar pallets uno por uno
+      for (const codigo of selectedPalletCodes) {
+        try {
+          await closePallet(codigo);
+          closedCount++;
+        } catch (error) {
+          console.error(`Error al cerrar pallet ${codigo}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (closedCount > 0) {
+        showSuccess(`Se cerraron exitosamente ${closedCount} pallet(s)`);
+      }
+      if (errorCount > 0) {
+        showError(`No se pudieron cerrar ${errorCount} pallet(s)`);
+      }
+
+      // Limpiar selección y refrescar
+      setSelectedPalletCodes(new Set());
+      setIsSelectionMode(false);
+      refresh();
+    } catch (error: any) {
+      showError(error.message || 'Error al cerrar los pallets seleccionados');
+    } finally {
+      setIsClosingSelected(false);
+    }
+  };
+
   return (
     <div className="macos-animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
@@ -116,39 +195,77 @@ const OpenPallets = () => {
             Pallets Abiertos
           </h1>
           <div className="macos-hstack">
+            {/* Botones de selección múltiple */}
             <Button
-              leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
-              variant="danger"
+              leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
+              variant={isSelectionMode ? 'primary' : 'secondary'}
               size="medium"
-              onClick={handleCloseAllPallets}
-              disabled={isClosingAll || filteredPallets.length === 0}
+              onClick={handleToggleSelectionMode}
+              disabled={filteredPallets.length === 0}
             >
-              {isClosingAll ? 'Cerrando...' : 'Cerrar Todos'}
+              {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}
             </Button>
-            <Button
-              leftIcon={<Filter style={{ width: '16px', height: '16px' }} />}
-              variant="secondary"
-              size="medium"
-            >
-              Filtrar
-            </Button>
-            <Button
-              leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
-              variant="primary"
-              size="medium"
-              onClick={() => navigate('/packing/createPallet')}
-            >
-              Crear Pallet
-            </Button>
-            <Button
-              leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
-              variant="secondary"
-              size="medium"
-              onClick={() => setIsLooseEggsModalOpen(true)}
-              style={{ marginLeft: 'var(--macos-space-2)' }}
-            >
-              Nuevo Pallet (Huevo suelto)
-            </Button>
+            
+            {isSelectionMode && (
+              <>
+                <Button
+                  leftIcon={<CheckSquare style={{ width: '16px', height: '16px' }} />}
+                  variant="secondary"
+                  size="medium"
+                  onClick={handleSelectAll}
+                  disabled={filteredPallets.length === 0}
+                >
+                  {selectedPalletCodes.size === filteredPallets.length ? 'Deseleccionar Todos' : 'Seleccionar Todos'}
+                </Button>
+                <Button
+                  leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
+                  variant="danger"
+                  size="medium"
+                  onClick={handleCloseSelectedPallets}
+                  disabled={isClosingSelected || selectedPalletCodes.size === 0}
+                >
+                  {isClosingSelected ? 'Cerrando...' : `Cerrar Seleccionados (${selectedPalletCodes.size})`}
+                </Button>
+              </>
+            )}
+
+            {!isSelectionMode && (
+              <>
+                <Button
+                  leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
+                  variant="danger"
+                  size="medium"
+                  onClick={handleCloseAllPallets}
+                  disabled={isClosingAll || filteredPallets.length === 0}
+                >
+                  {isClosingAll ? 'Cerrando...' : 'Cerrar Todos'}
+                </Button>
+                <Button
+                  leftIcon={<Filter style={{ width: '16px', height: '16px' }} />}
+                  variant="secondary"
+                  size="medium"
+                >
+                  Filtrar
+                </Button>
+                <Button
+                  leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
+                  variant="primary"
+                  size="medium"
+                  onClick={() => navigate('/packing/createPallet')}
+                >
+                  Crear Pallet
+                </Button>
+                <Button
+                  leftIcon={<Plus style={{ width: '16px', height: '16px' }} />}
+                  variant="secondary"
+                  size="medium"
+                  onClick={() => setIsLooseEggsModalOpen(true)}
+                  style={{ marginLeft: 'var(--macos-space-2)' }}
+                >
+                  Nuevo Pallet (Huevo suelto)
+                </Button>
+              </>
+            )}
           </div>
         </div>
         <p
@@ -306,6 +423,9 @@ const OpenPallets = () => {
                     console.error('Error al eliminar pallet:', error);
                   }
                 }}
+                showSelection={isSelectionMode}
+                isSelected={selectedPalletCodes.has(pallet.codigo)}
+                onSelectionChange={handleSelectionChange}
               />
             ))}
           </div>
