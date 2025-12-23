@@ -56,6 +56,11 @@ const sidebarItems: SidebarItem[] = [
         icon: <CheckSquare className="w-4 h-4" />,
       },
       {
+        path: '/packing/carts',
+        label: 'Carros',
+        icon: <ShoppingCart className="w-4 h-4" />,
+      },
+      {
         path: '/packing/unassignedBoxes',
         label: 'Cajas sin Pallet',
         icon: <Box className="w-4 h-4" />,
