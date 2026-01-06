@@ -117,7 +117,7 @@ const Carts = () => {
   }, []);
 
   // Open modal when cart is selected
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedCart && !isModalOpen) {
       setIsModalOpen(true);
     }
