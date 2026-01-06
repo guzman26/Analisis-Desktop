@@ -1,9 +1,11 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Cart } from '@/types';
 import CartCard from '@/components/CartCard';
+import CartDetailModal from '@/components/CartDetailModal';
 import {
   getCarts,
   deleteCart,
+  getCartByCode,
 } from '@/api/endpoints';
 import CartsFilters, {
   Filters,
@@ -23,6 +25,9 @@ const Carts = () => {
   const [collapsedCompanies, setCollapsedCompanies] = useState<Set<string>>(
     new Set()
   );
+  const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
 
   // Función para alternar el estado de colapso de una empresa
   const toggleCompany = useCallback((empresa: string) => {
@@ -106,6 +111,29 @@ const Carts = () => {
     setHasMore(true);
     loadCarts(true);
   }, [loadCarts]);
+
+  // Handle cart detail modal
+  const handleCartClick = useCallback(async (cart: Cart) => {
+    try {
+      setLoadingCart(true);
+      // Fetch full cart details from API
+      const fullCart = await getCartByCode(cart.codigo);
+      setSelectedCart(fullCart);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Error fetching cart details:', error);
+      // Fallback to using the cart from the list
+      setSelectedCart(cart);
+      setIsModalOpen(true);
+    } finally {
+      setLoadingCart(false);
+    }
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedCart(null);
+  }, []);
 
   // Agrupar carros por empresa
   const cartsByCompany = useMemo(() => {
@@ -360,8 +388,12 @@ const Carts = () => {
                       <CartCard
                         key={cart.codigo}
                         cart={cart}
-                        setSelectedCart={() => {}}
-                        setIsModalOpen={() => {}}
+                        setSelectedCart={(cart) => handleCartClick(cart)}
+                        setIsModalOpen={(isOpen) => {
+                          if (!isOpen) {
+                            handleCloseModal();
+                          }
+                        }}
                         onDelete={async (codigo) => {
                           try {
                             await deleteCart(codigo);
@@ -402,6 +434,13 @@ const Carts = () => {
           </p>
         </div>
       )}
+
+      {/* Cart Detail Modal */}
+      <CartDetailModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        cart={selectedCart}
+      />
     </div>
   );
 };
