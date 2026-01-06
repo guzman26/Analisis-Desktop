@@ -238,16 +238,19 @@ export const getAnoFromCodigo = (codigo: string) => {
 };
 
 export const getOperarioFromCodigo = (codigo: string) => {
+  if (!codigo || typeof codigo !== 'string' || codigo.length < 7) return '';
   // Operario: posiciones 5-6
   return codigo.slice(5, 7);
 };
 
 export const getEmpacadoraFromCodigo = (codigo: string) => {
+  if (!codigo || typeof codigo !== 'string' || codigo.length < 8) return '';
   // Empacadora: posición 7
   return codigo.slice(7, 8);
 };
 
 export const getTurnoFromCodigo = (codigo: string) => {
+  if (!codigo || typeof codigo !== 'string' || codigo.length < 9) return '';
   // Turno: posición 8
   return codigo.slice(8, 9);
 };

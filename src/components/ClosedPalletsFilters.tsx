@@ -51,48 +51,17 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
     });
   }, [filters]);
 
-  // Debounce para searchTerm
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      const currentSearchTerm = localState.searchTerm || undefined;
-      // Solo actualizar si el valor cambió
-      if (currentSearchTerm !== filters.searchTerm) {
-        onFiltersChange({
-          ...filters,
-          searchTerm: currentSearchTerm,
-        });
-      }
-    }, 350);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localState.searchTerm]);
-
-  // Debounce para empresa
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      const currentEmpresa = localState.empresa || undefined;
-      // Solo actualizar si el valor cambió
-      if (currentEmpresa !== filters.empresa) {
-        onFiltersChange({
-          ...filters,
-          empresa: currentEmpresa,
-        });
-      }
-    }, 350);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localState.empresa]);
-
-  // Actualizar filtros inmediatamente para otros campos
-  const updateFilter = React.useCallback(
-    (key: keyof Filters, value: string) => {
-      onFiltersChange({
-        ...filters,
-        [key]: value || undefined,
-      });
-    },
-    [filters, onFiltersChange]
-  );
+  // Función para aplicar todos los filtros del estado local
+  const handleApplyFilters = () => {
+    onFiltersChange({
+      calibre: localState.calibre || undefined,
+      searchTerm: localState.searchTerm || undefined,
+      fechaDesde: localState.dateFrom || undefined,
+      fechaHasta: localState.dateTo || undefined,
+      turno: localState.turno || undefined,
+      empresa: localState.empresa || undefined,
+    });
+  };
 
   const clearAll = () => {
     setLocalState({
@@ -103,6 +72,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
       turno: '',
       empresa: '',
     });
+    // Aplicar filtros vacíos inmediatamente
     onFiltersChange({});
   };
 
@@ -137,6 +107,16 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               disabled={disabled}
             >
               Limpiar
+            </Button>
+          )}
+          {expanded && (
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleApplyFilters}
+              disabled={disabled}
+            >
+              Aplicar
             </Button>
           )}
           <Button
@@ -197,7 +177,6 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               onChange={(e) => {
                 const value = e.target.value;
                 setLocalState((prev) => ({ ...prev, calibre: value }));
-                updateFilter('calibre', value);
               }}
               disabled={disabled}
             />
@@ -214,7 +193,6 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               onChange={(e) => {
                 const value = e.target.value;
                 setLocalState((prev) => ({ ...prev, turno: value }));
-                updateFilter('turno', value);
               }}
               disabled={disabled}
             >
@@ -237,7 +215,6 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
                 onChange={(e) => {
                   const v = e.target.value;
                   setLocalState((p) => ({ ...p, dateFrom: v }));
-                  updateFilter('fechaDesde', v);
                 }}
                 disabled={disabled}
               />
@@ -247,7 +224,6 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
                 onChange={(e) => {
                   const v = e.target.value;
                   setLocalState((p) => ({ ...p, dateTo: v }));
-                  updateFilter('fechaHasta', v);
                 }}
                 disabled={disabled}
               />

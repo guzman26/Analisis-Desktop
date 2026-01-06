@@ -35,7 +35,7 @@ const CartCard = ({
     setIsModalOpen(true);
   };
 
-  const calibre = getCalibreFromCodigo(cart.codigo);
+  const calibre = cart.codigo ? getCalibreFromCodigo(cart.codigo) : 'N/A';
 
   // Función para eliminar el carro
   const handleDelete = async () => {

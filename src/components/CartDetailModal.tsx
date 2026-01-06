@@ -28,7 +28,7 @@ interface CartDetailModalProps {
 }
 
 const CartDetailModal = ({ isOpen, onClose, cart }: CartDetailModalProps) => {
-  if (!isOpen || !cart) {
+  if (!isOpen || !cart || !cart.codigo) {
     return null;
   }
 
@@ -122,31 +122,31 @@ const CartDetailModal = ({ isOpen, onClose, cart }: CartDetailModalProps) => {
           <InfoRow
             icon={<Layers size={18} />}
             label="Calibre"
-            value={getCalibreFromCodigo(cart.codigo) || 'N/A'}
+            value={cart.codigo ? (getCalibreFromCodigo(cart.codigo) || 'N/A') : 'N/A'}
           />
 
           <InfoRow
             icon={<Building2 size={18} />}
             label="Empresa"
-            value={getEmpresaNombre(cart.codigo) || 'N/A'}
+            value={cart.codigo ? (getEmpresaNombre(cart.codigo) || 'N/A') : 'N/A'}
           />
 
           <InfoRow
             icon={<User size={18} />}
             label="Operario"
-            value={getOperarioFromCodigo(cart.codigo) || 'N/A'}
+            value={cart.codigo ? (getOperarioFromCodigo(cart.codigo) || 'N/A') : 'N/A'}
           />
 
           <InfoRow
             icon={<User size={18} />}
             label="Empacadora"
-            value={getEmpacadoraFromCodigo(cart.codigo) || 'N/A'}
+            value={cart.codigo ? (getEmpacadoraFromCodigo(cart.codigo) || 'N/A') : 'N/A'}
           />
 
           <InfoRow
             icon={<Clock size={18} />}
             label="Turno"
-            value={getTurnoFromCodigo(cart.codigo) || 'N/A'}
+            value={cart.codigo ? (getTurnoFromCodigo(cart.codigo) || 'N/A') : 'N/A'}
           />
         </div>
 
