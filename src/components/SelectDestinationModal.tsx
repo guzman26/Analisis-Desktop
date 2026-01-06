@@ -35,7 +35,12 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
 
   // Si se proporcionan ubicaciones disponibles, usarlas; si no, usar las predeterminadas
   const defaultLocations: Location[] = ['TRANSITO', 'BODEGA', 'VENTA'];
-  const locationsToShow = availableLocations || defaultLocations;
+  let locationsToShow = availableLocations || defaultLocations;
+
+  // Filtrar la ubicación actual si está especificada
+  if (currentLocation) {
+    locationsToShow = locationsToShow.filter((loc) => loc !== currentLocation);
+  }
 
   // Construir la lista de destinos disponibles
   const destinations = locationsToShow.map((code) => ({
@@ -70,7 +75,7 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
             marginBottom: 'var(--macos-space-5)',
           }}
         >
-          {availableDestinations.map((destination) => (
+          {destinations.map((destination) => (
             <button
               key={destination.code}
               onClick={() => onConfirm(destination.code)}

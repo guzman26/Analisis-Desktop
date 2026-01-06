@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePalletContext } from '@/contexts/PalletContext';
-import { Pallet } from '@/types';
+import { Pallet, Location } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import {
   closePallet,
@@ -167,7 +167,7 @@ const ClosedPallets = () => {
     }
   };
 
-  const handleMoveSelectedPallets = async (destination: 'TRANSITO' | 'BODEGA' | 'VENTA') => {
+  const handleMoveSelectedPallets = async (destination: Location) => {
     if (selectedPalletCodes.size === 0) return;
 
     setShowDestinationModal(false);

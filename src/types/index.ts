@@ -6,7 +6,9 @@ export type Location =
   | 'BODEGA'
   | 'PREVENTA'
   | 'VENTA'
-  | 'UNSUBSCRIBED';
+  | 'UNSUBSCRIBED'
+  | 'RECHAZO'
+  | 'CUARENTENA';
 export type CustomerStatus = 'ACTIVE' | 'INACTIVE';
 export type SaleType =
   | 'Venta'
