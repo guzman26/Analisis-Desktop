@@ -27,7 +27,6 @@ const Carts = () => {
   );
   const [selectedCart, setSelectedCart] = useState<Cart | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loadingCart, setLoadingCart] = useState(false);
 
   // Función para alternar el estado de colapso de una empresa
   const toggleCompany = useCallback((empresa: string) => {
@@ -115,9 +114,8 @@ const Carts = () => {
   // Handle cart detail modal
   const handleCartClick = useCallback(async (cart: Cart) => {
     try {
-      setLoadingCart(true);
       // Fetch full cart details from API
-      const fullCart = await getCartByCode(cart.codigo);
+      const fullCart: Cart = await getCartByCode(cart.codigo);
       setSelectedCart(fullCart);
       setIsModalOpen(true);
     } catch (error) {
@@ -125,8 +123,6 @@ const Carts = () => {
       // Fallback to using the cart from the list
       setSelectedCart(cart);
       setIsModalOpen(true);
-    } finally {
-      setLoadingCart(false);
     }
   }, []);
 
