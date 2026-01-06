@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Cart } from '@/types';
-import { Card, Button, Modal } from '@/components/design-system';
+import { Button, Modal } from '@/components/design-system';
 import {
   Eye,
   MapPin,
@@ -30,7 +30,12 @@ const CartCard = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleDetails = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open modal if clicking on buttons
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    // Show details
     setSelectedCart(cart);
     setIsModalOpen(true);
   };
@@ -59,13 +64,10 @@ const CartCard = ({
 
   return (
     <>
-      <Card
-        variant="flat"
-        isHoverable
-        isPressable
-        onClick={handleDetails}
-        padding="medium"
+      <div
+        onClick={handleCardClick}
         className={styles.palletCard}
+        style={{ cursor: 'pointer' }}
       >
         {/* Status Indicator - siempre azul para carros */}
         <div
@@ -190,7 +192,8 @@ const CartCard = ({
               leftIcon={<Eye style={{ width: 14, height: 14 }} />}
               onClick={(e) => {
                 e.stopPropagation();
-                handleDetails();
+                setSelectedCart(cart);
+                setIsModalOpen(true);
               }}
             >
               Detalles
@@ -211,7 +214,7 @@ const CartCard = ({
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Delete Confirmation Modal */}
       <Modal
