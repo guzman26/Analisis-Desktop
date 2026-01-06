@@ -115,8 +115,8 @@ const Carts = () => {
   const handleCartClick = useCallback(async (cart: Cart) => {
     try {
       // Fetch full cart details from API
-      const fullCart: Cart = await getCartByCode(cart.codigo);
-      setSelectedCart(fullCart);
+      const fullCart = await getCartByCode(cart.codigo);
+      setSelectedCart(fullCart as Cart);
       setIsModalOpen(true);
     } catch (error) {
       console.error('Error fetching cart details:', error);
