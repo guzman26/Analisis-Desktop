@@ -424,6 +424,10 @@ const Carts = () => {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         cart={selectedCart}
+        onCartMoved={() => {
+          // Refrescar la lista de carros después de mover
+          loadCarts(true);
+        }}
       />
     </div>
   );

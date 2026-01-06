@@ -1,5 +1,5 @@
-import React from 'react';
-import { Cart } from '@/types';
+import React, { useState } from 'react';
+import { Cart, Location } from '@/types';
 import { formatDate } from '@/utils/formatDate';
 import {
   getCalibreFromCodigo,
@@ -8,7 +8,7 @@ import {
   getEmpacadoraFromCodigo,
   getTurnoFromCodigo,
 } from '@/utils/getParamsFromCodigo';
-import { Modal, Card } from '@/components/design-system';
+import { Modal, Card, Button } from '@/components/design-system';
 import {
   Calendar,
   Package,
@@ -18,19 +18,83 @@ import {
   Layers,
   Building2,
   Clock,
+  MoveRight,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { moveCart } from '@/api/endpoints';
+import SelectDestinationModal from './SelectDestinationModal';
 
 interface CartDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   cart: Cart | null;
+  onCartMoved?: () => void;
 }
 
-const CartDetailModal = ({ isOpen, onClose, cart }: CartDetailModalProps) => {
+const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModalProps) => {
+  const [showDestinationModal, setShowDestinationModal] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
+  const [moveFeedback, setMoveFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
   if (!isOpen || !cart || !cart.codigo) {
     return null;
   }
+
+  // Ubicaciones válidas para carros según el backend
+  const validLocations: Location[] = [
+    'PACKING',
+    'TRANSITO',
+    'BODEGA',
+    'PREVENTA',
+    'VENTA',
+    'RECHAZO',
+    'CUARENTENA',
+  ];
+
+  // Filtrar ubicaciones disponibles (excluir la actual)
+  const availableLocations = validLocations.filter(
+    (loc) => loc !== cart.ubicacion
+  );
+
+  const handleMove = () => {
+    setShowDestinationModal(true);
+    setMoveFeedback(null);
+  };
+
+  const handleConfirmMove = async (destination: Location) => {
+    if (!cart?.codigo) return;
+
+    setIsMoving(true);
+    setMoveFeedback(null);
+
+    try {
+      await moveCart(cart.codigo, destination);
+      setMoveFeedback({
+        type: 'success',
+        message: `Carro movido exitosamente a ${destination}`,
+      });
+
+      // Cerrar modales después de un breve delay para mostrar el mensaje
+      setTimeout(() => {
+        setShowDestinationModal(false);
+        onClose();
+        if (onCartMoved) {
+          onCartMoved();
+        }
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error al mover carro:', error);
+      setMoveFeedback({
+        type: 'error',
+        message: error?.message || 'Error al mover el carro. Por favor, intenta nuevamente.',
+      });
+    } finally {
+      setIsMoving(false);
+    }
+  };
 
   const InfoRow = ({
     icon,
@@ -168,7 +232,50 @@ const CartDetailModal = ({ isOpen, onClose, cart }: CartDetailModalProps) => {
             </div>
           </Card>
         )}
+
+        {/* Acciones */}
+        <Card variant="flat" className="p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              {moveFeedback && (
+                <div
+                  className={clsx(
+                    'p-3 rounded-lg border text-sm',
+                    moveFeedback.type === 'success'
+                      ? 'bg-green-50 border-green-200 text-green-700'
+                      : 'bg-red-50 border-red-200 text-red-700'
+                  )}
+                >
+                  {moveFeedback.message}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="primary"
+              size="medium"
+              leftIcon={<MoveRight size={16} />}
+              onClick={handleMove}
+              disabled={isMoving || availableLocations.length === 0}
+              isLoading={isMoving}
+            >
+              Mover
+            </Button>
+          </div>
+        </Card>
       </div>
+
+      {/* Modal de selección de destino */}
+      <SelectDestinationModal
+        isOpen={showDestinationModal}
+        onClose={() => {
+          setShowDestinationModal(false);
+          setMoveFeedback(null);
+        }}
+        onConfirm={handleConfirmMove}
+        currentLocation={cart.ubicacion}
+        availableLocations={availableLocations}
+        itemType="carro"
+      />
     </Modal>
   );
 };

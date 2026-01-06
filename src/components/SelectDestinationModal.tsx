@@ -1,13 +1,16 @@
 import React from 'react';
 import { Modal, Button } from '@/components/design-system';
 import { MapPin } from 'lucide-react';
+import { Location } from '@/types';
 
 interface SelectDestinationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (destination: 'TRANSITO' | 'BODEGA' | 'VENTA') => void;
+  onConfirm: (destination: Location) => void;
   currentLocation?: string;
   palletCount?: number;
+  availableLocations?: Location[];
+  itemType?: 'pallet' | 'carro';
 }
 
 const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
@@ -16,33 +19,29 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
   onConfirm,
   currentLocation,
   palletCount = 0,
+  availableLocations,
+  itemType = 'pallet',
 }) => {
-  const destinations: Array<{
-    code: 'TRANSITO' | 'BODEGA' | 'VENTA';
-    label: string;
-    description: string;
-  }> = [
-    {
-      code: 'TRANSITO',
-      label: 'Tránsito',
-      description: 'Mover pallets a tránsito',
-    },
-    {
-      code: 'BODEGA',
-      label: 'Bodega',
-      description: 'Mover pallets a bodega',
-    },
-    {
-      code: 'VENTA',
-      label: 'Venta',
-      description: 'Mover pallets a venta',
-    },
-  ];
+  // Mapeo de ubicaciones a etiquetas y descripciones
+  const locationLabels: Record<Location, { label: string; description: string }> = {
+    PACKING: { label: 'Packing', description: 'Mover a packing' },
+    TRANSITO: { label: 'Tránsito', description: 'Mover a tránsito' },
+    BODEGA: { label: 'Bodega', description: 'Mover a bodega' },
+    PREVENTA: { label: 'Preventa', description: 'Mover a preventa' },
+    VENTA: { label: 'Venta', description: 'Mover a venta' },
+    RECHAZO: { label: 'Rechazo', description: 'Mover a rechazo' },
+    CUARENTENA: { label: 'Cuarentena', description: 'Mover a cuarentena' },
+  };
 
-  // Filtrar el destino actual si está especificado
-  const availableDestinations = currentLocation
-    ? destinations.filter((d) => d.code !== currentLocation)
-    : destinations;
+  // Si se proporcionan ubicaciones disponibles, usarlas; si no, usar las predeterminadas
+  const defaultLocations: Location[] = ['TRANSITO', 'BODEGA', 'VENTA'];
+  const locationsToShow = availableLocations || defaultLocations;
+
+  // Construir la lista de destinos disponibles
+  const destinations = locationsToShow.map((code) => ({
+    code,
+    ...locationLabels[code],
+  }));
 
   return (
     <Modal
@@ -56,7 +55,9 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
           className="macos-text-body"
           style={{ marginBottom: 'var(--macos-space-4)' }}
         >
-          {palletCount > 1
+          {itemType === 'carro'
+            ? 'Selecciona el destino para mover el carro:'
+            : palletCount > 1
             ? `Selecciona el destino para mover ${palletCount} pallets:`
             : 'Selecciona el destino para mover el pallet:'}
         </p>
