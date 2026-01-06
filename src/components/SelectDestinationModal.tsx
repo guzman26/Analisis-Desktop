@@ -29,6 +29,7 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
     BODEGA: { label: 'Bodega', description: 'Mover a bodega' },
     PREVENTA: { label: 'Preventa', description: 'Mover a preventa' },
     VENTA: { label: 'Venta', description: 'Mover a venta' },
+    UNSUBSCRIBED: { label: 'Unsubscribed', description: 'Mover a unsubscribed' },
     RECHAZO: { label: 'Rechazo', description: 'Mover a rechazo' },
     CUARENTENA: { label: 'Cuarentena', description: 'Mover a cuarentena' },
   };
