@@ -177,12 +177,12 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
             ubicacion: 'PACKING',
             fechaDesde: opts?.fechaDesde,
             fechaHasta: opts?.fechaHasta,
-            limit: opts?.limit ?? 50,
+            limit: opts?.limit ?? 200,
           } as any);
         } else {
           response = await getClosedPallets({
             ubicacion: 'PACKING' as const,
-            limit: opts?.limit ?? 50,
+            limit: opts?.limit ?? 200,
           });
         }
 
@@ -214,7 +214,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const response: PaginatedResponse<Pallet> = await getClosedPallets({
         ubicacion: 'TRANSITO' as Location,
-        limit: 50,
+        limit: 200, // Aumentado de 50 a 200 para cargar más pallets por tanda
       });
 
       const pallets = response.items || [];
@@ -243,7 +243,7 @@ export const PalletProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const response: PaginatedResponse<Pallet> = await getClosedPallets({
         ubicacion: 'BODEGA' as Location,
-        limit: 50,
+        limit: 200, // Aumentado de 50 a 200 para cargar más pallets por tanda
       });
 
       const pallets = response.items || [];

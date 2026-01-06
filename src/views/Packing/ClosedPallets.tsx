@@ -61,7 +61,7 @@ const ClosedPallets = () => {
       try {
         const params = {
           ubicacion: 'PACKING' as const,
-          limit: 50,
+          limit: 200, // Aumentado de 50 a 200 para cargar más pallets por tanda
           lastKey: resetPagination ? undefined : currentNextKey || undefined,
           ...filters,
         };
