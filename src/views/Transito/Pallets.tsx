@@ -10,7 +10,6 @@ import {
 import PalletCard from '@/components/PalletCard';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { useNotifications } from '@/components/Notification/Notification';
-import '../../styles/designSystem.css';
 
 const TransitoPallets = () => {
   const { closedPalletsInTransit, fetchClosedPalletsInTransit, loading } =
@@ -72,24 +71,24 @@ const TransitoPallets = () => {
   };
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Pallets en Tránsito
           </h1>
-          <div style={{ display: 'flex', gap: 'var(--macos-space-3)' }}>
+          <div style={{ display: 'flex', gap: 'var(--2)' }}>
             {closedPalletsInTransit.length > 0 && (
               <Button
                 variant="primary"
@@ -106,8 +105,8 @@ const TransitoPallets = () => {
           </div>
         </div>
         <p
-          className="macos-text-body"
-          style={{ color: 'var(--macos-text-secondary)' }}
+          className="text-base"
+          style={{ color: 'var(--text-muted-foreground)' }}
         >
           Pallets cerrados actualmente en tránsito
         </p>
@@ -118,24 +117,24 @@ const TransitoPallets = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--macos-space-5)',
-          marginBottom: 'var(--macos-space-7)',
+          gap: 'var(--4)',
+          marginBottom: 'var(--6)',
         }}
       >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Pallets
             </p>
             <p
-              className="macos-text-title-1"
-              style={{ color: 'var(--macos-blue)', fontWeight: 700 }}
+              className="text-2xl font-semibold"
+              style={{ color: 'var(--blue-500)', fontWeight: 700 }}
             >
               {closedPalletsInTransit.length}
             </p>
@@ -144,17 +143,17 @@ const TransitoPallets = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Cajas
             </p>
             <p
-              className="macos-text-title-1"
-              style={{ color: 'var(--macos-green)', fontWeight: 700 }}
+              className="text-2xl font-semibold"
+              style={{ color: 'var(--green-500)', fontWeight: 700 }}
             >
               {closedPalletsInTransit.reduce(
                 (sum, pallet) => sum + (pallet.cantidadCajas || 0),
@@ -169,11 +168,11 @@ const TransitoPallets = () => {
       {closedPalletsInTransit.length === 0 ? (
         <Card>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
               textAlign: 'center',
-              padding: 'var(--macos-space-8)',
-              color: 'var(--macos-text-secondary)',
+              padding: 'var(--8)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
             No hay pallets en tránsito
@@ -181,7 +180,7 @@ const TransitoPallets = () => {
         </Card>
       ) : (
         <div
-          className="macos-grid"
+          className="grid gap-4"
           style={{
             gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           }}

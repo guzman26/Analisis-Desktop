@@ -22,7 +22,6 @@ import {
   Truck,
   BarChart3,
 } from 'lucide-react';
-import '../styles/designSystem.css';
 
 interface SidebarItem {
   path?: string;
@@ -91,6 +90,22 @@ const sidebarItems: SidebarItem[] = [
         path: '/bodega/unassignedBoxes',
         label: 'Cajas sin Pallet',
         icon: <Box className="w-4 h-4" />,
+      },
+    ],
+  },
+  {
+    label: 'Despachos',
+    icon: <Truck className="w-5 h-5" />,
+    children: [
+      {
+        path: '/dispatch/list',
+        label: 'Listar Despachos',
+        icon: <FileText className="w-4 h-4" />,
+      },
+      {
+        path: '/dispatch/create',
+        label: 'Crear Despacho',
+        icon: <FileText className="w-4 h-4" />,
       },
     ],
   },
@@ -187,20 +202,20 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
 
     if (hasChildren) {
       return (
-        <li key={item.label} style={{ marginBottom: 'var(--macos-space-1)' }}>
+        <li key={item.label} style={{ marginBottom: 'var(--0.5)' }}>
           <button
-            className="macos-interactive"
+            className="cursor-pointer transition-all"
             style={{
               width: '100%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: isCollapsed ? 'center' : 'space-between',
-              gap: 'var(--macos-space-3)',
-              padding: 'var(--macos-space-3)',
-              color: 'var(--macos-text-primary)',
-              borderRadius: 'var(--macos-radius-medium)',
+              gap: 'var(--2)',
+              padding: 'var(--2)',
+              color: 'var(--text-foreground)',
+              borderRadius: 'var(--rounded-md)',
               transition:
-                'all var(--macos-duration-fast) var(--macos-ease-out)',
+                'all 0.15s ease-out',
             }}
             onClick={() => toggleSubfolder(item.label)}
             title={isCollapsed ? item.label : ''}
@@ -209,15 +224,15 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
-              <span style={{ color: 'var(--macos-text-secondary)' }}>
+              <span style={{ color: 'var(--text-muted-foreground)' }}>
                 {item.icon}
               </span>
               {!isCollapsed && (
                 <span
-                  className="macos-text-subheadline"
+                  className="text-sm font-medium"
                   style={{ fontWeight: 500 }}
                 >
                   {item.label}
@@ -229,14 +244,14 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
                 style={{
                   transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
                   transition:
-                    'transform var(--macos-duration-fast) var(--macos-ease-out)',
+                    'transform 0.15s ease-out',
                 }}
               >
                 <ChevronDown
                   style={{
                     width: '16px',
                     height: '16px',
-                    color: 'var(--macos-text-secondary)',
+                    color: 'var(--text-muted-foreground)',
                   }}
                 />
               </div>
@@ -244,10 +259,10 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
           </button>
           {isExpanded && !isCollapsed && (
             <ul
-              className="macos-animate-slide-in"
+              className="animate-slide-in"
               style={{
-                marginLeft: 'var(--macos-space-3)',
-                marginTop: 'var(--macos-space-1)',
+                marginLeft: 'var(--2)',
+                marginTop: 'var(--0.5)',
                 listStyle: 'none',
                 padding: 0,
               }}
@@ -260,36 +275,36 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
     }
 
     return (
-      <li key={item.path} style={{ marginBottom: 'var(--macos-space-1)' }}>
+      <li key={item.path} style={{ marginBottom: 'var(--0.5)' }}>
         <NavLink
           to={item.path!}
-          className={({ isActive }) => {
-            return `macos-interactive ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
+          className={({ isActive }: { isActive: boolean }) => {
+            return `cursor-pointer transition-all ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
           }}
-          style={({ isActive }) => ({
+          style={({ isActive }: { isActive: boolean }) => ({
             display: 'flex',
             alignItems: 'center',
-            gap: 'var(--macos-space-3)',
-            padding: 'var(--macos-space-3)',
-            borderRadius: 'var(--macos-radius-medium)',
+            gap: 'var(--2)',
+            padding: 'var(--2)',
+            borderRadius: 'var(--rounded-md)',
             textDecoration: 'none',
-            transition: 'all var(--macos-duration-fast) var(--macos-ease-out)',
+            transition: 'all 0.15s ease-out',
             justifyContent: isCollapsed ? 'center' : 'flex-start',
             paddingLeft:
               depth > 0
-                ? 'calc(var(--macos-space-8) + var(--macos-space-3))'
-                : 'var(--macos-space-3)',
-            backgroundColor: isActive ? 'var(--macos-blue)' : 'transparent',
+                ? 'calc(var(--8) + var(--2))'
+                : 'var(--2)',
+            backgroundColor: isActive ? 'var(--blue-500)' : 'transparent',
             color: isActive
-              ? 'var(--macos-text-on-color)'
-              : 'var(--macos-text-primary)',
+              ? 'var(--text-white)'
+              : 'var(--text-foreground)',
           })}
           title={isCollapsed ? item.label : ''}
         >
           <span style={{ flexShrink: 0 }}>{item.icon}</span>
           {!isCollapsed && (
             <span
-              className="macos-text-subheadline"
+              className="text-sm font-medium"
               style={{ fontWeight: 500 }}
             >
               {item.label}
@@ -308,14 +323,14 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         top: 0,
         height: '100%',
         width: isCollapsed
-          ? 'var(--macos-width-sidebar-collapsed)'
-          : 'var(--macos-width-sidebar)',
-        background: 'var(--macos-sidebar-bg)',
-        backdropFilter: 'var(--macos-backdrop-blur-light)',
-        WebkitBackdropFilter: 'var(--macos-backdrop-blur-light)',
-        borderRight: '1px solid var(--macos-border-primary)',
-        zIndex: 'var(--macos-z-fixed)',
-        transition: 'width var(--macos-duration-normal) var(--macos-ease-out)',
+          ? '16rem'
+          : '20rem',
+        background: 'hsl(var(--muted))',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRight: '1px solid var(--border-border)',
+        zIndex: '1030',
+        transition: 'width 0.2s ease-out',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -326,25 +341,25 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: 'var(--macos-space-5)',
-          borderBottom: '1px solid var(--macos-border-primary)',
-          minHeight: 'var(--macos-height-titlebar)',
+          padding: 'var(--4)',
+          borderBottom: '1px solid var(--border-border)',
+          minHeight: '3.5rem',
         }}
       >
         {!isCollapsed && (
           <h2
-            className="macos-text-headline"
-            style={{ margin: 0, color: 'var(--macos-text-primary)' }}
+            className="text-base font-semibold"
+            style={{ margin: 0, color: 'var(--text-foreground)' }}
           >
             Análisis Desktop
           </h2>
         )}
         <button
-          className="macos-focusable macos-interactive"
+          className="focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer transition-all"
           style={{
-            padding: 'var(--macos-space-2)',
-            borderRadius: 'var(--macos-radius-medium)',
-            color: 'var(--macos-text-secondary)',
+            padding: 'var(--1)',
+            borderRadius: 'var(--rounded-md)',
+            color: 'var(--text-muted-foreground)',
             margin: isCollapsed ? '0 auto' : '0',
           }}
           onClick={toggleSidebar}
@@ -363,7 +378,7 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: 'var(--macos-space-3)',
+          padding: 'var(--2)',
         }}
       >
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>

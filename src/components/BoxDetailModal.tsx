@@ -11,7 +11,9 @@ import {
   getProductionInfo,
   getProductInfo,
 } from '@/utils';
-import { Modal, Button, Card } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Calendar,
   Package,
@@ -98,38 +100,32 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
   }) => (
     <div
       className={clsx(
-        'flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors',
+        'flex items-start gap-3 p-3 rounded-md hover:bg-muted/40 transition-colors',
         className
       )}
     >
-      <div className="text-macos-text-secondary mt-0.5">{icon}</div>
+      <div className="text-muted-foreground mt-0.5">{icon}</div>
       <div className="flex-1">
-        <p className="text-sm text-macos-text-secondary">{label}</p>
-        <p className="text-base font-medium text-macos-text">{value}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-base font-medium">{value}</p>
       </div>
     </div>
   );
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Detalles de Caja ${box.codigo}`}
-      size="large"
-      resizable
-      minWidth={560}
-      minHeight={420}
-      defaultWidth={920}
-      defaultHeight={680}
-      showTrafficLights={true}
-    >
-      <div className="space-y-6">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>Detalles de Caja {box.codigo}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
         {/* Status Badges */}
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex gap-2">
             <span
               className={clsx(
-                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+                'px-3 py-1.5 text-sm font-medium rounded-md border inline-flex items-center gap-2',
                 locationColor
               )}
             >
@@ -138,7 +134,7 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
             </span>
             <span
               className={clsx(
-                'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+                'px-3 py-1.5 text-sm font-medium rounded-md border',
                 statusColor
               )}
             >
@@ -146,9 +142,9 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
             </span>
           </div>
           {box.palletId && (
-            <span className="text-sm text-macos-text-secondary">
+            <span className="text-sm text-muted-foreground">
               Pallet:{' '}
-              <span className="font-medium text-macos-accent">
+              <span className="font-medium text-primary">
                 {box.palletId}
               </span>
             </span>
@@ -156,14 +152,10 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
         </div>
 
         {/* Main Information */}
-        <Card variant="flat" padding="none">
-          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
+        <Card>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="space-y-1">
-              <InfoRow
-                icon={<Barcode className="w-5 h-5" />}
-                label="Código"
-                value={box.codigo}
-              />
+              <InfoRow icon={<Barcode className="w-5 h-5" />} label="Código" value={box.codigo} />
               <InfoRow
                 icon={<Calendar className="w-5 h-5" />}
                 label="Fecha de Registro"
@@ -184,7 +176,11 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
               <InfoRow
                 icon={<Package className="w-5 h-5" />}
                 label="Calibre"
-                value={box.calibre ? formatCalibreName(box.calibre) : (productInfo?.caliberDisplay || 'N/A')}
+                value={
+                  box.calibre
+                    ? formatCalibreName(box.calibre)
+                    : productInfo?.caliberDisplay || 'N/A'
+                }
               />
               <InfoRow
                 icon={<Layers className="w-5 h-5" />}
@@ -202,126 +198,125 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
                 value={box.quantity || 'N/A'}
               />
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Production Information */}
-        <Card variant="flat">
-          <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
             <CalendarDays className="w-4 h-4" />
             Información de Producción
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <p className="text-macos-text-secondary">Semana</p>
-              <p className="font-medium text-macos-text">
+              <p className="text-muted-foreground">Semana</p>
+              <p className="font-medium">
                 {box.semana || productionInfo?.weekOfYear || 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-macos-text-secondary">Año</p>
-              <p className="font-medium text-macos-text">
+              <p className="text-muted-foreground">Año</p>
+              <p className="font-medium">
                 {box.año || productionInfo?.year || 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-macos-text-secondary">Día de la Semana</p>
-              <p className="font-medium text-macos-text">
+              <p className="text-muted-foreground">Día de la Semana</p>
+              <p className="font-medium">
                 {box.dia_semana || productionInfo?.dayOfWeekDisplay || 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-macos-text-secondary">Horario</p>
-              <p className="font-medium text-macos-text flex items-center gap-1">
+              <p className="text-muted-foreground">Horario</p>
+              <p className="font-medium flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {box.horario_proceso || productionInfo?.shiftDisplay || 'N/A'}
               </p>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Custom Info - Eggs Information */}
         {processedCustomInfo.length > 0 && (
-          <Card variant="flat">
-            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
               <Package className="w-4 h-4" />
               Información de Huevos
-              <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-blue-100 text-xs text-blue-700">
+              <span className="ml-2 px-2 py-0.5 rounded-md bg-blue-100 text-xs text-blue-700">
                 {totalEggs} huevos
               </span>
-            </h3>
+              </CardTitle>
+            </CardHeader>
 
-            <div className="space-y-3">
-              {/* Summary */}
-              <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-macos-sm">
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-4 p-3 rounded-md border bg-muted/30">
                 <div>
-                  <p className="text-xs text-macos-text-secondary">
-                    Total de Huevos
-                  </p>
-                  <p className="text-lg font-semibold text-macos-text">
-                    {totalEggs}
-                  </p>
+                  <p className="text-xs text-muted-foreground">Total de Huevos</p>
+                  <p className="text-lg font-semibold">{totalEggs}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-macos-text-secondary">
-                    Código Principal
-                  </p>
-                  <p className="text-sm font-mono font-medium text-macos-text">
+                  <p className="text-xs text-muted-foreground">Código Principal</p>
+                  <p className="text-sm font-mono font-medium">
                     {mostFrequentCode || 'N/A'}
                   </p>
                 </div>
               </div>
 
-              {/* Detailed List */}
               <div>
-                <p className="text-xs text-macos-text-secondary mb-2">
+                <p className="text-xs text-muted-foreground mb-2">
                   Desglose por Código:
                 </p>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {processedCustomInfo.map((eggInfo, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-macos-sm"
+                      className="flex items-center justify-between p-2 border rounded-md"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-macos-accent"></div>
-                        <span className="text-sm font-mono text-macos-text">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                        <span className="text-sm font-mono">
                           {eggInfo.code}
                         </span>
                       </div>
-                      <span className="text-sm font-medium text-macos-text">
+                      <span className="text-sm font-medium">
                         {eggInfo.quantity} huevos
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+            </CardContent>
           </Card>
         )}
 
         {/* Description */}
         {box.descripcion && (
-          <Card variant="flat">
-            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              Descripción
-            </h3>
-            <p className="text-sm text-macos-text whitespace-pre-wrap">
-              {box.descripcion}
-            </p>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Descripción
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm whitespace-pre-wrap">{box.descripcion}</p>
+            </CardContent>
           </Card>
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+        </div>
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
             Cerrar
           </Button>
           <Button variant="primary">Editar Información</Button>
-        </div>
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

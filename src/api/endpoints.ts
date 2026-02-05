@@ -25,6 +25,9 @@ import {
   ReturnBoxesRequest,
   AddBoxesToSaleRequest,
   GetCartsParams,
+  Dispatch,
+  CreateDispatchRequest,
+  GetDispatchesParamsPaginated,
 } from '@/types';
 
 // Pallet operations - now using consolidated /inventory endpoint
@@ -660,3 +663,31 @@ export const getAnalyticsData = (params?: {
   endDate?: string;
   groupBy?: 'day' | 'week' | 'month';
 }) => get('/analytics', params);
+
+// Dispatch operations - using consolidated /inventory endpoint
+export const getDispatches = (params?: GetDispatchesParamsPaginated) => {
+  const filters: any = {};
+  if (params?.estado) filters.estado = params.estado;
+  if (params?.destino) filters.destino = params.destino;
+  if (params?.startDate) filters.startDate = params.startDate;
+  if (params?.endDate) filters.endDate = params.endDate;
+
+  return inventory<PaginatedResponse<Dispatch>>('list', 'dispatch', {
+    ...filters,
+    pagination: { limit: params?.limit, lastKey: params?.lastKey },
+  });
+};
+
+export const getDispatchById = (id: string) =>
+  inventory<{ dispatch: Dispatch }>('get', 'dispatch', { id }).then(
+    (res) => res.dispatch || res
+  );
+
+export const createDispatch = (data: CreateDispatchRequest) =>
+  inventory<Dispatch>('create', 'dispatch', data);
+
+export const approveDispatch = (id: string, userId: string) =>
+  inventory<Dispatch>('approve', 'dispatch', { id, userId });
+
+export const cancelDispatch = (id: string, userId: string, reason?: string) =>
+  inventory<Dispatch>('cancel', 'dispatch', { id, userId, reason });

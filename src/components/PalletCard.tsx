@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { Pallet, PalletAuditResult } from '@/types';
-import { Card, Button, Modal } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { translateStatus } from '@/utils/translations';
 import {
   Eye,
@@ -13,8 +26,6 @@ import {
 } from 'lucide-react';
 import { auditPallet } from '@/api/endpoints';
 import PalletAuditModal from './PalletAuditModal';
-import '../styles/designSystem.css';
-import styles from './PalletCard.module.css';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
 import { getPalletBoxCount } from '@/utils/palletHelpers';
@@ -183,18 +194,10 @@ const PalletCard = ({
     }
   };
 
-  // Determine status color for improved visual hierarchy
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'open':
-        return 'var(--macos-green)';
-      case 'closed':
-        return 'var(--macos-blue)';
-      case 'pending':
-        return 'var(--macos-orange)';
-      default:
-        return 'var(--macos-gray)';
-    }
+  const statusBadgeStyles: Record<string, string> = {
+    open: 'bg-green-100 text-green-700',
+    closed: 'bg-blue-100 text-blue-700',
+    pending: 'bg-orange-100 text-orange-700',
   };
 
   // Format date if available (DD/MM/YYYY)
@@ -211,149 +214,63 @@ const PalletCard = ({
   return (
     <>
       <Card
-        variant="flat"
-        isHoverable
-        isPressable
         onClick={handleDetails}
-        padding="medium"
-        className={styles.palletCard}
-        style={isSelected ? { outline: '2px solid var(--macos-blue)', outlineOffset: '-2px' } : undefined}
+        className={isSelected ? 'ring-2 ring-primary' : ''}
       >
-        {/* Checkbox de selección */}
-        {showSelection && (
-          <div
-            onClick={handleSelectionClick}
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '12px',
-              zIndex: 10,
-              cursor: 'pointer',
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => {}}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: 'var(--macos-blue)',
-              }}
-            />
-          </div>
-        )}
-
-        {/* Status Indicator */}
-        <div
-          className={styles.statusIndicator}
-          style={{
-            backgroundColor: getStatusColor(pallet.estado),
-            left: showSelection ? '36px' : '0',
-          }}
-        />
-
-        {/* Main content container */}
-        <div className={styles.contentContainer}>
-          {/* Header Section */}
-          <div className={styles.palletHeader}>
-            <div className={styles.primaryInfo}>
-              <div className={styles.codeContainer}>
-                <span
-                  className="macos-text-headline"
-                  style={{ fontWeight: 700 }}
-                >
-                  {pallet.codigo}
-                </span>
-                <span
-                  className={styles.statusBadge}
-                  style={{
-                    backgroundColor:
-                      pallet.estado.toLowerCase() === 'open'
-                        ? 'var(--macos-green-transparentize-6)'
-                        : 'var(--macos-blue-transparentize-6)',
-                    color:
-                      pallet.estado.toLowerCase() === 'open'
-                        ? 'var(--macos-green)'
-                        : 'var(--macos-blue)',
-                  }}
-                >
-                  {translateStatus(pallet.estado)}
-                </span>
-              </div>
-              <div className={styles.locationContainer}>
-                <MapPin
-                  size={12}
-                  style={{ color: 'var(--macos-text-tertiary)' }}
-                />
-                <span
-                  className="macos-text-footnote"
-                  style={{ color: 'var(--macos-text-tertiary)' }}
-                >
-                  {pallet.ubicacion || 'Sin ubicación'}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.dateInfo}>
-              <CalendarIcon
-                size={12}
-                style={{ color: 'var(--macos-text-tertiary)' }}
-              />
-              <span
-                className="macos-text-footnote"
-                style={{ color: 'var(--macos-text-tertiary)' }}
-              >
-                {formattedDate}
+        <CardHeader className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {showSelection && (
+                <div onClick={handleSelectionClick}>
+                  <Checkbox checked={isSelected} />
+                </div>
+              )}
+              <span className="font-mono text-sm font-semibold">
+                {pallet.codigo}
               </span>
+              <Badge
+                className={
+                  statusBadgeStyles[pallet.estado?.toLowerCase()] || 'bg-muted'
+                }
+              >
+                {translateStatus(pallet.estado)}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CalendarIcon size={12} />
+              {formattedDate}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin size={12} />
+            {pallet.ubicacion || 'Sin ubicación'}
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Package size={16} className="text-primary" />
+                Cajas
+              </div>
+              <div className="text-lg font-semibold">
+                {typeof pallet.maxBoxes === 'number' &&
+                !Number.isNaN(pallet.maxBoxes)
+                  ? `${realBoxCount}/${pallet.maxBoxes}`
+                  : realBoxCount}
+              </div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Layers size={16} className="text-purple-500" />
+                Calibre
+              </div>
+              <div className="text-lg font-semibold">{calibre || 'N/A'}</div>
             </div>
           </div>
 
-          {/* Info Section */}
-          <div className={styles.infoSection}>
-            <div className={styles.infoCard}>
-              <Package size={16} style={{ color: 'var(--macos-blue)' }} />
-              <div className={styles.infoCol}>
-                <span
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  Cajas
-                </span>
-                <span
-                  className="macos-text-title-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  {typeof pallet.maxBoxes === 'number' &&
-                  !Number.isNaN(pallet.maxBoxes)
-                    ? `${realBoxCount}/${pallet.maxBoxes}`
-                    : realBoxCount}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.infoCard}>
-              <Layers size={16} style={{ color: 'var(--macos-purple)' }} />
-              <div className={styles.infoCol}>
-                <span
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  Calibre
-                </span>
-                <span
-                  className="macos-text-title-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  {calibre || 'N/A'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className={styles.palletActions}>
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
               size="small"
@@ -393,7 +310,7 @@ const PalletCard = ({
               </Button>
             )}
           </div>
-        </div>
+        </CardContent>
       </Card>
 
       {/* Audit Modal */}
@@ -406,54 +323,30 @@ const PalletCard = ({
         palletCode={pallet.codigo}
       />
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteConfirm}
-        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
-        title="Confirmar Eliminación"
-        size="small"
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => !open && !isDeleting && setShowDeleteConfirm(false)}
       >
-        <div style={{ paddingBottom: 'var(--macos-space-5)' }}>
-          <p
-            className="macos-text-body"
-            style={{ marginBottom: 'var(--macos-space-3)' }}
-          >
-            ¿Estás seguro de que deseas eliminar el pallet{' '}
-            <strong>{pallet.codigo}</strong>?
-          </p>
-          <p
-            className="macos-text-footnote"
-            style={{ color: 'var(--macos-text-secondary)' }}
-          >
-            Esta acción no se puede deshacer.
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--macos-space-3)',
-              marginTop: 'var(--macos-space-5)',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setShowDeleteConfirm(false)}
-              disabled={isDeleting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              size="small"
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Eliminación</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar el pallet{' '}
+              <strong>{pallet.codigo}</strong>? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? 'Eliminando...' : 'Eliminar'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

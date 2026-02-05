@@ -1,20 +1,15 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { RouteRenderer } from './routes/RouteRenderer';
 import { AppProviders } from './contexts/AppProviders';
-import {
-  NotificationProvider,
-  NotificationContainer,
-} from './components/Notification';
+import { Toaster } from '@/components/ui/sonner';
 
 function App() {
   return (
     <Router>
-      <NotificationProvider>
-        <AppProviders>
-          <RouteRenderer />
-        </AppProviders>
-        <NotificationContainer />
-      </NotificationProvider>
+      <AppProviders>
+        <RouteRenderer />
+      </AppProviders>
+      <Toaster position="top-right" richColors />
     </Router>
   );
 }

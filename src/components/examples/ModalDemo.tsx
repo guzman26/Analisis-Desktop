@@ -31,7 +31,7 @@ const ModalDemo: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onMinimize={handleMinimize}
+        
         title="Información del Sistema"
         size="medium"
       >
@@ -60,7 +60,7 @@ const ModalDemo: React.FC = () => {
         onClose={() => setIsConfirmOpen(false)}
         title="Confirmar Acción"
         size="small"
-        showTrafficLights={false}
+        
       >
         <div className="text-center space-y-4">
           <div className="text-4xl">⚠️</div>
@@ -85,7 +85,7 @@ const ModalDemo: React.FC = () => {
       <Modal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        onMinimize={handleMinimize}
+        
         title="Nuevo Usuario"
         size="large"
       >

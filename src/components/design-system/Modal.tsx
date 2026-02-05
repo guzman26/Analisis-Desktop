@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onMinimize?: () => void;
   title?: string;
   children: React.ReactNode;
   size?: 'small' | 'medium' | 'large';
-  showTrafficLights?: boolean;
   className?: string;
   // Resizable modal
   resizable?: boolean;
@@ -24,11 +23,9 @@ export interface ModalProps {
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
-  onMinimize,
   title = 'Untitled',
   children,
   size = 'medium',
-  showTrafficLights = true,
   className,
   resizable = false,
   defaultWidth,
@@ -133,11 +130,7 @@ const Modal: React.FC<ModalProps> = ({
             {/* Backdrop */}
             <Dialog.Overlay asChild>
               <motion.div
-                className="fixed inset-0 z-50 bg-black/60 pointer-events-none"
-                style={{
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                }}
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm pointer-events-none"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -151,22 +144,20 @@ const Modal: React.FC<ModalProps> = ({
             {/* Modal Content */}
             <Dialog.Content
               asChild
-              onEscapeKeyDown={(e) => e.stopPropagation()}
-              onPointerDownOutside={(e) => e.preventDefault()}
+              onEscapeKeyDown={(e: Event) => e.stopPropagation()}
+              onPointerDownOutside={(e: Event) => e.preventDefault()}
             >
               <motion.div
                 className={twMerge(
                   clsx(
                     'fixed left-[25%] top-[12%] -translate-x-0 translate-y-0 z-[51] overflow-hidden max-w-[75vw] max-h-[88vh] pointer-events-auto',
-                    'bg-white/95 rounded-lg border border-white/20',
-                    'shadow-[0_0_0_0.5px_rgba(0,0,0,0.1),0_4px_20px_rgba(0,0,0,0.15),0_25px_50px_rgba(0,0,0,0.25)]',
+                    'bg-white rounded-lg border border-border',
+                    'shadow-lg',
                     !resizable && sizes[size],
                     className
                   )
                 )}
                 style={{
-                  backdropFilter: 'blur(40px)',
-                  WebkitBackdropFilter: 'blur(40px)',
                   width: resizable ? `${width}px` : undefined,
                   height: resizable ? `${height}px` : undefined,
                 }}
@@ -178,106 +169,31 @@ const Modal: React.FC<ModalProps> = ({
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
               >
-                {/* macOS Title Bar */}
-                <div
-                  className="relative flex items-center h-11 px-4 bg-white/80 border-b border-black/10"
-                  style={{
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
-                  }}
-                >
-                  {showTrafficLights && (
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                      {/* Close Button */}
-                      <button
-                        className="flex items-center justify-center w-3 h-3 rounded-full border-[0.5px] border-black/10 bg-gradient-to-br from-[#ff6159] to-[#ff4d43] hover:from-[#ff5147] hover:to-[#ff3b31] transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-300/30 group"
-                        onClick={onClose}
-                        aria-label="Close"
-                      >
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <svg
-                            width="6"
-                            height="6"
-                            viewBox="0 0 6 6"
-                            className="text-black/60"
-                          >
-                            <path
-                              d="M1 1L5 5M5 1L1 5"
-                              stroke="currentColor"
-                              strokeWidth="1"
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                        </div>
-                      </button>
-
-                      {/* Minimize Button */}
-                      <button
-                        className="flex items-center justify-center w-3 h-3 rounded-full border-[0.5px] border-black/10 bg-gradient-to-br from-[#ffbd2e] to-[#ffab00] hover:from-[#ffb01c] hover:to-[#ff9f00] transition-all duration-150 outline-none focus:ring-2 focus:ring-blue-300/30 group disabled:opacity-60 disabled:cursor-not-allowed"
-                        onClick={onMinimize}
-                        aria-label="Minimize"
-                        disabled={!onMinimize}
-                      >
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                          <svg
-                            width="8"
-                            height="1"
-                            viewBox="0 0 8 1"
-                            className="text-black/60"
-                          >
-                            <path
-                              d="M0 0H8"
-                              stroke="currentColor"
-                              strokeWidth="1"
-                              strokeLinecap="round"
-                            />
-                          </svg>
-                        </div>
-                      </button>
-
-                      {/* Maximize Button (Disabled) */}
-                      <button
-                        className="flex items-center justify-center w-3 h-3 rounded-full border-[0.5px] border-black/10 bg-gradient-to-br from-[#00ca4e] to-[#28cd41] opacity-60 cursor-not-allowed"
-                        disabled
-                        aria-label="Maximize"
-                      >
-                        <div className="opacity-0">
-                          <svg
-                            width="6"
-                            height="6"
-                            viewBox="0 0 6 6"
-                            className="text-black/60"
-                          >
-                            <path
-                              d="M1 3L3 1L5 3"
-                              stroke="currentColor"
-                              strokeWidth="1"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              fill="none"
-                            />
-                          </svg>
-                        </div>
-                      </button>
-                    </div>
-                  )}
-
-                  <Dialog.Title className="flex-1 text-center px-10 text-[13px] font-semibold text-black/85 font-sf leading-tight tracking-[-0.01em] select-none">
+                {/* Title Bar */}
+                <div className="relative flex items-center justify-between h-14 px-6 bg-background border-b border-border">
+                  <Dialog.Title className="text-lg font-semibold text-foreground">
                     {title}
                   </Dialog.Title>
+
+                  {/* Close Button */}
+                  <button
+                    onClick={onClose}
+                    className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+                    aria-label="Close"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
 
                 {/* Modal Body */}
                 <div
                   className={clsx(
-                    'p-5 bg-white/95 overflow-y-auto',
-                    !resizable && 'max-h-[calc(80vh-44px)]'
+                    'p-6 bg-background overflow-y-auto',
+                    !resizable && 'max-h-[calc(80vh-56px)]'
                   )}
                   style={{
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
                     height: resizable
-                      ? `${Math.max(height - 44, minHeight - 44)}px`
+                      ? `${Math.max(height - 56, minHeight - 56)}px`
                       : undefined,
                   }}
                 >
@@ -333,7 +249,7 @@ const Modal: React.FC<ModalProps> = ({
                       width="12"
                       height="12"
                       viewBox="0 0 12 12"
-                      className="text-black/30"
+                      className="text-muted-foreground"
                     >
                       <path
                         d="M2 10h8M4 8h6M6 6h4"

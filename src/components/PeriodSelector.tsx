@@ -1,5 +1,7 @@
 import React from 'react';
-import { Button, Input } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Calendar } from 'lucide-react';
 import { PeriodType, PeriodRange } from '@/utils/metricsAggregation';
 
@@ -30,21 +32,8 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   ];
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--macos-space-4)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 'var(--macos-space-2)',
-          alignItems: 'center',
-        }}
-      >
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
         {periodButtons.map(({ type, label }) => (
           <Button
             key={type}
@@ -58,25 +47,9 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
       </div>
 
       {periodType === 'custom' && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 'var(--macos-space-3)',
-            alignItems: 'flex-end',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ flex: '1', minWidth: '180px' }}>
-            <label
-              className="macos-text-footnote"
-              style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
-                display: 'block',
-              }}
-            >
-              Fecha Inicio
-            </label>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[180px] space-y-1">
+            <Label className="text-xs">Fecha Inicio</Label>
             <Input
               type="date"
               value={
@@ -91,20 +64,10 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
                   onCustomDatesChange(newStart, end);
                 }
               }}
-              style={{ width: '100%' }}
             />
           </div>
-          <div style={{ flex: '1', minWidth: '180px' }}>
-            <label
-              className="macos-text-footnote"
-              style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
-                display: 'block',
-              }}
-            >
-              Fecha Fin
-            </label>
+          <div className="flex-1 min-w-[180px] space-y-1">
+            <Label className="text-xs">Fecha Fin</Label>
             <Input
               type="date"
               value={
@@ -119,27 +82,14 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
                   onCustomDatesChange(start, newEnd);
                 }
               }}
-              style={{ width: '100%' }}
             />
           </div>
         </div>
       )}
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--macos-space-2)',
-          padding: 'var(--macos-space-2) var(--macos-space-3)',
-          backgroundColor: 'var(--macos-gray-6)',
-          borderRadius: 'var(--macos-radius-medium)',
-        }}
-      >
-        <Calendar style={{ width: '16px', height: '16px', color: 'var(--macos-text-secondary)' }} />
-        <span
-          className="macos-text-footnote"
-          style={{ color: 'var(--macos-text-secondary)' }}
-        >
+      <div className="flex items-center gap-2 rounded-md bg-muted/40 px-3 py-2">
+        <Calendar className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">
           {periodRange.label}
         </span>
       </div>
@@ -148,4 +98,3 @@ const PeriodSelector: React.FC<PeriodSelectorProps> = ({
 };
 
 export default PeriodSelector;
-

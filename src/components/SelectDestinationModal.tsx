@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Button } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MapPin } from 'lucide-react';
 import { Location } from '@/types';
 
@@ -50,99 +51,49 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
   }));
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Seleccionar Destino"
-      size="small"
-    >
-      <div style={{ paddingBottom: 'var(--macos-space-5)' }}>
-        <p
-          className="macos-text-body"
-          style={{ marginBottom: 'var(--macos-space-4)' }}
-        >
-          {itemType === 'carro'
-            ? 'Selecciona el destino para mover el carro:'
-            : palletCount > 1
-            ? `Selecciona el destino para mover ${palletCount} pallets:`
-            : 'Selecciona el destino para mover el pallet:'}
-        </p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Seleccionar Destino</DialogTitle>
+        </DialogHeader>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--macos-space-2)',
-            marginBottom: 'var(--macos-space-5)',
-          }}
-        >
-          {destinations.map((destination) => (
-            <button
-              key={destination.code}
-              onClick={() => onConfirm(destination.code)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--macos-space-3)',
-                padding: 'var(--macos-space-3)',
-                border: '1px solid var(--macos-border)',
-                borderRadius: 'var(--macos-radius-sm)',
-                backgroundColor: 'var(--macos-fill-secondary)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  'var(--macos-fill-tertiary)';
-                e.currentTarget.style.borderColor = 'var(--macos-blue)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  'var(--macos-fill-secondary)';
-                e.currentTarget.style.borderColor = 'var(--macos-border)';
-              }}
-            >
-              <MapPin
-                size={18}
-                style={{ color: 'var(--macos-blue)' }}
-              />
-              <div style={{ flex: 1, textAlign: 'left' }}>
-                <p
-                  className="macos-text-body"
-                  style={{
-                    fontWeight: 600,
-                    color: 'var(--macos-text-primary)',
-                    marginBottom: '2px',
-                  }}
-                >
-                  {destination.label}
-                </p>
-                <p
-                  className="macos-text-footnote"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  {destination.description}
-                </p>
-              </div>
-            </button>
-          ))}
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            {itemType === 'carro'
+              ? 'Selecciona el destino para mover el carro:'
+              : palletCount > 1
+              ? `Selecciona el destino para mover ${palletCount} pallets:`
+              : 'Selecciona el destino para mover el pallet:'}
+          </p>
+
+          <div className="space-y-2">
+            {destinations.map((destination) => (
+              <Button
+                key={destination.code}
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={() => onConfirm(destination.code)}
+              >
+                <MapPin size={18} className="text-primary" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold">{destination.label}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {destination.description}
+                  </p>
+                </div>
+              </Button>
+            ))}
+          </div>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: 'var(--macos-space-3)',
-            justifyContent: 'flex-end',
-          }}
-        >
-          <Button variant="secondary" size="small" onClick={onClose}>
+        <DialogFooter>
+          <Button variant="secondary" size="sm" onClick={onClose}>
             Cancelar
           </Button>
-        </div>
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 export default SelectDestinationModal;
-

@@ -19,7 +19,8 @@ import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
 import { formatDate } from '@/utils/formatDate';
-import { Modal, Button, Card } from './design-system';
+import { Button, Card } from './design-system';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import SelectTargetPalletModal from './SelectTargetPalletModal';
 import {
   CheckCircle,
@@ -359,14 +360,14 @@ const PalletDetailModal = ({
   }) => (
     <div
       className={clsx(
-        'flex items-start gap-3 p-3 rounded-macos-sm hover:bg-gray-50 transition-colors',
+        'flex items-start gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors',
         className
       )}
     >
-      <div className="text-macos-text-secondary mt-0.5">{icon}</div>
+      <div className="text-muted-foreground mt-0.5">{icon}</div>
       <div className="flex-1">
-        <p className="text-sm text-macos-text-secondary">{label}</p>
-        <p className="text-base font-medium text-macos-text">{value}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-base font-medium text-foreground">{value}</p>
       </div>
     </div>
   );
@@ -391,20 +392,19 @@ const PalletDetailModal = ({
 
   return (
     <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title={`Detalles de Pallet ${pallet.codigo}`}
-        size="large"
-        showTrafficLights={true}
-      >
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalles de Pallet {pallet.codigo}</DialogTitle>
+          </DialogHeader>
+
         <div className="space-y-6">
           {/* Status Badges */}
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex gap-2">
               <span
                 className={clsx(
-                  'px-3 py-1.5 text-sm font-medium rounded-macos-sm border inline-flex items-center gap-2',
+                  'px-3 py-1.5 text-sm font-medium rounded-md border inline-flex items-center gap-2',
                   locationColor
                 )}
               >
@@ -413,16 +413,16 @@ const PalletDetailModal = ({
               </span>
               <span
                 className={clsx(
-                  'px-3 py-1.5 text-sm font-medium rounded-macos-sm border',
+                  'px-3 py-1.5 text-sm font-medium rounded-md border',
                   statusColor
                 )}
               >
                 {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
               </span>
             </div>
-            <span className="text-sm text-macos-text-secondary">
+            <span className="text-sm text-muted-foreground">
               Cajas:{' '}
-              <span className="font-medium text-macos-accent">
+              <span className="font-medium text-primary">
                 {boxesSummary}
               </span>
             </span>
@@ -430,7 +430,7 @@ const PalletDetailModal = ({
 
           {/* Main Information */}
           <Card variant="flat" padding="none">
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-macos-border">
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
               <div className="space-y-1">
                 <InfoRow
                   icon={<Package className="w-5 h-5" />}
@@ -475,15 +475,15 @@ const PalletDetailModal = ({
 
           {/* Boxes */}
           <Card variant="flat">
-            <h3 className="text-sm font-medium text-macos-text mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
               <Layers className="w-4 h-4" />
               Historial reciente
-              <span className="ml-2 px-2 py-0.5 rounded-macos-sm bg-gray-200 text-xs text-macos-text-secondary">
+              <span className="ml-2 px-2 py-0.5 rounded-md bg-gray-200 text-xs text-muted-foreground">
                 {realBoxCount}
               </span>
             </h3>
             {realBoxCount === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-macos-text-tertiary">
+              <div className="flex flex-col items-center justify-center py-6 text-foreground-tertiary">
                 <PackageX className="w-8 h-8 mb-3 opacity-60" />
                 No hay cajas registradas en este pallet
               </div>
@@ -492,7 +492,7 @@ const PalletDetailModal = ({
                 {getPalletBoxes(pallet).map((caja, index) => (
                   <div
                     key={index}
-                    className="group relative bg-white border border-macos-border rounded-macos-sm hover:border-macos-accent hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                    className="group relative bg-white border border-border rounded-md hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                     onClick={() => handleBoxClick(caja)}
                   >
                     {selectionMode && (
@@ -501,46 +501,46 @@ const PalletDetailModal = ({
                           type="checkbox"
                           checked={selectedBoxCodes.has(caja)}
                           onChange={() => handleBoxClick(caja)}
-                          className="w-4 h-4 accent-macos-accent"
+                          className="w-4 h-4 accent-primary"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
                     )}
                     {/* Status indicator */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-macos-accent to-macos-accent/70" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/70" />
 
                     {/* Content */}
                     <div className="p-3">
                       {/* Header */}
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <Package className="w-4 h-4 text-macos-accent" />
-                          <span className="text-xs text-macos-text-secondary font-medium">
+                          <Package className="w-4 h-4 text-primary" />
+                          <span className="text-xs text-muted-foreground font-medium">
                             Caja #{index + 1}
                           </span>
                         </div>
-                        <div className="w-2 h-2 rounded-full bg-macos-success" />
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
                       </div>
 
                       {/* Code */}
                       <div className="mb-3">
-                        <p className="text-xs text-macos-text-secondary mb-1">
+                        <p className="text-xs text-muted-foreground mb-1">
                           Código
                         </p>
-                        <p className="text-sm font-mono font-medium text-macos-text break-all">
+                        <p className="text-sm font-mono font-medium text-foreground break-all">
                           {caja}
                         </p>
                       </div>
 
                       {/* Parsed badges: Operario, Calibre, Contador */}
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
                           Op: {getOperarioFromCodigo(caja)}
                         </span>
-                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
                           Cal: {formatCalibreName(getCalibreFromCodigo(caja))}
                         </span>
-                        <span className="px-2 py-0.5 rounded-macos-sm bg-gray-100 text-xs text-macos-text-secondary border border-macos-border">
+                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
                           N°{getContadorFromCodigo(caja)}
                         </span>
                       </div>
@@ -548,14 +548,14 @@ const PalletDetailModal = ({
                       {/* Calibre info (extracted from code) */}
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-xs text-macos-text-secondary mb-1">
+                          <p className="text-xs text-muted-foreground mb-1">
                             Calibre
                           </p>
-                          <p className="text-sm font-medium text-macos-text">
+                          <p className="text-sm font-medium text-foreground">
                             {formatCalibreName(getCalibreFromCodigo(caja))}
                           </p>
                         </div>
-                        <div className="text-macos-text-secondary group-hover:text-macos-accent transition-colors">
+                        <div className="text-muted-foreground group-hover:text-primary transition-colors">
                           <svg
                             className="w-4 h-4"
                             fill="none"
@@ -574,7 +574,7 @@ const PalletDetailModal = ({
                     </div>
 
                     {/* Hover effect */}
-                    <div className="absolute inset-0 bg-macos-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                   </div>
                 ))}
               </div>
@@ -582,7 +582,7 @@ const PalletDetailModal = ({
           </Card>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-macos-border">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button
               variant="secondary"
               size="medium"
@@ -626,7 +626,7 @@ const PalletDetailModal = ({
                   Mover Pallet {showMoveOptions ? '▲' : '▼'}
                 </Button>
                 {showMoveOptions && (
-                  <div className="absolute left-0 mt-1 w-full rounded-macos-sm bg-white shadow-lg z-10">
+                  <div className="absolute left-0 mt-1 w-full rounded-md bg-white shadow-lg z-10">
                     {moveLocations.map((location) => (
                       <button
                         key={location}
@@ -653,14 +653,14 @@ const PalletDetailModal = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
-                      className="px-3 py-1.5 text-sm rounded-macos-sm border border-macos-border hover:border-macos-accent transition-colors"
+                      className="px-3 py-1.5 text-sm rounded-md border border-border hover:border-primary transition-colors"
                       onClick={toggleSelectAll}
                     >
                       {selectedBoxCodes.size === realBoxCount
                         ? 'Deseleccionar todo'
                         : 'Seleccionar todo'}
                     </button>
-                    <span className="text-sm text-macos-text-secondary">
+                    <span className="text-sm text-muted-foreground">
                       {selectedBoxCodes.size} seleccionada(s)
                     </span>
                   </div>
@@ -678,7 +678,7 @@ const PalletDetailModal = ({
 
                 {moveFeedback && (
                   <div
-                    className={`p-3 rounded-macos-sm border ${
+                    className={`p-3 rounded-md border ${
                       moveFeedback.type === 'success'
                         ? 'bg-green-50 border-green-200 text-green-700'
                         : 'bg-red-50 border-red-200 text-red-700'
@@ -708,7 +708,8 @@ const PalletDetailModal = ({
             palletCode={pallet.codigo}
           />
         </div>
-      </Modal>
+      </DialogContent>
+    </Dialog>
       <SelectTargetPalletModal
         isOpen={showSelectTargetModal}
         onClose={() => setShowSelectTargetModal(false)}

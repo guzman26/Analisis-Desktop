@@ -1,5 +1,15 @@
 import React from 'react';
-import { Modal, Button } from '@/components/design-system';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -23,27 +33,33 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   loading = false,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={title} size="small">
-      <div className="macos-stack" style={{ gap: 12 }}>
-        <p className="text-macos-text-secondary">{description}</p>
-        <div
-          className="macos-hstack"
-          style={{ justifyContent: 'flex-end', gap: 8 }}
-        >
-          <Button variant="secondary" onClick={onClose} disabled={loading}>
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose} disabled={loading}>
             {cancelLabel}
-          </Button>
-          <Button
-            variant="primary"
+          </AlertDialogCancel>
+          <AlertDialogAction
             onClick={onConfirm}
             disabled={loading}
-            className="!bg-macos-danger !text-white hover:!bg-macos-danger/90"
+            className={cn(
+              'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            )}
           >
             {loading ? 'Eliminando…' : confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </Modal>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

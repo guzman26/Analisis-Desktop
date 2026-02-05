@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { useNotifications } from '@/components/Notification/Notification';
 import { Customer, CustomerStatus } from '@/types';
-import DataTable, {
+import {
+  DataTable,
   DataTableColumn,
   SortDirection,
-} from '@/components/design-system/DataTable';
-import { Card, Button, LoadingOverlay } from '@/components/design-system';
-import EditableCell from '@/components/CustomersTable/EditableCell';
+  Card,
+  Button,
+  LoadingOverlay,
+  EditableCell,
+} from '@/components/design-system';
 import { Search, Trash2, ShoppingCart, FileText, Download } from 'lucide-react';
 import './CustomersTable.css';
 

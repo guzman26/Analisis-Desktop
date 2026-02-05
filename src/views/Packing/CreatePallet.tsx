@@ -98,19 +98,19 @@ const CreatePallet: React.FC = () => {
   };
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <Card variant="flat">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <h1
-              className="macos-text-large-title"
-              style={{ color: 'var(--macos-text-primary)' }}
+              className="text-3xl font-bold"
+              style={{ color: 'var(--text-foreground)' }}
             >
               Crear Pallet
             </h1>
             <span
-              className="px-2 py-0.5 rounded-macos-sm bg-macos-green-transparentize-6 macos-text-footnote"
-              style={{ color: 'var(--macos-green)' }}
+              className="px-2 py-0.5 rounded-md bg-green-500-transparentize-6 text-sm"
+              style={{ color: 'var(--green-500)' }}
             >
               Nuevo
             </span>
@@ -120,11 +120,11 @@ const CreatePallet: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Turnos (Múltiples) */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
+            <label className="text-sm text-muted-foreground block mb-1">
               Turnos (máximo 3)
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              className="w-full border border-border rounded-md px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               style={{
                 minHeight: '40px',
                 cursor: 'pointer',
@@ -140,7 +140,7 @@ const CreatePallet: React.FC = () => {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-macos-text-secondary mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {turnos.length === 0
                 ? 'Ningún turno seleccionado'
                 : `${turnos.length} turno${turnos.length !== 1 ? 's' : ''} seleccionado${turnos.length !== 1 ? 's' : ''}`}
@@ -149,11 +149,11 @@ const CreatePallet: React.FC = () => {
 
           {/* Calibre */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
+            <label className="text-sm text-muted-foreground block mb-1">
               Calibre
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              className="w-full border border-border rounded-md px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={calibre}
               onChange={(e) => setCalibre(e.target.value)}
               style={{
@@ -173,11 +173,11 @@ const CreatePallet: React.FC = () => {
 
           {/* Formato */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
+            <label className="text-sm text-muted-foreground block mb-1">
               Formato
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              className="w-full border border-border rounded-md px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={formato}
               onChange={(e) => setFormato(e.target.value)}
               style={{
@@ -197,11 +197,11 @@ const CreatePallet: React.FC = () => {
 
           {/* Empresa */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
+            <label className="text-sm text-muted-foreground block mb-1">
               Empresa
             </label>
             <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              className="w-full border border-border rounded-md px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={empresa}
               onChange={(e) => setEmpresa(e.target.value)}
               style={{
@@ -221,14 +221,14 @@ const CreatePallet: React.FC = () => {
 
           {/* Capacidad de cajas */}
           <div>
-            <label className="text-sm text-macos-text-secondary block mb-1">
+            <label className="text-sm text-muted-foreground block mb-1">
               Capacidad de cajas (máximo 60)
             </label>
             <input
               type="number"
               min={1}
               max={60}
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2 bg-white text-macos-text-primary focus:outline-none focus:ring-2 focus:ring-macos-blue transition-all"
+              className="w-full border border-border rounded-md px-3 py-2 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               style={{ minHeight: '40px' }}
               value={maxBoxes}
               onChange={(e) => {
@@ -246,7 +246,7 @@ const CreatePallet: React.FC = () => {
           </div>
         </div>
 
-        {error && <div className="mt-4 text-macos-danger">{error}</div>}
+        {error && <div className="mt-4 text-destructive">{error}</div>}
 
         <div className="flex justify-end mt-6">
           <Button

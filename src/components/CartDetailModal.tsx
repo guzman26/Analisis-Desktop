@@ -8,7 +8,9 @@ import {
   getEmpacadoraFromCodigo,
   getTurnoFromCodigo,
 } from '@/utils/getParamsFromCodigo';
-import { Modal, Card, Button } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Calendar,
   Package,
@@ -135,17 +137,22 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
     ] || locationColors.default;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Detalle del Carro" size="large">
-      <div className="space-y-4">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Detalle del Carro</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
         {/* Código del Carro */}
-        <Card variant="flat" className="p-4">
-          <div className="flex items-center gap-3">
-            <Barcode className="text-blue-600" size={24} />
+        <Card>
+          <CardContent className="flex items-center gap-3 p-4">
+            <Barcode className="text-primary" size={24} />
             <div>
-              <div className="text-xs text-gray-500 mb-1">Código</div>
-              <div className="text-xl font-bold text-gray-900">{cart.codigo}</div>
+              <div className="text-xs text-muted-foreground mb-1">Código</div>
+              <div className="text-xl font-bold">{cart.codigo}</div>
             </div>
-          </div>
+          </CardContent>
         </Card>
 
         {/* Información Principal */}
@@ -216,26 +223,28 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
 
         {/* Información Adicional */}
         {cart.formatId && (
-          <Card variant="flat" className="p-4">
-            <div className="text-xs text-gray-500 mb-2">Formato ID</div>
-            <div className="text-sm font-semibold text-gray-900">
-              {cart.formatId}
-            </div>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground mb-2">Formato ID</div>
+              <div className="text-sm font-semibold">{cart.formatId}</div>
+            </CardContent>
           </Card>
         )}
 
         {cart.updatedAt && (
-          <Card variant="flat" className="p-4">
-            <div className="text-xs text-gray-500 mb-2">Última Actualización</div>
-            <div className="text-sm font-semibold text-gray-900">
-              {formatDate(cart.updatedAt)}
-            </div>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-xs text-muted-foreground mb-2">
+                Última Actualización
+              </div>
+              <div className="text-sm font-semibold">{formatDate(cart.updatedAt)}</div>
+            </CardContent>
           </Card>
         )}
 
         {/* Acciones */}
-        <Card variant="flat" className="p-4">
-          <div className="flex items-center justify-between gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center justify-between gap-3">
             <div className="flex-1">
               {moveFeedback && (
                 <div
@@ -260,7 +269,7 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
             >
               Mover
             </Button>
-          </div>
+          </CardContent>
         </Card>
       </div>
 
@@ -276,9 +285,9 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
         availableLocations={availableLocations}
         itemType="carro"
       />
-    </Modal>
+    </DialogContent>
+  </Dialog>
   );
 };
 
 export default CartDetailModal;
-

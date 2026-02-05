@@ -1,6 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import styles from './DataTable.module.css';
-import '../../styles/designSystem.css';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
+import { cn } from '@/lib/utils';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -126,50 +134,51 @@ function DataTableInner<T>({
   const hasExpansion = !!renderExpandedContent;
 
   return (
-    <div className={styles.tableContainer}>
-      <table className={styles.table}>
-        <thead className={styles.thead}>
-          <tr>
+    <div className="w-full overflow-x-auto bg-white border border-border rounded-lg">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-white border-b-2 border-border hover:bg-white">
             {columns.map((column) => {
               const isNumeric = column.align === 'right';
               const isSorted = sortColumn === column.id;
-              const sortIcon =
-                column.sortable && isSorted
-                  ? sortDirection === 'asc'
-                    ? '▲'
-                    : '▼'
-                  : column.sortable
-                    ? '▲'
-                    : null;
+              const showSortIcon = column.sortable;
 
               return (
-                <th
+                <TableHead
                   key={column.id}
-                  className={[
-                    styles.th,
-                    column.sortable ? styles.thSortable : '',
-                    isNumeric ? styles.thNumeric : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                  className={cn(
+                    'font-semibold text-foreground text-xs whitespace-nowrap select-none border-r border-border last:border-r-0',
+                    column.sortable && 'cursor-pointer hover:bg-accent/50',
+                    isNumeric && 'text-right'
+                  )}
                   style={{
                     width: column.width,
                     textAlign: column.align ?? 'left',
                   }}
                   onClick={() => handleHeaderClick(column)}
                 >
-                  <span>
+                  <span className="flex items-center gap-1.5">
                     {column.header}
-                    {sortIcon && (
-                      <span className={styles.sortIcon}>{sortIcon}</span>
+                    {showSortIcon && (
+                      <span className="inline-flex text-[10px] text-muted-foreground">
+                        {isSorted ? (
+                          sortDirection === 'asc' ? (
+                            <ChevronUp className="w-3 h-3" />
+                          ) : (
+                            <ChevronDown className="w-3 h-3" />
+                          )
+                        ) : (
+                          <ChevronUp className="w-3 h-3 opacity-30" />
+                        )}
+                      </span>
                     )}
                   </span>
-                </th>
+                </TableHead>
               );
             })}
-          </tr>
-        </thead>
-        <tbody>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {sortedData.map((row, index) => {
             const rowId = getRowId(row, index);
             const isExpanded = expandedRowIds.has(rowId);
@@ -179,19 +188,17 @@ function DataTableInner<T>({
 
             return (
               <React.Fragment key={rowId}>
-                <tr
-                  className={[
-                    styles.tbodyRow,
-                    hasExpansion ? styles.tbodyRowHoverable : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                <TableRow
+                  className={cn(
+                    'border-b border-border transition-colors',
+                    index % 2 === 0 ? 'bg-white' : 'bg-muted/50',
+                    hasExpansion && 'cursor-pointer hover:bg-blue-50'
+                  )}
                   onClick={() => {
                     if (hasExpansion) {
                       toggleRow(rowId);
                     }
                   }}
-                  style={{ cursor: hasExpansion ? 'pointer' : 'default' }}
                 >
                   {columns.map((column) => {
                     const isNumeric = column.align === 'right';
@@ -207,52 +214,46 @@ function DataTableInner<T>({
                     }
 
                     return (
-                      <td
+                      <TableCell
                         key={column.id}
-                        className={[
-                          styles.td,
-                          isNumeric ? styles.tdNumeric : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
+                        className={cn(
+                          'py-1.5 px-2.5 align-middle border-r border-border last:border-r-0 text-foreground text-[13px] leading-relaxed',
+                          isNumeric && 'text-right tabular-nums'
+                        )}
                         style={{ textAlign: column.align ?? 'left' }}
                       >
                         {content}
-                      </td>
+                      </TableCell>
                     );
                   })}
-                </tr>
+                </TableRow>
                 {hasExpansion && isExpanded && expandableContent && (
-                  <tr className={styles.expandedRow}>
-                    <td
-                      className={styles.expandedCell}
+                  <TableRow className="bg-muted/50 border-t border-border hover:bg-muted/50">
+                    <TableCell
                       colSpan={columns.length}
+                      className="py-3 px-2.5 border-r border-border"
                     >
-                      <div className={styles.expandedContent}>
+                      <div className="border-t border-border pt-0">
                         {expandableContent}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
               </React.Fragment>
             );
           })}
           {sortedData.length === 0 && (
-            <tr>
-              <td
-                className={styles.td}
+            <TableRow className="hover:bg-transparent">
+              <TableCell
                 colSpan={columns.length}
-                style={{
-                  textAlign: 'center',
-                  color: 'var(--macos-text-secondary)',
-                }}
+                className="text-center text-muted-foreground py-8"
               >
                 No hay datos para mostrar.
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

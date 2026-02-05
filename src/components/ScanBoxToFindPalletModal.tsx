@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Pallet } from '@/types';
 import { getBoxByCode, getPalletByCode } from '@/api/endpoints';
-import { Modal, Button, Card } from './design-system';
+import { Button } from './design-system';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import PalletDetailModal from './PalletDetailModal';
 import { Search, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -112,49 +115,27 @@ const ScanBoxToFindPalletModal = ({
 
   return (
     <>
-      <Modal
-        isOpen={isOpen}
-        onClose={onClose}
-        title="Buscar Pallet por Código de Caja"
-        size="medium"
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--macos-space-5)',
-          }}
-        >
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Buscar Pallet por Código de Caja</DialogTitle>
+          </DialogHeader>
+
+        <div className="space-y-5">
           {/* Input Section */}
           <div>
-            <label
-              className="macos-text-callout"
-              style={{
-                display: 'block',
-                marginBottom: 'var(--macos-space-2)',
-                color: 'var(--macos-text-primary)',
-                fontWeight: 500,
-              }}
-            >
+            <label className="block mb-2 text-sm font-medium">
               Escanear o ingresar código de caja
             </label>
-            <div style={{ display: 'flex', gap: 'var(--macos-space-2)' }}>
-              <input
+            <div className="flex gap-2">
+              <Input
                 ref={inputRef}
-                type="text"
                 value={boxCode}
                 onChange={(e) => setBoxCode(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ingrese el código de la caja..."
                 disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: 'var(--macos-space-3)',
-                  borderRadius: 'var(--macos-radius-2)',
-                  border: '1px solid var(--macos-border)',
-                  fontSize: 'var(--macos-text-body-size)',
-                  fontFamily: 'monospace',
-                }}
+                className="font-mono"
                 autoFocus
               />
               <Button
@@ -177,66 +158,35 @@ const ScanBoxToFindPalletModal = ({
 
           {/* Error Message */}
           {error && (
-            <Card variant="flat" padding="medium">
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--macos-space-2)',
-                  color: 'var(--macos-red)',
-                }}
-              >
+            <Card>
+              <CardContent className="p-4 flex items-center gap-2 text-destructive">
                 <AlertCircle size={16} />
-                <span className="macos-text-body">{error}</span>
-              </div>
+                <span className="text-sm">{error}</span>
+              </CardContent>
             </Card>
           )}
 
           {/* Success Message - Solo mostrar si el modal de detalles no está abierto */}
           {foundBox && foundPallet && !showPalletDetail && (
-            <Card variant="flat" padding="medium">
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--macos-space-3)',
-                }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--macos-space-2)',
-                    color: 'var(--macos-green)',
-                  }}
-                >
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2 text-green-600">
                   <Search size={16} />
-                  <span className="macos-text-body" style={{ fontWeight: 500 }}>
+                  <span className="text-sm font-medium">
                     Pallet encontrado - Mostrando detalles...
                   </span>
                 </div>
-                <div
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
+                <div className="text-sm text-muted-foreground">
                   Caja: <strong>{foundBox.codigo}</strong>
                   <br />
                   Pallet: <strong>{foundPallet.codigo}</strong>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           )}
 
           {/* Instructions */}
-          <div
-            className="macos-text-footnote"
-            style={{
-              color: 'var(--macos-text-tertiary)',
-              padding: 'var(--macos-space-3)',
-              backgroundColor: 'var(--macos-gray-transparentize-6)',
-              borderRadius: 'var(--macos-radius-2)',
-            }}
-          >
+          <div className="text-xs text-muted-foreground p-3 rounded-md bg-muted/40">
             <strong>Instrucciones:</strong>
             <br />
             • Escanee o ingrese el código de barras de una caja
@@ -245,7 +195,8 @@ const ScanBoxToFindPalletModal = ({
             <br />• Podrá ver los detalles del pallet e imprimir su tarjeta
           </div>
         </div>
-      </Modal>
+      </DialogContent>
+    </Dialog>
 
       {/* Pallet Detail Modal */}
       {foundPallet && (
@@ -262,7 +213,6 @@ const ScanBoxToFindPalletModal = ({
 };
 
 export default ScanBoxToFindPalletModal;
-
 
 
 

@@ -1,10 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Customer, CalibreSelection } from '@/types';
 import { Card, Button } from '@/components/design-system';
 import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
 import { getEggCountForBox, formatEggCount } from '@/utils/eggCalculations';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
+
+const notesSchema = z.object({
+  notes: z.string().max(500, 'Máximo 500 caracteres').optional(),
+});
+
+type NotesFormValues = z.infer<typeof notesSchema>;
 
 interface SaleSummaryStepProps {
   customer: Customer;
@@ -21,7 +32,13 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
   onConfirm,
   isSubmitting,
 }) => {
-  const [notes, setNotes] = useState<string>('');
+  const form = useForm<NotesFormValues>({
+    resolver: zodResolver(notesSchema),
+    defaultValues: { notes: '' },
+  });
+
+  const notesValue = form.watch('notes') ?? '';
+  const notesLength = notesValue.length;
 
   // Calcular total de cajas
   const totalBoxes = useMemo(() => {
@@ -29,19 +46,14 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
   }, [calibres]);
 
   // Calcular total de huevos estimados (asumiendo formato 1 por defecto)
-  // Nota: En el futuro se podría permitir especificar formato por calibre
   const totalEggs = useMemo(() => {
-    const eggsPerBox = getEggCountForBox('1'); // Formato 1 = 180 huevos
+    const eggsPerBox = getEggCountForBox('1');
     return totalBoxes * eggsPerBox;
   }, [totalBoxes]);
 
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNotes(e.target.value);
-  };
-
-  const handleConfirm = () => {
-    onConfirm(notes);
-  };
+  const handleConfirm = form.handleSubmit((data) => {
+    onConfirm(data.notes);
+  });
 
   return (
     <Card className="sale-summary-step p-6" variant="elevated">
@@ -168,47 +180,61 @@ const SaleSummaryStep: React.FC<SaleSummaryStepProps> = ({
         </Card>
 
         {/* Notes Section */}
-        <Card className="p-4" variant="flat">
-          <h3 className="text-lg font-medium mb-3">Notas Adicionales</h3>
-          <textarea
-            value={notes}
-            onChange={handleNotesChange}
-            placeholder="Agregar notas sobre la operación (opcional)..."
-            className="w-full p-2 border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-            rows={3}
-            maxLength={500}
-          />
-          <div className="mt-1 text-xs text-right text-gray-500">
-            {notes.length}/500 caracteres
-          </div>
-        </Card>
+        <Form {...form}>
+          <Card className="p-4" variant="flat">
+            <h3 className="text-lg font-medium mb-3">Notas Adicionales</h3>
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Agregar notas sobre la operación (opcional)..."
+                      className="w-full resize-none"
+                      rows={3}
+                      maxLength={500}
+                    />
+                  </FormControl>
+                  <div className="mt-1 flex items-center justify-between">
+                    <FormMessage />
+                    <span className="text-xs text-right text-gray-500 ml-auto">
+                      {notesLength}/500 caracteres
+                    </span>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </Card>
 
-        {/* Confirmation */}
-        <Card className="p-4 bg-blue-50" variant="flat">
-          <div className="mb-4">
-            <p className="text-center text-lg">
-              ¿Confirma que desea procesar esta {saleType.toLowerCase()} de{' '}
-              <strong>{totalBoxes} caja{totalBoxes !== 1 ? 's' : ''}</strong>{' '}
-              ({calibres.length} calibre{calibres.length !== 1 ? 's' : ''}) para
-              el cliente <strong>{customer.name}</strong>?
-            </p>
-            <p className="text-center text-sm text-gray-600 mt-2">
-              La asignación de cajas específicas se realizará en un proceso
-              posterior
-            </p>
-          </div>
+          {/* Confirmation */}
+          <Card className="p-4 bg-blue-50" variant="flat">
+            <div className="mb-4">
+              <p className="text-center text-lg">
+                ¿Confirma que desea procesar esta {saleType.toLowerCase()} de{' '}
+                <strong>{totalBoxes} caja{totalBoxes !== 1 ? 's' : ''}</strong>{' '}
+                ({calibres.length} calibre{calibres.length !== 1 ? 's' : ''}) para
+                el cliente <strong>{customer.name}</strong>?
+              </p>
+              <p className="text-center text-sm text-gray-600 mt-2">
+                La asignación de cajas específicas se realizará en un proceso
+                posterior
+              </p>
+            </div>
 
-          <div className="flex justify-center">
-            <Button
-              type="button"
-              onClick={handleConfirm}
-              variant="primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Procesando...' : `Confirmar ${saleType}`}
-            </Button>
-          </div>
-        </Card>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                onClick={handleConfirm}
+                variant="primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Procesando...' : `Confirmar ${saleType}`}
+              </Button>
+            </div>
+          </Card>
+        </Form>
       </div>
     </Card>
   );

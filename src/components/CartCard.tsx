@@ -1,6 +1,18 @@
 import { useState } from 'react';
 import { Cart } from '@/types';
-import { Button, Modal } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import {
   Eye,
   MapPin,
@@ -9,8 +21,6 @@ import {
   Layers,
   Trash2,
 } from 'lucide-react';
-import '../styles/designSystem.css';
-import styles from './PalletCard.module.css';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { formatDate } from '@/utils/formatDate';
 
@@ -64,128 +74,50 @@ const CartCard = ({
 
   return (
     <>
-      <div
-        onClick={handleCardClick}
-        className={styles.palletCard}
-        style={{ cursor: 'pointer' }}
-      >
-        {/* Status Indicator - siempre azul para carros */}
-        <div
-          className={styles.statusIndicator}
-          style={{
-            backgroundColor: 'var(--macos-blue)',
-          }}
-        />
-
-        {/* Main content container */}
-        <div className={styles.contentContainer}>
-          {/* Header Section */}
-          <div className={styles.palletHeader}>
-            <div className={styles.primaryInfo}>
-              <div className={styles.codeContainer}>
-                <span
-                  className="macos-text-headline"
-                  style={{ fontWeight: 700 }}
-                >
-                  {cart.codigo}
-                </span>
-                <span
-                  className={styles.statusBadge}
-                  style={{
-                    backgroundColor: 'var(--macos-blue-transparentize-6)',
-                    color: 'var(--macos-blue)',
-                  }}
-                >
-                  Carro
-                </span>
-              </div>
-              <div className={styles.locationContainer}>
-                <MapPin
-                  size={12}
-                  style={{ color: 'var(--macos-text-tertiary)' }}
-                />
-                <span
-                  className="macos-text-footnote"
-                  style={{ color: 'var(--macos-text-tertiary)' }}
-                >
-                  {cart.ubicacion || 'Sin ubicación'}
-                </span>
-              </div>
+      <Card onClick={handleCardClick} className="cursor-pointer">
+        <CardHeader className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-semibold">{cart.codigo}</span>
+              <Badge className="bg-blue-100 text-blue-700">Carro</Badge>
             </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CalendarIcon size={12} />
+              {formattedDate}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin size={12} />
+            {cart.ubicacion || 'Sin ubicación'}
+          </div>
+        </CardHeader>
 
-            <div className={styles.dateInfo}>
-              <CalendarIcon
-                size={12}
-                style={{ color: 'var(--macos-text-tertiary)' }}
-              />
-              <span
-                className="macos-text-footnote"
-                style={{ color: 'var(--macos-text-tertiary)' }}
-              >
-                {formattedDate}
-              </span>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Package size={16} className="text-primary" />
+                Bandejas
+              </div>
+              <div className="text-lg font-semibold">{cart.cantidadBandejas || 0}</div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Layers size={16} className="text-purple-500" />
+                Huevos
+              </div>
+              <div className="text-lg font-semibold">{cart.cantidadHuevos || 0}</div>
+            </div>
+            <div className="rounded-md border p-3">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Layers size={16} className="text-green-500" />
+                Calibre
+              </div>
+              <div className="text-lg font-semibold">{calibre || 'N/A'}</div>
             </div>
           </div>
 
-          {/* Info Section */}
-          <div className={styles.infoSection}>
-            <div className={styles.infoCard}>
-              <Package size={16} style={{ color: 'var(--macos-blue)' }} />
-              <div className={styles.infoCol}>
-                <span
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  Bandejas
-                </span>
-                <span
-                  className="macos-text-title-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  {cart.cantidadBandejas || 0}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.infoCard}>
-              <Layers size={16} style={{ color: 'var(--macos-purple)' }} />
-              <div className={styles.infoCol}>
-                <span
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  Huevos
-                </span>
-                <span
-                  className="macos-text-title-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  {cart.cantidadHuevos || 0}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.infoCard}>
-              <Layers size={16} style={{ color: 'var(--macos-green)' }} />
-              <div className={styles.infoCol}>
-                <span
-                  className="macos-text-callout"
-                  style={{ color: 'var(--macos-text-secondary)' }}
-                >
-                  Calibre
-                </span>
-                <span
-                  className="macos-text-title-2"
-                  style={{ fontWeight: 600 }}
-                >
-                  {calibre || 'N/A'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className={styles.palletActions}>
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="secondary"
               size="small"
@@ -213,60 +145,35 @@ const CartCard = ({
               </Button>
             )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteConfirm}
-        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
-        title="Confirmar Eliminación"
-        size="small"
+      <AlertDialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => !open && !isDeleting && setShowDeleteConfirm(false)}
       >
-        <div style={{ paddingBottom: 'var(--macos-space-5)' }}>
-          <p
-            className="macos-text-body"
-            style={{ marginBottom: 'var(--macos-space-3)' }}
-          >
-            ¿Estás seguro de que deseas eliminar el carro{' '}
-            <strong>{cart.codigo}</strong>?
-          </p>
-          <p
-            className="macos-text-footnote"
-            style={{ color: 'var(--macos-text-secondary)' }}
-          >
-            Esta acción no se puede deshacer.
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--macos-space-3)',
-              marginTop: 'var(--macos-space-5)',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setShowDeleteConfirm(false)}
-              disabled={isDeleting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              size="small"
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Eliminación</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar el carro{' '}
+              <strong>{cart.codigo}</strong>? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? 'Eliminando...' : 'Eliminar'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
 
 export default CartCard;
-

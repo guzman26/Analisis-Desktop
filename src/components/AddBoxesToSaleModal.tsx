@@ -4,8 +4,13 @@ import { addBoxesToSale } from '@/api/endpoints';
 import { useFilteredPallets } from '@/contexts/PalletContext';
 import { getPalletBoxes } from '@/utils/palletHelpers';
 import { useNotifications } from './Notification/Notification';
-import { Button, Modal } from './design-system';
-import './AddBoxesToSaleModal.css';
+import { Button } from './design-system';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 interface AddBoxesToSaleModalProps {
   sale: Sale;
@@ -111,124 +116,153 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Agregar Cajas a Venta">
-      <div className="add-boxes-modal">
-        <div className="modal-section">
-          <h3>Información de Venta</h3>
-          <div className="sale-info">
-            <div className="info-row">
-              <span className="info-label">ID Venta:</span>
-              <span className="info-value">{sale.saleId}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Cliente:</span>
-              <span className="info-value">{sale.customerInfo?.name}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Cajas Actuales:</span>
-              <span className="info-value">{sale.totalBoxes}</span>
-            </div>
-          </div>
-        </div>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent className="max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>Agregar Cajas a Venta</DialogTitle>
+        </DialogHeader>
 
-        <div className="modal-section">
-          <div className="section-header">
-            <h3>Pallets Disponibles en Bodega</h3>
-            <span className="pallet-count">
-              {closedPalletsInBodega.length} pallet(s)
-            </span>
-          </div>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Información de Venta</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">ID Venta</span>
+                <span className="font-medium">{sale.saleId}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Cliente</span>
+                <span className="font-medium">{sale.customerInfo?.name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Cajas Actuales</span>
+                <span className="font-medium">{sale.totalBoxes}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-          {closedPalletsInBodega.length === 0 ? (
-            <div className="empty-state">
-              <p>No hay pallets cerrados disponibles en bodega</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Pallets Disponibles en Bodega</h3>
+              <span className="text-xs text-muted-foreground">
+                {closedPalletsInBodega.length} pallet(s)
+              </span>
             </div>
-          ) : (
-            <div className="pallets-list">
-              {closedPalletsInBodega.map((pallet) => {
-                const boxes = getPalletBoxes(pallet);
-                const selectedFromPallet = selectedBoxes.get(pallet.codigo) || [];
-                
-                return (
-                  <div key={pallet.codigo} className="pallet-card">
-                    <div className="pallet-card-header">
-                      <div className="pallet-info">
-                        <span className="pallet-code">{pallet.codigo}</span>
-                        <span className="pallet-calibre">Calibre: {pallet.calibre}</span>
-                      </div>
-                      <div className="pallet-actions">
-                        <button
-                          type="button"
-                          className="link-button"
-                          onClick={() => handleSelectAllFromPallet(pallet.codigo, boxes)}
-                          disabled={isSubmitting}
-                        >
-                          Seleccionar Todas
-                        </button>
-                        {selectedFromPallet.length > 0 && (
-                          <>
-                            <span className="separator">|</span>
-                            <button
+
+            {closedPalletsInBodega.length === 0 ? (
+              <Card>
+                <CardContent className="py-6 text-sm text-muted-foreground">
+                  No hay pallets cerrados disponibles en bodega
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {closedPalletsInBodega.map((pallet) => {
+                  const boxes = getPalletBoxes(pallet);
+                  const selectedFromPallet = selectedBoxes.get(pallet.codigo) || [];
+
+                  return (
+                    <Card key={pallet.codigo}>
+                      <CardContent className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div>
+                            <p className="text-sm font-semibold">{pallet.codigo}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Calibre: {pallet.calibre}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
                               type="button"
-                              className="link-button"
-                              onClick={() => handleDeselectAllFromPallet(pallet.codigo)}
+                              variant="link"
+                              size="sm"
+                              onClick={() =>
+                                handleSelectAllFromPallet(pallet.codigo, boxes)
+                              }
                               disabled={isSubmitting}
                             >
-                              Deseleccionar
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="pallet-stats">
-                      <span>{boxes.length} cajas</span>
-                      {selectedFromPallet.length > 0 && (
-                        <span className="selected-indicator">
-                          {selectedFromPallet.length} seleccionada(s)
-                        </span>
-                      )}
-                    </div>
+                              Seleccionar Todas
+                            </Button>
+                            {selectedFromPallet.length > 0 && (
+                              <>
+                                <Separator orientation="vertical" className="h-4" />
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleDeselectAllFromPallet(pallet.codigo)
+                                  }
+                                  disabled={isSubmitting}
+                                >
+                                  Deseleccionar
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
 
-                    <div className="boxes-grid">
-                      {boxes.map((boxId) => (
-                        <label key={boxId} className="box-checkbox">
-                          <input
-                            type="checkbox"
-                            checked={selectedFromPallet.includes(boxId)}
-                            onChange={() => handleToggleBox(pallet.codigo, boxId)}
-                            disabled={isSubmitting}
-                          />
-                          <span className="box-id">{boxId}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{boxes.length} cajas</span>
+                          {selectedFromPallet.length > 0 && (
+                            <span className="font-medium text-foreground">
+                              {selectedFromPallet.length} seleccionada(s)
+                            </span>
+                          )}
+                        </div>
 
-          {getTotalSelectedBoxes() > 0 && (
-            <div className="selected-summary">
-              {getTotalSelectedBoxes()} caja(s) seleccionada(s) de {selectedBoxes.size} pallet(s)
-            </div>
-          )}
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                          {boxes.map((boxId) => (
+                            <Label
+                              key={boxId}
+                              className="flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs"
+                            >
+                              <Checkbox
+                                checked={selectedFromPallet.includes(boxId)}
+                                onCheckedChange={() =>
+                                  handleToggleBox(pallet.codigo, boxId)
+                                }
+                                disabled={isSubmitting}
+                              />
+                              <span className="font-mono">{boxId}</span>
+                            </Label>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+
+            {getTotalSelectedBoxes() > 0 && (
+              <div className="text-xs text-muted-foreground">
+                {getTotalSelectedBoxes()} caja(s) seleccionada(s) de{' '}
+                {selectedBoxes.size} pallet(s)
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Motivo (Opcional)</h3>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              disabled={isSubmitting}
+              rows={2}
+              placeholder="Descripción del motivo para agregar cajas..."
+            />
+          </div>
         </div>
 
-        <div className="modal-section">
-          <h3>Motivo (Opcional)</h3>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            disabled={isSubmitting}
-            className="form-textarea"
-            rows={2}
-            placeholder="Descripción del motivo para agregar cajas..."
-          />
-        </div>
-
-        <div className="modal-actions">
+        <DialogFooter>
           <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
             Cancelar
           </Button>
@@ -237,13 +271,14 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
             onClick={handleSubmit}
             disabled={isSubmitting || getTotalSelectedBoxes() === 0}
           >
-            {isSubmitting ? 'Procesando...' : `Agregar ${getTotalSelectedBoxes()} Caja(s)`}
+            {isSubmitting
+              ? 'Procesando...'
+              : `Agregar ${getTotalSelectedBoxes()} Caja(s)`}
           </Button>
-        </div>
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 export default AddBoxesToSaleModal;
-

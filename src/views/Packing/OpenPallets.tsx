@@ -11,7 +11,6 @@ import {
 } from '@/components/design-system';
 import { Search, Plus, Filter, Lock, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/designSystem.css';
 import {
   closePallet,
   movePallet,
@@ -177,24 +176,24 @@ const OpenPallets = () => {
   };
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Pallets Abiertos
           </h1>
-          <div className="macos-hstack">
+          <div className="flex items-center gap-4">
             {/* Botones de selección múltiple */}
             <Button
               leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
@@ -260,7 +259,7 @@ const OpenPallets = () => {
                   variant="secondary"
                   size="medium"
                   onClick={() => setIsLooseEggsModalOpen(true)}
-                  style={{ marginLeft: 'var(--macos-space-2)' }}
+                  style={{ marginLeft: 'var(--1)' }}
                 >
                   Nuevo Pallet (Huevo suelto)
                 </Button>
@@ -269,15 +268,15 @@ const OpenPallets = () => {
           </div>
         </div>
         <p
-          className="macos-text-body"
-          style={{ color: 'var(--macos-text-secondary)' }}
+          className="text-base"
+          style={{ color: 'var(--text-muted-foreground)' }}
         >
           Gestiona los pallets actualmente abiertos en el sistema
         </p>
       </div>
 
       {/* Search Bar */}
-      <div style={{ marginBottom: 'var(--macos-space-6)' }}>
+      <div style={{ marginBottom: 'var(--5)' }}>
         <Input
           placeholder="Buscar por nombre o ID..."
           value={searchTerm}
@@ -292,25 +291,25 @@ const OpenPallets = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--macos-space-5)',
-          marginBottom: 'var(--macos-space-7)',
+          gap: 'var(--4)',
+          marginBottom: 'var(--6)',
         }}
       >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Pallets
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-blue)',
+                color: 'var(--blue-500)',
                 fontWeight: 700,
               }}
             >
@@ -321,18 +320,18 @@ const OpenPallets = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Cajas
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-green)',
+                color: 'var(--green-500)',
                 fontWeight: 700,
               }}
             >
@@ -346,18 +345,18 @@ const OpenPallets = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Promedio por Pallet
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-orange)',
+                color: 'var(--orange-500)',
                 fontWeight: 700,
               }}
             >
@@ -377,10 +376,10 @@ const OpenPallets = () => {
       {/* Pallets List */}
       <Card>
         <h2
-          className="macos-text-title-2"
+          className="text-xl font-semibold"
           style={{
-            marginBottom: 'var(--macos-space-5)',
-            color: 'var(--macos-text-primary)',
+            marginBottom: 'var(--4)',
+            color: 'var(--text-foreground)',
           }}
         >
           Lista de Pallets
@@ -390,16 +389,16 @@ const OpenPallets = () => {
           <div
             style={{
               textAlign: 'center',
-              padding: 'var(--macos-space-8)',
-              color: 'var(--macos-text-secondary)',
+              padding: 'var(--8)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
-            <p className="macos-text-body">
+            <p className="text-base">
               No se encontraron pallets abiertos
             </p>
           </div>
         ) : (
-          <div className="macos-stack">
+          <div className="flex flex-col gap-4">
             {filteredPallets.map((pallet) => (
               <PalletCard
                 key={pallet.codigo}

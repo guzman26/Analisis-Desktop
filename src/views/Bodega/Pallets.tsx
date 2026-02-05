@@ -8,7 +8,6 @@ import PalletCard from '@/components/PalletCard';
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { ScanLine } from 'lucide-react';
-import '../../styles/designSystem.css';
 
 const BodegaPallets = () => {
   const { closedPalletsInBodega, fetchClosedPalletsInBodega, loading } =
@@ -53,24 +52,24 @@ const BodegaPallets = () => {
   }, []); // Dependencias vacías para que solo se ejecute una vez al montar
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Pallets en Bodega
           </h1>
-          <div style={{ display: 'flex', gap: 'var(--macos-space-2)' }}>
+          <div style={{ display: 'flex', gap: 'var(--1)' }}>
             <Button
               variant="primary"
               size="medium"
@@ -85,8 +84,8 @@ const BodegaPallets = () => {
           </div>
         </div>
         <p
-          className="macos-text-body"
-          style={{ color: 'var(--macos-text-secondary)' }}
+          className="text-base"
+          style={{ color: 'var(--text-muted-foreground)' }}
         >
           Pallets cerrados actualmente almacenados en Bodega
         </p>
@@ -97,24 +96,24 @@ const BodegaPallets = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--macos-space-5)',
-          marginBottom: 'var(--macos-space-7)',
+          gap: 'var(--4)',
+          marginBottom: 'var(--6)',
         }}
       >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Pallets
             </p>
             <p
-              className="macos-text-title-1"
-              style={{ color: 'var(--macos-blue)', fontWeight: 700 }}
+              className="text-2xl font-semibold"
+              style={{ color: 'var(--blue-500)', fontWeight: 700 }}
             >
               {closedPalletsInBodega.length}
             </p>
@@ -123,17 +122,17 @@ const BodegaPallets = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Cajas
             </p>
             <p
-              className="macos-text-title-1"
-              style={{ color: 'var(--macos-green)', fontWeight: 700 }}
+              className="text-2xl font-semibold"
+              style={{ color: 'var(--green-500)', fontWeight: 700 }}
             >
               {closedPalletsInBodega.reduce(
                 (sum, pallet) => sum + (pallet.cantidadCajas || 0),
@@ -148,11 +147,11 @@ const BodegaPallets = () => {
       {closedPalletsInBodega.length === 0 ? (
         <Card>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
               textAlign: 'center',
-              padding: 'var(--macos-space-8)',
-              color: 'var(--macos-text-secondary)',
+              padding: 'var(--8)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
             No hay pallets en bodega
@@ -163,7 +162,7 @@ const BodegaPallets = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--macos-space-7)',
+            gap: 'var(--6)',
           }}
         >
           {palletsByCalibre.map(({ calibre, pallets }) => (
@@ -171,34 +170,34 @@ const BodegaPallets = () => {
               {/* Header del grupo de calibre */}
               <div
                 style={{
-                  marginBottom: 'var(--macos-space-4)',
-                  paddingBottom: 'var(--macos-space-2)',
-                  borderBottom: '1px solid var(--macos-separator)',
+                  marginBottom: 'var(--3)',
+                  paddingBottom: 'var(--1)',
+                  borderBottom: '1px solid var(--border)',
                 }}
               >
                 <div
-                  className="macos-hstack"
+                  className="flex items-center gap-4"
                   style={{
                     justifyContent: 'space-between',
                     alignItems: 'center',
                   }}
                 >
                   <h2
-                    className="macos-text-title-2"
+                    className="text-xl font-semibold"
                     style={{
-                      color: 'var(--macos-text-primary)',
+                      color: 'var(--text-foreground)',
                       fontWeight: 600,
                     }}
                   >
                     Calibre {calibre}
                   </h2>
                   <span
-                    className="macos-text-callout"
+                    className="text-base"
                     style={{
-                      color: 'var(--macos-text-secondary)',
-                      backgroundColor: 'var(--macos-gray-transparentize-6)',
-                      padding: 'var(--macos-space-1) var(--macos-space-3)',
-                      borderRadius: 'var(--macos-radius-2)',
+                      color: 'var(--text-muted-foreground)',
+                      backgroundColor: 'rgba(200, 200, 200, 0.1)',
+                      padding: 'var(--0.5) var(--2)',
+                      borderRadius: '0.375rem',
                     }}
                   >
                     {pallets.length} pallet{pallets.length !== 1 ? 's' : ''}
@@ -208,7 +207,7 @@ const BodegaPallets = () => {
 
               {/* Grid de pallets para este calibre */}
               <div
-                className="macos-grid"
+                className="grid gap-4"
                 style={{
                   gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                 }}

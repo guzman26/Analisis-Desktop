@@ -6,8 +6,8 @@ import {
   Button,
   WindowContainer,
   LoadingOverlay,
+  SalesCard,
 } from '../../components/design-system';
-import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { useNotifications } from '../../components/Notification';
 import { confirmSale } from '@/api/endpoints';

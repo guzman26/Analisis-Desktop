@@ -1,6 +1,5 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
-import '../styles/designSystem.css';
 import { NetworkOfflineOverlay } from '@/components/design-system';
 
 interface LayoutProps {
@@ -11,24 +10,24 @@ const Layout = ({ children }: LayoutProps) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const sidebarWidth = sidebarCollapsed
-    ? 'var(--macos-width-sidebar-collapsed)'
-    : 'var(--macos-width-sidebar)';
+    ? '16rem'
+    : '20rem';
 
   return (
-    <div className="macos-window-fullscreen">
+    <div className="min-h-screen h-screen">
       <Sidebar onToggle={setSidebarCollapsed} />
       <main
-        className="macos-content macos-animate-fade-in"
+        className="flex-1 overflow-y-auto animate-fade-in"
         style={{
           marginLeft: sidebarWidth,
-          paddingLeft: 'var(--macos-space-6)',
-          paddingRight: 'var(--macos-space-6)',
-          paddingTop: 'var(--macos-space-6)',
-          paddingBottom: 'var(--macos-space-6)',
+          paddingLeft: 'var(--5)',
+          paddingRight: 'var(--5)',
+          paddingTop: 'var(--5)',
+          paddingBottom: 'var(--5)',
           minHeight: '100vh',
           overflow: 'auto',
           transition:
-            'margin-left var(--macos-duration-normal) var(--macos-ease-out)',
+            'margin-left 0.2s ease-out',
         }}
       >
         <NetworkOfflineOverlay />

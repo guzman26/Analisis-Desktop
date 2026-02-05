@@ -33,6 +33,9 @@ const AdminDangerZone = lazy(() => import('../views/Admin/DangerZone'));
 const AdminMetrics = lazy(() => import('../views/Admin/Metrics'));
 const AdminMetricsAggregated = lazy(() => import('../views/Admin/MetricsAggregated'));
 const AdminSalesMetrics = lazy(() => import('../views/Admin/SalesMetrics'));
+const DispatchesList = lazy(() => import('../views/Dispatch/DispatchesList'));
+const CreateDispatchForm = lazy(() => import('../views/Dispatch/CreateDispatchForm'));
+const ShadcnTest = lazy(() => import('../views/Test/ShadcnTest'));
 
 export const routes = [
   {
@@ -114,6 +117,22 @@ export const routes = [
   {
     path: '/admin/metrics/sales',
     element: <AdminSalesMetrics />,
+  },
+  {
+    path: '/dispatch/list',
+    element: <DispatchesList />,
+  },
+  {
+    path: '/dispatch/create',
+    element: <CreateDispatchForm />,
+  },
+  {
+    path: '/dispatch/edit/:id',
+    element: <CreateDispatchForm />,
+  },
+  {
+    path: '/test/shadcn',
+    element: <ShadcnTest />,
   },
 ];
 

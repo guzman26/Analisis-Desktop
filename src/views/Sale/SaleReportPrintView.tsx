@@ -210,7 +210,7 @@ const SaleReportPrintView: React.FC = () => {
   }
 
   return (
-    <WindowContainer title="Ficha Interna" showTrafficLights={false}>
+    <WindowContainer title="Ficha Interna" >
       {/* Print Actions - Hidden when printing */}
       <div className="print-actions no-print">
         <Button onClick={handleGoBack} variant="secondary">

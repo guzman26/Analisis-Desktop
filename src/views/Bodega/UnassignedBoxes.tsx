@@ -238,7 +238,7 @@ const UnassignedBoxes = () => {
             disabled={filteredBoxes.length === 0}
             style={{
               padding: '8px 12px',
-              backgroundColor: isSelectionMode ? 'var(--macos-blue)' : '#6c757d',
+              backgroundColor: isSelectionMode ? 'var(--blue-500)' : '#6c757d',
               color: 'white',
               border: 'none',
               borderRadius: '4px',

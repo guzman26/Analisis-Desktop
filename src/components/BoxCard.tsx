@@ -6,11 +6,13 @@ import {
   getDateFromCodigo,
 } from '@/utils/getParamsFromCodigo';
 import { Button } from '@/components/design-system';
-import { Calendar, MapPin, Check, Tag, Clipboard, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, MapPin, Tag, Clipboard, Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { deleteBox } from '@/api/endpoints';
 import { clsx } from 'clsx';
-import styles from './BoxCard.module.css';
 
 interface BoxCardProps {
   box: Box;
@@ -77,36 +79,12 @@ const BoxCard = ({
     : getDateFromCodigo(box.codigo);
   const calibre = formatCalibreName(box.calibre);
 
-  // Determine color for status indicator based on location
-  const getLocationColor = (location: string) => {
-    switch (location.toLowerCase()) {
-      case 'packing':
-        return 'var(--macos-blue)';
-      case 'bodega':
-        return 'var(--macos-green)';
-      case 'venta':
-        return 'var(--macos-purple)';
-      case 'transito':
-        return 'var(--macos-orange)';
-      default:
-        return 'var(--macos-gray-5)';
-    }
-  };
-
-  // Get the appropriate CSS class for the location badge
-  const getLocationClass = (location: string) => {
-    switch (location.toLowerCase()) {
-      case 'packing':
-        return styles.locationPacking;
-      case 'bodega':
-        return styles.locationBodega;
-      case 'venta':
-        return styles.locationVenta;
-      case 'transito':
-        return styles.locationTransito;
-      default:
-        return styles.locationDefault;
-    }
+  const locationStyles: Record<string, string> = {
+    packing: 'bg-blue-100 text-blue-700',
+    bodega: 'bg-green-100 text-green-700',
+    venta: 'bg-purple-100 text-purple-700',
+    transito: 'bg-orange-100 text-orange-700',
+    default: 'bg-gray-100 text-gray-700',
   };
 
   const [showDeleteModal, setShowDeleteModal] = React.useState(false);
@@ -130,71 +108,57 @@ const BoxCard = ({
   };
 
   return (
-    <div
+    <Card
       className={clsx(
-        styles.boxCard,
-        isSelectable && styles.selectable,
-        isSelected && styles.selected
+        'relative transition-shadow',
+        isSelectable && 'cursor-pointer',
+        isSelected && 'ring-2 ring-primary'
       )}
       onClick={handleCardClick}
     >
-      {/* Status indicator */}
-      <div
-        className={styles.statusIndicator}
-        style={{ backgroundColor: getLocationColor(box.ubicacion) }}
-      />
+      <CardHeader className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-mono text-sm font-semibold">{box.codigo}</span>
+          <Badge
+            className={locationStyles[box.ubicacion?.toLowerCase() ?? ''] || locationStyles.default}
+          >
+            <MapPin size={12} className="mr-1" />
+            {box.ubicacion}
+          </Badge>
+        </div>
 
-      {/* Selection Checkbox */}
-      {isSelectable && (
-        <div className={styles.checkboxContainer}>
+        {isSelectable && (
           <div
-            className={clsx(
-              styles.checkbox,
-              isSelected && styles.checkboxSelected
-            )}
+            className="flex items-center gap-2 text-xs text-muted-foreground"
             onClick={handleCheckboxClick}
           >
-            {isSelected && <Check className="w-3 h-3 text-white" />}
+            <Checkbox checked={isSelected} />
+            <span>Seleccionar</span>
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 gap-2 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Código</span>
+            <span className="font-medium">{box.codigo}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Calendar size={14} /> Fecha
+            </span>
+            <span className="font-medium">{formattedDate}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Tag size={14} /> Calibre
+            </span>
+            <span className="font-medium">{calibre}</span>
           </div>
         </div>
-      )}
 
-      {/* Header with code and location */}
-      <div className={styles.header}>
-        <div className={styles.codeContainer}>
-          <span className={styles.code}>{box.codigo}</span>
-        </div>
-        <span className={`${styles.badge} ${getLocationClass(box.ubicacion)}`}>
-          <MapPin size={12} className="mr-1" />
-          {box.ubicacion}
-        </span>
-      </div>
-
-      {/* Info Cards Section */}
-      <div className={styles.infoSection}>
-        <div className={styles.infoItem}>
-          <div className={styles.infoLabel}>Código</div>
-          <div className={styles.infoValue}>{box.codigo}</div>
-        </div>
-        <div className={styles.infoItem}>
-          <div className={styles.infoLabel}>
-            <Calendar size={14} />
-            Fecha
-          </div>
-          <div className={styles.infoValue}>{formattedDate}</div>
-        </div>
-
-        <div className={styles.infoItem}>
-          <div className={styles.infoLabel}>
-            <Tag size={14} />
-            Calibre
-          </div>
-          <div className={styles.infoValue}>{calibre}</div>
-        </div>
-      </div>
-
-      {/* Card Actions */}
-      <div className={styles.actions}>
+        <div className="flex flex-wrap gap-2">
         <Button
           variant="secondary"
           size="small"
@@ -241,7 +205,7 @@ const BoxCard = ({
               isSearchingCompatible
             }
             isLoading={isSearchingCompatible}
-            className="!bg-macos-blue-transparentize-6 !text-macos-blue hover:!bg-macos-blue-transparentize-5"
+            className="!bg-blue-500-transparentize-6 !text-blue-500 hover:!bg-blue-500-transparentize-5"
           >
             {!isSearchingCompatible && 'Buscar Compatible'}
           </Button>
@@ -261,7 +225,7 @@ const BoxCard = ({
               isSearchingCompatible
             }
             isLoading={isAssigningToCompatible}
-            className="!bg-macos-green-transparentize-6 !text-macos-green hover:!bg-macos-green-transparentize-5"
+            className="!bg-green-500-transparentize-6 !text-green-500 hover:!bg-green-500-transparentize-5"
           >
             {!isAssigningToCompatible && 'Asignar a Compatible'}
           </Button>
@@ -276,11 +240,12 @@ const BoxCard = ({
             e.stopPropagation();
             setShowDeleteModal(true);
           }}
-          className="!bg-macos-danger-transparentize-6 !text-macos-danger hover:!bg-macos-danger-transparentize-5"
+          className="text-destructive hover:text-destructive"
         >
           Eliminar
         </Button>
       </div>
+      </CardContent>
 
       <ConfirmDeleteModal
         isOpen={showDeleteModal}
@@ -291,7 +256,7 @@ const BoxCard = ({
         description={`¿Seguro que deseas eliminar la caja ${box.codigo}? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
       />
-    </div>
+    </Card>
   );
 };
 

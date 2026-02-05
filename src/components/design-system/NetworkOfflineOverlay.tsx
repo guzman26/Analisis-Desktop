@@ -29,22 +29,22 @@ const NetworkOfflineOverlay: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60">
-      <div className="bg-white rounded-macos-sm shadow-xl border border-macos-border px-6 py-5 max-w-lg text-center">
-        <h2 className="text-lg font-semibold text-macos-text mb-2">
+      <div className="bg-white rounded-md shadow-xl border border-border px-6 py-5 max-w-lg text-center">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
           Sin conexión a internet
         </h2>
-        <p className="text-macos-text-secondary mb-4">
+        <p className="text-muted-foreground mb-4">
           Parece que no hay conexión. Verifica tu red Wi‑Fi o datos móviles.
         </p>
         <div className="flex items-center justify-center gap-2">
           <button
-            className="px-4 py-2 rounded-macos-sm border border-macos-border hover:bg-gray-50"
+            className="px-4 py-2 rounded-md border border-border hover:bg-gray-50"
             onClick={() => setIsOffline(!navigator.onLine ? true : false)}
           >
             Reintentar
           </button>
           <button
-            className="px-4 py-2 rounded-macos-sm bg-macos-accent text-white hover:bg-macos-accent/90"
+            className="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90"
             onClick={() => window.location.reload()}
           >
             Recargar

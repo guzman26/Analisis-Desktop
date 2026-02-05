@@ -12,7 +12,6 @@ import CartsFilters, {
 import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre, getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
-import '../../styles/designSystem.css';
 
 const Carts = () => {
   const [allCarts, setAllCarts] = useState<Cart[]>([]);
@@ -167,20 +166,20 @@ const Carts = () => {
   }, [cartsByCompany, filters.searchTerm]);
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando carros…" />
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Carros
           </h1>
@@ -189,8 +188,8 @@ const Carts = () => {
           </Button>
         </div>
         <p
-          className="macos-text-body"
-          style={{ color: 'var(--macos-text-secondary)' }}
+          className="text-base"
+          style={{ color: 'var(--text-muted-foreground)' }}
         >
           Lista de carros en Packing
         </p>
@@ -208,25 +207,25 @@ const Carts = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--macos-space-5)',
-          marginBottom: 'var(--macos-space-7)',
+          gap: 'var(--4)',
+          marginBottom: 'var(--6)',
         }}
       >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Carros
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-blue)',
+                color: 'var(--blue-500)',
                 fontWeight: 700,
               }}
             >
@@ -237,18 +236,18 @@ const Carts = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Bandejas
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-green)',
+                color: 'var(--green-500)',
                 fontWeight: 700,
               }}
             >
@@ -262,18 +261,18 @@ const Carts = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Huevos
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-purple)',
+                color: 'var(--purple-500)',
                 fontWeight: 700,
               }}
             >
@@ -290,11 +289,11 @@ const Carts = () => {
       {allCarts.length === 0 && !loadingMore && !loading ? (
         <Card>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
               textAlign: 'center',
-              padding: 'var(--macos-space-8)',
-              color: 'var(--macos-text-secondary)',
+              padding: 'var(--8)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
             No hay carros
@@ -305,7 +304,7 @@ const Carts = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--macos-space-6)',
+            gap: 'var(--5)',
           }}
         >
           {filteredCartsByCompany.map(([empresa, carts]) => {
@@ -318,10 +317,10 @@ const Carts = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 'var(--macos-space-3)',
-                    marginBottom: isCollapsed ? 0 : 'var(--macos-space-4)',
-                    paddingBottom: 'var(--macos-space-2)',
-                    borderBottom: '1px solid var(--macos-separator)',
+                    gap: 'var(--2)',
+                    marginBottom: isCollapsed ? 0 : 'var(--3)',
+                    paddingBottom: 'var(--1)',
+                    borderBottom: '1px solid var(--border)',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'margin-bottom 0.2s ease',
@@ -330,19 +329,19 @@ const Carts = () => {
                   {isCollapsed ? (
                     <ChevronUp
                       size={20}
-                      style={{ color: 'var(--macos-text-secondary)' }}
+                      style={{ color: 'var(--text-muted-foreground)' }}
                     />
                   ) : (
                     <ChevronDown
                       size={20}
-                      style={{ color: 'var(--macos-text-secondary)' }}
+                      style={{ color: 'var(--text-muted-foreground)' }}
                     />
                   )}
-                  <Building2 size={20} style={{ color: 'var(--macos-blue)' }} />
+                  <Building2 size={20} style={{ color: 'var(--blue-500)' }} />
                   <h2
-                    className="macos-text-title-2"
+                    className="text-xl font-semibold"
                     style={{
-                      color: 'var(--macos-text-primary)',
+                      color: 'var(--text-foreground)',
                       fontWeight: 600,
                       margin: 0,
                     }}
@@ -350,12 +349,12 @@ const Carts = () => {
                     {empresa}
                   </h2>
                   <span
-                    className="macos-text-footnote"
+                    className="text-sm"
                     style={{
-                      color: 'var(--macos-text-tertiary)',
-                      backgroundColor: 'var(--macos-fill-secondary)',
+                      color: 'var(--text-muted-foreground/70)',
+                      backgroundColor: 'hsl(var(--muted))',
                       padding: '2px 8px',
-                      borderRadius: 'var(--macos-radius-sm)',
+                      borderRadius: '0.25rem',
                     }}
                   >
                     {carts.length}{' '}
@@ -366,7 +365,7 @@ const Carts = () => {
                 {/* Grid de carros de esta empresa - solo visible si no está colapsado */}
                 {!isCollapsed && (
                   <div
-                    className="macos-grid"
+                    className="grid gap-4"
                     style={{
                       gridTemplateColumns:
                         'repeat(auto-fill, minmax(320px, 1fr))',
@@ -398,7 +397,7 @@ const Carts = () => {
 
       {/* Botón Cargar Más */}
       {hasMore && allCarts.length > 0 && (
-        <div style={{ marginTop: 'var(--macos-space-6)', textAlign: 'center' }}>
+        <div style={{ marginTop: 'var(--5)', textAlign: 'center' }}>
           <Button
             variant="secondary"
             size="medium"
@@ -408,10 +407,10 @@ const Carts = () => {
             {loadingMore ? 'Cargando...' : 'Cargar más carros'}
           </Button>
           <p
-            className="macos-text-footnote"
+            className="text-sm"
             style={{
-              color: 'var(--macos-text-secondary)',
-              marginTop: 'var(--macos-space-2)',
+              color: 'var(--text-muted-foreground)',
+              marginTop: 'var(--1)',
             }}
           >
             Mostrando {allCarts.length} carros

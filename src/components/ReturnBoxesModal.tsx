@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { Sale, ReturnReason } from '@/types';
 import { returnBoxes } from '@/api/endpoints';
 import { useNotifications } from './Notification/Notification';
-import { Button, Modal } from './design-system';
-import './ReturnBoxesModal.css';
+import { Button } from './design-system';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 interface ReturnBoxesModalProps {
   sale: Sale;
@@ -123,130 +129,144 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Devolver Cajas">
-      <div className="return-boxes-modal">
-        <div className="modal-section">
-          <h3>Información de Venta</h3>
-          <div className="sale-info">
-            <div className="info-row">
-              <span className="info-label">ID Venta:</span>
-              <span className="info-value">{sale.saleId}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Cliente:</span>
-              <span className="info-value">{sale.customerInfo?.name}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Total Cajas:</span>
-              <span className="info-value">{sale.totalBoxes}</span>
-            </div>
-          </div>
-        </div>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent className="max-w-5xl">
+        <DialogHeader>
+          <DialogTitle>Devolver Cajas</DialogTitle>
+        </DialogHeader>
 
-        <div className="modal-section">
-          <div className="section-header">
-            <h3>Seleccionar Cajas</h3>
-            <div className="selection-actions">
-              <button
-                type="button"
-                className="link-button"
-                onClick={handleSelectAll}
-                disabled={isSubmitting}
-              >
-                Seleccionar Todas
-              </button>
-              <span className="separator">|</span>
-              <button
-                type="button"
-                className="link-button"
-                onClick={handleDeselectAll}
-                disabled={isSubmitting}
-              >
-                Deseleccionar Todas
-              </button>
-            </div>
-          </div>
-
-          <div className="boxes-list">
-            {allBoxes.map((item) => (
-              <div key={item.palletId} className="pallet-group">
-                <div className="pallet-header">
-                  <span className="pallet-label">Pallet: {item.palletId}</span>
-                  <span className="box-count">{item.boxIds.length} cajas</span>
-                </div>
-                <div className="boxes-grid">
-                  {item.boxIds.map((boxId: string) => (
-                    <label key={boxId} className="box-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={selectedBoxes.includes(boxId)}
-                        onChange={() => handleToggleBox(boxId)}
-                        disabled={isSubmitting}
-                      />
-                      <span className="box-id">{boxId}</span>
-                    </label>
-                  ))}
-                </div>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Información de Venta</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">ID Venta</span>
+                <span className="font-medium">{sale.saleId}</span>
               </div>
-            ))}
-          </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Cliente</span>
+                <span className="font-medium">{sale.customerInfo?.name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Total Cajas</span>
+                <span className="font-medium">{sale.totalBoxes}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="selected-count">
-            {selectedBoxes.length} caja(s) seleccionada(s)
-          </div>
-        </div>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-medium">Seleccionar Cajas</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  disabled={isSubmitting}
+                >
+                  Seleccionar Todas
+                </Button>
+                <Separator orientation="vertical" className="h-4" />
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  onClick={handleDeselectAll}
+                  disabled={isSubmitting}
+                >
+                  Deseleccionar Todas
+                </Button>
+              </div>
+            </div>
 
-        <div className="modal-section">
-          <h3>Motivo de Devolución</h3>
-          <div className="form-group">
-            <label htmlFor="return-reason">Motivo</label>
-            <select
-              id="return-reason"
-              value={reason}
-              onChange={(e) => setReason(e.target.value as ReturnReason)}
-              disabled={isSubmitting}
-              className="form-select"
-            >
-              {RETURN_REASONS.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
+            <div className="space-y-4">
+              {allBoxes.map((item) => (
+                <Card key={item.palletId}>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium">Pallet: {item.palletId}</span>
+                      <span className="text-muted-foreground">
+                        {item.boxIds.length} cajas
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {item.boxIds.map((boxId: string) => (
+                        <Label
+                          key={boxId}
+                          className="flex items-center gap-2 rounded-md border px-2 py-1.5 text-xs"
+                        >
+                          <Checkbox
+                            checked={selectedBoxes.includes(boxId)}
+                            onCheckedChange={() => handleToggleBox(boxId)}
+                            disabled={isSubmitting}
+                          />
+                          <span className="font-mono">{boxId}</span>
+                        </Label>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-            </select>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              {selectedBoxes.length} caja(s) seleccionada(s)
+            </div>
           </div>
 
-          {reason === 'other' && (
-            <div className="form-group">
-              <label htmlFor="reason-details">Detalles</label>
-              <textarea
-                id="reason-details"
-                value={reasonDetails}
-                onChange={(e) => setReasonDetails(e.target.value)}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium">Motivo de Devolución</h3>
+            <div className="space-y-2">
+              <Label htmlFor="return-reason">Motivo</Label>
+              <Select
+                value={reason}
+                onValueChange={(value) => setReason(value as ReturnReason)}
                 disabled={isSubmitting}
-                className="form-textarea"
-                rows={3}
-                placeholder="Describa el motivo de la devolución..."
-              />
+              >
+                <SelectTrigger id="return-reason">
+                  <SelectValue placeholder="Selecciona un motivo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {RETURN_REASONS.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          {reason !== 'other' && (
-            <div className="form-group">
-              <label htmlFor="reason-details">Detalles Adicionales (Opcional)</label>
-              <textarea
+            <div className="space-y-2">
+              <Label htmlFor="reason-details">
+                {reason === 'other'
+                  ? 'Detalles'
+                  : 'Detalles Adicionales (Opcional)'}
+              </Label>
+              <Textarea
                 id="reason-details"
                 value={reasonDetails}
                 onChange={(e) => setReasonDetails(e.target.value)}
                 disabled={isSubmitting}
-                className="form-textarea"
-                rows={2}
-                placeholder="Información adicional..."
+                rows={reason === 'other' ? 3 : 2}
+                placeholder={
+                  reason === 'other'
+                    ? 'Describa el motivo de la devolución...'
+                    : 'Información adicional...'
+                }
               />
             </div>
-          )}
+          </div>
         </div>
 
-        <div className="modal-actions">
+        <DialogFooter>
           <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
             Cancelar
           </Button>
@@ -255,13 +275,14 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
             onClick={handleSubmit}
             disabled={isSubmitting || selectedBoxes.length === 0}
           >
-            {isSubmitting ? 'Procesando...' : `Devolver ${selectedBoxes.length} Caja(s)`}
+            {isSubmitting
+              ? 'Procesando...'
+              : `Devolver ${selectedBoxes.length} Caja(s)`}
           </Button>
-        </div>
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
 export default ReturnBoxesModal;
-

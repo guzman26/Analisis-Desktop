@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Button } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Issue } from '@/types';
-import '../styles/designSystem.css';
-import './IssueCard.css';
 import { updateIssueStatus } from '@/api/endpoints';
 
 interface IssueCardProps {
@@ -32,10 +32,11 @@ const IssueCard: React.FC<IssueCardProps> = ({
     }
   )}`;
 
-  // Compute CSS class for status badge based on current status
-  const statusClass = `status-badge ${currentStatus
-    .toLowerCase()
-    .replace('_', '-')}`;
+  const statusStyles: Record<string, string> = {
+    PENDING: 'bg-yellow-100 text-yellow-700',
+    IN_PROGRESS: 'bg-blue-100 text-blue-700',
+    RESOLVED: 'bg-green-100 text-green-700',
+  };
 
   const statusOptions = [
     { value: 'PENDING', label: 'Pendiente' },
@@ -59,54 +60,47 @@ const IssueCard: React.FC<IssueCardProps> = ({
 
   return (
     <Card
-      variant="default"
-      isHoverable
-      isPressable={!!onClick}
       onClick={onClick}
-      className="issue-card"
+      className={onClick ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}
     >
-      {/* Header: Date & Status */}
-      <div className="issue-card-header macos-hstack">
-        <span className="issue-date macos-text-headline">{formattedDate}</span>
-        <span className={statusClass}>{currentStatus}</span>
-      </div>
-
-      {/* Title */}
-      {issue.title && (
-        <div className="issue-title">
-          <span className="macos-text-callout issue-title-text">
-            {issue.title}
-          </span>
+      <CardHeader className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold">{formattedDate}</span>
+          <Badge className={statusStyles[currentStatus] || 'bg-muted'}>
+            {currentStatus}
+          </Badge>
         </div>
-      )}
 
-      {/* Secondary Info: ID */}
-      <div className="issue-secondary macos-hstack">
-        <span className="label macos-text-footnote">ID:</span>
-        <span className="value macos-text-footnote">{issue.id}</span>
-      </div>
+        {issue.title && (
+          <div className="text-sm font-medium">{issue.title}</div>
+        )}
+      </CardHeader>
 
-      {/* Description */}
-      <div className="issue-description macos-stack">
-        <span className="label macos-text-footnote">Descripción:</span>
-        <p className="macos-text-body description-text">{issue.description}</p>
-      </div>
+      <CardContent className="space-y-3">
+        <div className="text-xs text-muted-foreground">
+          ID: <span className="font-medium text-foreground">{issue.id}</span>
+        </div>
 
-      {/* Status Update Buttons */}
-      <div className="issue-actions macos-hstack">
-        {statusOptions.map((opt) => (
-          <Button
-            key={opt.value}
-            variant={currentStatus === opt.value ? 'primary' : 'secondary'}
-            size="small"
-            disabled={currentStatus === opt.value || !!updating}
-            isLoading={updating === opt.value}
-            onClick={() => handleStatusChange(opt.value)}
-          >
-            {opt.label}
-          </Button>
-        ))}
-      </div>
+        <div className="space-y-1">
+          <span className="text-xs text-muted-foreground">Descripción:</span>
+          <p className="text-sm">{issue.description}</p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {statusOptions.map((opt) => (
+            <Button
+              key={opt.value}
+              variant={currentStatus === opt.value ? 'primary' : 'secondary'}
+              size="small"
+              disabled={currentStatus === opt.value || !!updating}
+              isLoading={updating === opt.value}
+              onClick={() => handleStatusChange(opt.value)}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+      </CardContent>
     </Card>
   );
 };

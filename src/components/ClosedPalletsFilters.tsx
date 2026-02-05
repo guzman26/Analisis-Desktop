@@ -1,5 +1,16 @@
 import React from 'react';
-import { Button, Card, Input } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Filter, X, Package, Search, Clock, Building2 } from 'lucide-react';
 
 export type Filters = {
@@ -86,57 +97,54 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
   );
 
   return (
-    <Card variant="flat">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-macos-accent" />
-          <h3 className="text-sm font-medium">Filtros</h3>
-          {hasActive && (
-            <span className="px-2 py-0.5 rounded-macos-sm bg-macos-accent/10 text-macos-accent text-xs">
-              Activos
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {hasActive && (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-primary" />
+            <CardTitle className="text-base">Filtros</CardTitle>
+            {hasActive && <Badge variant="secondary">Activos</Badge>}
+          </div>
+          <div className="flex items-center gap-2">
+            {hasActive && (
+              <Button
+                variant="secondary"
+                size="small"
+                leftIcon={<X size={14} />}
+                onClick={clearAll}
+                disabled={disabled}
+              >
+                Limpiar
+              </Button>
+            )}
+            {expanded && (
+              <Button
+                variant="primary"
+                size="small"
+                onClick={handleApplyFilters}
+                disabled={disabled}
+              >
+                Aplicar
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="small"
-              leftIcon={<X size={14} />}
-              onClick={clearAll}
+              onClick={() => setExpanded((v) => !v)}
               disabled={disabled}
             >
-              Limpiar
+              {expanded ? 'Ocultar' : 'Mostrar'}
             </Button>
-          )}
-          {expanded && (
-            <Button
-              variant="primary"
-              size="small"
-              onClick={handleApplyFilters}
-              disabled={disabled}
-            >
-              Aplicar
-            </Button>
-          )}
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => setExpanded((v) => !v)}
-            disabled={disabled}
-          >
-            {expanded ? 'Ocultar' : 'Mostrar'}
-          </Button>
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
       {expanded && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Búsqueda */}
+        <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+            <Label className="text-xs flex items-center gap-1">
               <Search size={14} /> Buscar código o calibre
-            </label>
+            </Label>
             <Input
               placeholder="Buscar…"
               value={localState.searchTerm}
@@ -150,11 +158,10 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             />
           </div>
 
-          {/* Empresa */}
           <div className="space-y-1">
-            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+            <Label className="text-xs flex items-center gap-1">
               <Building2 size={14} /> Empresa
-            </label>
+            </Label>
             <Input
               placeholder="Nombre de empresa"
               value={localState.empresa}
@@ -166,11 +173,10 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             />
           </div>
 
-          {/* Calibre */}
           <div className="space-y-1">
-            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+            <Label className="text-xs flex items-center gap-1">
               <Package size={14} /> Calibre
-            </label>
+            </Label>
             <Input
               placeholder="Calibre (ej: M, G, J)"
               value={localState.calibre}
@@ -182,32 +188,34 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             />
           </div>
 
-          {/* Turno (client-side) */}
           <div className="space-y-1">
-            <label className="text-xs text-macos-text-secondary flex items-center gap-1">
+            <Label className="text-xs flex items-center gap-1">
               <Clock size={14} /> Turno
-            </label>
-            <select
-              className="w-full border border-macos-border rounded-macos-sm px-3 py-2"
-              value={localState.turno}
-              onChange={(e) => {
-                const value = e.target.value;
-                setLocalState((prev) => ({ ...prev, turno: value }));
-              }}
+            </Label>
+            <Select
+              value={localState.turno || 'all'}
+              onValueChange={(value) =>
+                setLocalState((prev) => ({
+                  ...prev,
+                  turno: value === 'all' ? '' : value,
+                }))
+              }
               disabled={disabled}
             >
-              <option value="">Todos</option>
-              <option value="1">Turno 1</option>
-              <option value="2">Turno 2</option>
-              <option value="3">Turno 3</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="1">Turno 1</SelectItem>
+                <SelectItem value="2">Turno 2</SelectItem>
+                <SelectItem value="3">Turno 3</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Rango de fechas (server-side) */}
           <div className="space-y-1">
-            <label className="text-xs text-macos-text-secondary">
-              Rango de fechas
-            </label>
+            <Label className="text-xs">Rango de fechas</Label>
             <div className="grid grid-cols-2 gap-2">
               <Input
                 type="date"
@@ -229,7 +237,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               />
             </div>
           </div>
-        </div>
+        </CardContent>
       )}
     </Card>
   );

@@ -46,7 +46,6 @@ import {
   isValidCustomer,
   isValidPaginatedResponse,
 } from '@/utils/dataValidation';
-import '../../styles/designSystem.css';
 
 const SalesMetrics: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
@@ -392,10 +391,10 @@ const SalesMetrics: React.FC = () => {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
-          marginTop: 'var(--macos-space-2)',
+          marginTop: 'var(--1)',
           padding: '4px 8px',
           backgroundColor: bgColor,
-          borderRadius: 'var(--macos-radius-small)',
+          borderRadius: 'var(--rounded-sm)',
           border: `1px solid ${color}40`,
         }}
       >
@@ -599,25 +598,25 @@ const SalesMetrics: React.FC = () => {
 
   return (
     <div
-      className="macos-animate-fade-in"
-      style={{ padding: 'var(--macos-space-7)' }}
+      className="animate-fade-in"
+      style={{ padding: 'var(--6)' }}
     >
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-5)',
+            marginBottom: 'var(--4)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Métricas de Ventas
           </h1>
-          <div className="macos-hstack" style={{ gap: 'var(--macos-space-2)' }}>
+          <div className="flex items-center gap-4" style={{ gap: 'var(--1)' }}>
             <Button
               leftIcon={<FileSpreadsheet style={{ width: '16px', height: '16px' }} />}
               variant="secondary"
@@ -643,8 +642,8 @@ const SalesMetrics: React.FC = () => {
         <Card variant="default" padding="none">
           <div
             style={{
-              padding: 'var(--macos-space-4)',
-              borderBottom: filtersExpanded ? '1px solid var(--macos-gray-4)' : 'none',
+              padding: 'var(--3)',
+              borderBottom: filtersExpanded ? '1px solid var(--gray-200)' : 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -652,29 +651,29 @@ const SalesMetrics: React.FC = () => {
             }}
             onClick={() => setFiltersExpanded(!filtersExpanded)}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-2)' }}>
-              <Filter style={{ width: '18px', height: '18px', color: 'var(--macos-text-secondary)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--1)' }}>
+              <Filter style={{ width: '18px', height: '18px', color: 'var(--text-muted-foreground)' }} />
               <h3
-                className="macos-text-title-3"
-                style={{ margin: 0, color: 'var(--macos-text-primary)' }}
+                className="text-lg font-semibold"
+                style={{ margin: 0, color: 'var(--text-foreground)' }}
               >
                 Filtros y Comparación
               </h3>
             </div>
             {filtersExpanded ? (
-              <ChevronUp style={{ width: '18px', height: '18px', color: 'var(--macos-text-secondary)' }} />
+              <ChevronUp style={{ width: '18px', height: '18px', color: 'var(--text-muted-foreground)' }} />
             ) : (
-              <ChevronDown style={{ width: '18px', height: '18px', color: 'var(--macos-text-secondary)' }} />
+              <ChevronDown style={{ width: '18px', height: '18px', color: 'var(--text-muted-foreground)' }} />
             )}
           </div>
 
           {filtersExpanded && (
             <div
               style={{
-                padding: 'var(--macos-space-4)',
+                padding: 'var(--3)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 'var(--macos-space-4)',
+                gap: 'var(--3)',
               }}
             >
               <PeriodSelector
@@ -689,10 +688,10 @@ const SalesMetrics: React.FC = () => {
               {/* Comparison Toggle - Improved Switch */}
               <div
                 style={{
-                  padding: 'var(--macos-space-4)',
-                  backgroundColor: enableComparison ? 'rgba(0, 122, 255, 0.05)' : 'var(--macos-gray-6)',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  border: `2px solid ${enableComparison ? 'var(--macos-blue)' : 'var(--macos-gray-4)'}`,
+                  padding: 'var(--3)',
+                  backgroundColor: enableComparison ? 'rgba(0, 122, 255, 0.05)' : 'var(--gray-50)',
+                  borderRadius: 'var(--rounded-md)',
+                  border: `2px solid ${enableComparison ? 'var(--blue-500)' : 'var(--gray-200)'}`,
                   transition: 'all 0.2s ease',
                 }}
               >
@@ -701,10 +700,10 @@ const SalesMetrics: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginBottom: enableComparison ? 'var(--macos-space-3)' : 0,
+                    marginBottom: enableComparison ? 'var(--2)' : 0,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--macos-space-3)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--2)' }}>
                     <label
                       style={{
                         position: 'relative',
@@ -736,7 +735,7 @@ const SalesMetrics: React.FC = () => {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          backgroundColor: enableComparison ? 'var(--macos-blue)' : 'var(--macos-gray-4)',
+                          backgroundColor: enableComparison ? 'var(--blue-500)' : 'var(--gray-200)',
                           borderRadius: '28px',
                           transition: 'all 0.3s ease',
                         }}
@@ -758,9 +757,9 @@ const SalesMetrics: React.FC = () => {
                       </span>
                     </label>
                     <span
-                      className="macos-text-subheadline"
+                      className="text-sm font-medium"
                       style={{
-                        color: 'var(--macos-text-primary)',
+                        color: 'var(--text-foreground)',
                         fontWeight: 600,
                       }}
                     >
@@ -774,9 +773,9 @@ const SalesMetrics: React.FC = () => {
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: 'var(--macos-space-3)',
-                      paddingTop: 'var(--macos-space-3)',
-                      borderTop: '1px solid var(--macos-gray-4)',
+                      gap: 'var(--2)',
+                      paddingTop: 'var(--2)',
+                      borderTop: '1px solid var(--gray-200)',
                     }}
                   >
                     {/* Period Labels - More Visible */}
@@ -784,26 +783,26 @@ const SalesMetrics: React.FC = () => {
                       style={{
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
-                        gap: 'var(--macos-space-3)',
-                        padding: 'var(--macos-space-3)',
-                        backgroundColor: 'var(--macos-background)',
-                        borderRadius: 'var(--macos-radius-small)',
+                        gap: 'var(--2)',
+                        padding: 'var(--2)',
+                        backgroundColor: 'var(--bg-background)',
+                        borderRadius: 'var(--rounded-sm)',
                       }}
                     >
                       <div>
                         <p
-                          className="macos-text-caption-1"
+                          className="text-xs"
                           style={{
-                            color: 'var(--macos-text-secondary)',
+                            color: 'var(--text-muted-foreground)',
                             marginBottom: '4px',
                           }}
                         >
                           Período Actual
                         </p>
                         <p
-                          className="macos-text-body"
+                          className="text-base"
                           style={{
-                            color: 'var(--macos-blue)',
+                            color: 'var(--blue-500)',
                             fontWeight: 600,
                             margin: 0,
                           }}
@@ -813,18 +812,18 @@ const SalesMetrics: React.FC = () => {
                       </div>
                       <div>
                         <p
-                          className="macos-text-caption-1"
+                          className="text-xs"
                           style={{
-                            color: 'var(--macos-text-secondary)',
+                            color: 'var(--text-muted-foreground)',
                             marginBottom: '4px',
                           }}
                         >
                           Período Comparado
                         </p>
                         <p
-                          className="macos-text-body"
+                          className="text-base"
                           style={{
-                            color: 'var(--macos-text-tertiary)',
+                            color: 'var(--text-muted-foreground/70)',
                             fontWeight: 600,
                             margin: 0,
                           }}
@@ -835,7 +834,7 @@ const SalesMetrics: React.FC = () => {
                     </div>
 
                     {/* Mode Selector */}
-                    <div style={{ display: 'flex', gap: 'var(--macos-space-2)' }}>
+                    <div style={{ display: 'flex', gap: 'var(--1)' }}>
                       <Button
                         variant={comparisonMode === 'auto' ? 'primary' : 'secondary'}
                         size="small"
@@ -863,18 +862,18 @@ const SalesMetrics: React.FC = () => {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                  gap: 'var(--macos-space-3)',
-                  padding: 'var(--macos-space-3)',
-                  backgroundColor: 'var(--macos-gray-6)',
-                  borderRadius: 'var(--macos-radius-medium)',
+                  gap: 'var(--2)',
+                  padding: 'var(--2)',
+                  backgroundColor: 'var(--gray-50)',
+                  borderRadius: 'var(--rounded-md)',
                 }}
               >
                 <div>
                   <label
-                    className="macos-text-footnote"
+                    className="text-sm"
                     style={{
-                      color: 'var(--macos-text-secondary)',
-                      marginBottom: 'var(--macos-space-1)',
+                      color: 'var(--text-muted-foreground)',
+                      marginBottom: 'var(--0.5)',
                       display: 'block',
                     }}
                   >
@@ -891,19 +890,19 @@ const SalesMetrics: React.FC = () => {
                 </div>
                 <div>
                   <label
-                    className="macos-text-footnote"
+                    className="text-sm"
                     style={{
-                      color: 'var(--macos-text-secondary)',
-                      marginBottom: 'var(--macos-space-1)',
+                      color: 'var(--text-muted-foreground)',
+                      marginBottom: 'var(--0.5)',
                       display: 'block',
                     }}
                   >
                     Período 2
                   </label>
                   <p
-                    className="macos-text-caption-1"
+                    className="text-xs"
                     style={{
-                      color: 'var(--macos-text-tertiary)',
+                      color: 'var(--text-muted-foreground/70)',
                       margin: '4px 0',
                     }}
                   >
@@ -917,10 +916,10 @@ const SalesMetrics: React.FC = () => {
               {enableComparison && (
                 <div>
                   <label
-                    className="macos-text-footnote"
+                    className="text-sm"
                     style={{
-                      color: 'var(--macos-text-secondary)',
-                      marginBottom: 'var(--macos-space-2)',
+                      color: 'var(--text-muted-foreground)',
+                      marginBottom: 'var(--1)',
                       display: 'block',
                       fontWeight: 500,
                     }}
@@ -931,7 +930,7 @@ const SalesMetrics: React.FC = () => {
                     style={{
                       display: 'flex',
                       flexWrap: 'wrap',
-                      gap: 'var(--macos-space-2)',
+                      gap: 'var(--1)',
                     }}
                   >
                     {[
@@ -957,10 +956,10 @@ const SalesMetrics: React.FC = () => {
                             alignItems: 'center',
                             gap: '6px',
                             padding: '6px 12px',
-                            backgroundColor: isSelected ? 'var(--macos-blue)' : 'var(--macos-gray-6)',
-                            color: isSelected ? 'white' : 'var(--macos-text-primary)',
-                            border: `1px solid ${isSelected ? 'var(--macos-blue)' : 'var(--macos-gray-4)'}`,
-                            borderRadius: 'var(--macos-radius-medium)',
+                            backgroundColor: isSelected ? 'var(--blue-500)' : 'var(--gray-50)',
+                            color: isSelected ? 'white' : 'var(--text-foreground)',
+                            border: `1px solid ${isSelected ? 'var(--blue-500)' : 'var(--gray-200)'}`,
+                            borderRadius: 'var(--rounded-md)',
                             cursor: 'pointer',
                             fontSize: '12px',
                             fontWeight: 500,
@@ -969,12 +968,12 @@ const SalesMetrics: React.FC = () => {
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected) {
-                              e.currentTarget.style.backgroundColor = 'var(--macos-gray-5)';
+                              e.currentTarget.style.backgroundColor = 'var(--gray-100)';
                             }
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected) {
-                              e.currentTarget.style.backgroundColor = 'var(--macos-gray-6)';
+                              e.currentTarget.style.backgroundColor = 'var(--gray-50)';
                             }
                           }}
                           onKeyDown={(e) => {
@@ -997,16 +996,16 @@ const SalesMetrics: React.FC = () => {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: 'var(--macos-space-3)',
+                  gap: 'var(--2)',
                 }}
               >
               {/* Search */}
               <div>
                 <label
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     display: 'block',
                   }}
                 >
@@ -1023,10 +1022,10 @@ const SalesMetrics: React.FC = () => {
               {/* State Filter */}
               <div>
                 <label
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     display: 'block',
                   }}
                 >
@@ -1037,11 +1036,11 @@ const SalesMetrics: React.FC = () => {
                   onChange={(e) => setSelectedState(e.target.value as SaleState | 'all')}
                   style={{
                     width: '100%',
-                    padding: 'var(--macos-space-2)',
-                    borderRadius: 'var(--macos-radius-medium)',
-                    border: '1px solid var(--macos-gray-4)',
-                    backgroundColor: 'var(--macos-background)',
-                    color: 'var(--macos-text-primary)',
+                    padding: 'var(--1)',
+                    borderRadius: 'var(--rounded-md)',
+                    border: '1px solid var(--gray-200)',
+                    backgroundColor: 'var(--bg-background)',
+                    color: 'var(--text-foreground)',
                     fontSize: '13px',
                   }}
                 >
@@ -1059,10 +1058,10 @@ const SalesMetrics: React.FC = () => {
               {/* Type Filter */}
               <div>
                 <label
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     display: 'block',
                   }}
                 >
@@ -1073,11 +1072,11 @@ const SalesMetrics: React.FC = () => {
                   onChange={(e) => setSelectedType(e.target.value as SaleType | 'all')}
                   style={{
                     width: '100%',
-                    padding: 'var(--macos-space-2)',
-                    borderRadius: 'var(--macos-radius-medium)',
-                    border: '1px solid var(--macos-gray-4)',
-                    backgroundColor: 'var(--macos-background)',
-                    color: 'var(--macos-text-primary)',
+                    padding: 'var(--1)',
+                    borderRadius: 'var(--rounded-md)',
+                    border: '1px solid var(--gray-200)',
+                    backgroundColor: 'var(--bg-background)',
+                    color: 'var(--text-foreground)',
                     fontSize: '13px',
                   }}
                 >
@@ -1093,10 +1092,10 @@ const SalesMetrics: React.FC = () => {
               {/* Customer Filter */}
               <div>
                 <label
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     display: 'block',
                   }}
                 >
@@ -1107,11 +1106,11 @@ const SalesMetrics: React.FC = () => {
                   onChange={(e) => setSelectedCustomerId(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: 'var(--macos-space-2)',
-                    borderRadius: 'var(--macos-radius-medium)',
-                    border: '1px solid var(--macos-gray-4)',
-                    backgroundColor: 'var(--macos-background)',
-                    color: 'var(--macos-text-primary)',
+                    padding: 'var(--1)',
+                    borderRadius: 'var(--rounded-md)',
+                    border: '1px solid var(--gray-200)',
+                    backgroundColor: 'var(--bg-background)',
+                    color: 'var(--text-foreground)',
                     fontSize: '13px',
                   }}
                 >
@@ -1135,18 +1134,18 @@ const SalesMetrics: React.FC = () => {
           variant="flat"
           padding="large"
           style={{
-            marginBottom: 'var(--macos-space-5)',
+            marginBottom: 'var(--4)',
             backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            border: '2px solid var(--macos-red)',
+            border: '2px solid var(--red-500)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--macos-space-3)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--2)' }}>
             <div
               style={{
                 width: '48px',
                 height: '48px',
                 borderRadius: '50%',
-                backgroundColor: 'var(--macos-red)',
+                backgroundColor: 'var(--red-500)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1157,20 +1156,20 @@ const SalesMetrics: React.FC = () => {
             </div>
             <div style={{ flex: 1 }}>
               <h3
-                className="macos-text-title-3"
+                className="text-lg font-semibold"
                 style={{
-                  color: 'var(--macos-red)',
-                  margin: '0 0 var(--macos-space-2) 0',
+                  color: 'var(--red-500)',
+                  margin: '0 0 var(--1) 0',
                   fontWeight: 600,
                 }}
               >
                 {errorDetails.title}
               </h3>
               <p
-                className="macos-text-body"
+                className="text-base"
                 style={{
-                  color: 'var(--macos-text-primary)',
-                  margin: '0 0 var(--macos-space-2) 0',
+                  color: 'var(--text-foreground)',
+                  margin: '0 0 var(--1) 0',
                   fontWeight: 500,
                 }}
               >
@@ -1179,16 +1178,16 @@ const SalesMetrics: React.FC = () => {
               {errorDetails.suggestion && (
                 <div
                   style={{
-                    padding: 'var(--macos-space-3)',
+                    padding: 'var(--2)',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    borderRadius: 'var(--macos-radius-small)',
-                    marginBottom: 'var(--macos-space-2)',
+                    borderRadius: 'var(--rounded-sm)',
+                    marginBottom: 'var(--1)',
                   }}
                 >
                   <p
-                    className="macos-text-caption-1"
+                    className="text-xs"
                     style={{
-                      color: 'var(--macos-text-secondary)',
+                      color: 'var(--text-muted-foreground)',
                       margin: 0,
                       fontWeight: 500,
                     }}
@@ -1200,17 +1199,17 @@ const SalesMetrics: React.FC = () => {
               {errorDetails.details && typeof errorDetails.details === 'object' && (
                 <div
                   style={{
-                    padding: 'var(--macos-space-3)',
-                    backgroundColor: 'var(--macos-gray-6)',
-                    borderRadius: 'var(--macos-radius-small)',
-                    marginBottom: 'var(--macos-space-2)',
+                    padding: 'var(--2)',
+                    backgroundColor: 'var(--gray-50)',
+                    borderRadius: 'var(--rounded-sm)',
+                    marginBottom: 'var(--1)',
                   }}
                 >
                   <p
-                    className="macos-text-caption-1"
+                    className="text-xs"
                     style={{
-                      color: 'var(--macos-text-secondary)',
-                      margin: '0 0 var(--macos-space-1) 0',
+                      color: 'var(--text-muted-foreground)',
+                      margin: '0 0 var(--0.5) 0',
                       fontWeight: 600,
                     }}
                   >
@@ -1220,7 +1219,7 @@ const SalesMetrics: React.FC = () => {
                     style={{
                       margin: 0,
                       fontSize: '11px',
-                      color: 'var(--macos-text-tertiary)',
+                      color: 'var(--text-muted-foreground/70)',
                       fontFamily: 'monospace',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
@@ -1232,10 +1231,10 @@ const SalesMetrics: React.FC = () => {
               )}
               {errorDetails.requestId && (
                 <p
-                  className="macos-text-caption-1"
+                  className="text-xs"
                   style={{
-                    color: 'var(--macos-text-tertiary)',
-                    margin: '0 0 var(--macos-space-3) 0',
+                    color: 'var(--text-muted-foreground/70)',
+                    margin: '0 0 var(--2) 0',
                     fontFamily: 'monospace',
                     fontSize: '11px',
                   }}
@@ -1243,7 +1242,7 @@ const SalesMetrics: React.FC = () => {
                   ID de solicitud: {errorDetails.requestId}
                 </p>
               )}
-              <div style={{ display: 'flex', gap: 'var(--macos-space-2)', marginTop: 'var(--macos-space-3)' }}>
+              <div style={{ display: 'flex', gap: 'var(--1)', marginTop: 'var(--2)' }}>
                 <Button
                   variant="primary"
                   size="small"
@@ -1274,38 +1273,38 @@ const SalesMetrics: React.FC = () => {
           padding="large"
           style={{
             textAlign: 'center',
-            marginBottom: 'var(--macos-space-5)',
+            marginBottom: 'var(--4)',
           }}
         >
           <div
             style={{
               display: 'inline-block',
-              marginBottom: 'var(--macos-space-4)',
+              marginBottom: 'var(--3)',
             }}
           >
             <RefreshCw
               style={{
                 width: '64px',
                 height: '64px',
-                color: 'var(--macos-blue)',
+                color: 'var(--blue-500)',
                 animation: 'spin 1s linear infinite',
               }}
             />
           </div>
           <h3
-            className="macos-text-title-3"
+            className="text-lg font-semibold"
             style={{
-              color: 'var(--macos-text-primary)',
-              margin: '0 0 var(--macos-space-2) 0',
+              color: 'var(--text-foreground)',
+              margin: '0 0 var(--1) 0',
               fontWeight: 600,
             }}
           >
             Cargando métricas de ventas
           </h3>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
-              color: 'var(--macos-text-secondary)',
+              color: 'var(--text-muted-foreground)',
               margin: 0,
             }}
           >
@@ -1320,8 +1319,8 @@ const SalesMetrics: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 'var(--macos-space-5)',
-            marginBottom: 'var(--macos-space-5)',
+            gap: 'var(--4)',
+            marginBottom: 'var(--4)',
           }}
         >
           <Card variant="flat" padding="medium" isHoverable>
@@ -1329,15 +1328,15 @@ const SalesMetrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '56px',
                   height: '56px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-blue)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--blue-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1350,19 +1349,19 @@ const SalesMetrics: React.FC = () => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     fontWeight: 500,
                   }}
                 >
                   Total Ventas
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                     fontSize: '28px',
@@ -1371,12 +1370,12 @@ const SalesMetrics: React.FC = () => {
                   {formatNumber(summaryData.totalSales)}
                 </p>
                 {enableComparison && periodComparison && selectedMetrics.has('totalSales') && (
-                  <div style={{ marginTop: 'var(--macos-space-2)' }}>
+                  <div style={{ marginTop: 'var(--1)' }}>
                     {summaryDataComparison && (
                       <p
-                        className="macos-text-caption-1"
+                        className="text-xs"
                         style={{
-                          color: 'var(--macos-text-tertiary)',
+                          color: 'var(--text-muted-foreground/70)',
                           margin: '0 0 4px 0',
                           fontSize: '11px',
                         }}
@@ -1396,15 +1395,15 @@ const SalesMetrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '56px',
                   height: '56px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-green)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--green-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1417,19 +1416,19 @@ const SalesMetrics: React.FC = () => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     fontWeight: 500,
                   }}
                 >
                   Total Cajas
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                     fontSize: '28px',
@@ -1438,12 +1437,12 @@ const SalesMetrics: React.FC = () => {
                   {formatNumber(summaryData.totalBoxes)}
                 </p>
                 {enableComparison && periodComparison && selectedMetrics.has('totalBoxes') && (
-                  <div style={{ marginTop: 'var(--macos-space-2)' }}>
+                  <div style={{ marginTop: 'var(--1)' }}>
                     {summaryDataComparison && (
                       <p
-                        className="macos-text-caption-1"
+                        className="text-xs"
                         style={{
-                          color: 'var(--macos-text-tertiary)',
+                          color: 'var(--text-muted-foreground/70)',
                           margin: '0 0 4px 0',
                           fontSize: '11px',
                         }}
@@ -1463,15 +1462,15 @@ const SalesMetrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '56px',
                   height: '56px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-indigo)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--indigo-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1484,19 +1483,19 @@ const SalesMetrics: React.FC = () => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     fontWeight: 500,
                   }}
                 >
                   Total Pallets
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                     fontSize: '28px',
@@ -1505,12 +1504,12 @@ const SalesMetrics: React.FC = () => {
                   {formatNumber(summaryData.totalPallets)}
                 </p>
                 {enableComparison && periodComparison && selectedMetrics.has('totalPallets') && (
-                  <div style={{ marginTop: 'var(--macos-space-2)' }}>
+                  <div style={{ marginTop: 'var(--1)' }}>
                     {summaryDataComparison && (
                       <p
-                        className="macos-text-caption-1"
+                        className="text-xs"
                         style={{
-                          color: 'var(--macos-text-tertiary)',
+                          color: 'var(--text-muted-foreground/70)',
                           margin: '0 0 4px 0',
                           fontSize: '11px',
                         }}
@@ -1530,15 +1529,15 @@ const SalesMetrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '56px',
                   height: '56px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-orange)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--orange-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1551,19 +1550,19 @@ const SalesMetrics: React.FC = () => {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                     fontWeight: 500,
                   }}
                 >
                   Promedio Cajas/Venta
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                     fontSize: '28px',
@@ -1572,12 +1571,12 @@ const SalesMetrics: React.FC = () => {
                   {summaryData.averageBoxesPerSale.toFixed(1)}
                 </p>
                 {enableComparison && periodComparison && selectedMetrics.has('averages') && (
-                  <div style={{ marginTop: 'var(--macos-space-2)' }}>
+                  <div style={{ marginTop: 'var(--1)' }}>
                     {summaryDataComparison && (
                       <p
-                        className="macos-text-caption-1"
+                        className="text-xs"
                         style={{
-                          color: 'var(--macos-text-tertiary)',
+                          color: 'var(--text-muted-foreground/70)',
                           margin: '0 0 4px 0',
                           fontSize: '11px',
                         }}
@@ -1600,22 +1599,22 @@ const SalesMetrics: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: 'var(--macos-space-5)',
-            marginBottom: 'var(--macos-space-5)',
+            gap: 'var(--4)',
+            marginBottom: 'var(--4)',
           }}
         >
           {/* Top Customers */}
           <Card variant="default" padding="medium">
             <h3
-              className="macos-text-title-3"
+              className="text-lg font-semibold"
               style={{
-                marginBottom: 'var(--macos-space-4)',
-                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--3)',
+                color: 'var(--text-foreground)',
               }}
             >
               Top 5 Clientes
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--1)' }}>
               {summaryData.topCustomers.map((customer, index) => (
                 <div
                   key={customer.customerId}
@@ -1623,24 +1622,24 @@ const SalesMetrics: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: 'var(--macos-space-2)',
-                    backgroundColor: index % 2 === 0 ? 'var(--macos-gray-6)' : 'transparent',
-                    borderRadius: 'var(--macos-radius-small)',
+                    padding: 'var(--1)',
+                    backgroundColor: index % 2 === 0 ? 'var(--gray-50)' : 'transparent',
+                    borderRadius: 'var(--rounded-sm)',
                   }}
                 >
                   <div>
                     <span
                       style={{
                         fontWeight: 600,
-                        color: 'var(--macos-text-primary)',
+                        color: 'var(--text-foreground)',
                       }}
                     >
                       #{index + 1} {customer.customerName}
                     </span>
                     <p
-                      className="macos-text-caption-1"
+                      className="text-xs"
                       style={{
-                        color: 'var(--macos-text-secondary)',
+                        color: 'var(--text-muted-foreground)',
                         margin: 0,
                       }}
                     >
@@ -1651,15 +1650,15 @@ const SalesMetrics: React.FC = () => {
                     <span
                       style={{
                         fontWeight: 600,
-                        color: 'var(--macos-text-primary)',
+                        color: 'var(--text-foreground)',
                       }}
                     >
                       {formatNumber(customer.totalBoxes)}
                     </span>
                     <p
-                      className="macos-text-caption-1"
+                      className="text-xs"
                       style={{
-                        color: 'var(--macos-text-secondary)',
+                        color: 'var(--text-muted-foreground)',
                         margin: 0,
                       }}
                     >
@@ -1674,15 +1673,15 @@ const SalesMetrics: React.FC = () => {
           {/* Sales by Type */}
           <Card variant="default" padding="medium">
             <h3
-              className="macos-text-title-3"
+              className="text-lg font-semibold"
               style={{
-                marginBottom: 'var(--macos-space-4)',
-                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--3)',
+                color: 'var(--text-foreground)',
               }}
             >
               Ventas por Tipo
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--1)' }}>
               {summaryData.salesByType.map((type, index) => (
                 <div
                   key={type.type}
@@ -1690,15 +1689,15 @@ const SalesMetrics: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: 'var(--macos-space-2)',
-                    backgroundColor: index % 2 === 0 ? 'var(--macos-gray-6)' : 'transparent',
-                    borderRadius: 'var(--macos-radius-small)',
+                    padding: 'var(--1)',
+                    backgroundColor: index % 2 === 0 ? 'var(--gray-50)' : 'transparent',
+                    borderRadius: 'var(--rounded-sm)',
                   }}
                 >
                   <span
                     style={{
                       fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
+                      color: 'var(--text-foreground)',
                     }}
                   >
                     {type.type}
@@ -1707,15 +1706,15 @@ const SalesMetrics: React.FC = () => {
                     <span
                       style={{
                         fontWeight: 600,
-                        color: 'var(--macos-text-primary)',
+                        color: 'var(--text-foreground)',
                       }}
                     >
                       {formatNumber(type.totalSales)}
                     </span>
                     <p
-                      className="macos-text-caption-1"
+                      className="text-xs"
                       style={{
-                        color: 'var(--macos-text-secondary)',
+                        color: 'var(--text-muted-foreground)',
                         margin: 0,
                       }}
                     >
@@ -1730,15 +1729,15 @@ const SalesMetrics: React.FC = () => {
           {/* Sales by State */}
           <Card variant="default" padding="medium">
             <h3
-              className="macos-text-title-3"
+              className="text-lg font-semibold"
               style={{
-                marginBottom: 'var(--macos-space-4)',
-                color: 'var(--macos-text-primary)',
+                marginBottom: 'var(--3)',
+                color: 'var(--text-foreground)',
               }}
             >
               Ventas por Estado
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--macos-space-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--1)' }}>
               {summaryData.salesByState.map((state, index) => (
                 <div
                   key={state.state}
@@ -1746,15 +1745,15 @@ const SalesMetrics: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    padding: 'var(--macos-space-2)',
-                    backgroundColor: index % 2 === 0 ? 'var(--macos-gray-6)' : 'transparent',
-                    borderRadius: 'var(--macos-radius-small)',
+                    padding: 'var(--1)',
+                    backgroundColor: index % 2 === 0 ? 'var(--gray-50)' : 'transparent',
+                    borderRadius: 'var(--rounded-sm)',
                   }}
                 >
                   <span
                     style={{
                       fontWeight: 600,
-                      color: 'var(--macos-text-primary)',
+                      color: 'var(--text-foreground)',
                     }}
                   >
                     {stateLabels[state.state]}
@@ -1763,15 +1762,15 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-text-primary)',
+                          color: 'var(--text-foreground)',
                         }}
                       >
                         {formatNumber(state.totalSales)}
                       </span>
                       <p
-                        className="macos-text-caption-1"
+                        className="text-xs"
                         style={{
-                          color: 'var(--macos-text-secondary)',
+                          color: 'var(--text-muted-foreground)',
                           margin: 0,
                         }}
                       >
@@ -1787,20 +1786,20 @@ const SalesMetrics: React.FC = () => {
 
       {/* Comparison Tables */}
       {!loading && enableComparison && filteredSales.length > 0 && (
-        <div style={{ marginBottom: 'var(--macos-space-5)' }}>
+        <div style={{ marginBottom: 'var(--4)' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 'var(--macos-space-4)',
+              marginBottom: 'var(--3)',
             }}
           >
             <h2
-              className="macos-text-title-2"
+              className="text-xl font-semibold"
               style={{
                 margin: 0,
-                color: 'var(--macos-text-primary)',
+                color: 'var(--text-foreground)',
               }}
             >
               Comparación de Períodos
@@ -1808,10 +1807,10 @@ const SalesMetrics: React.FC = () => {
             <div
               style={{
                 display: 'flex',
-                gap: 'var(--macos-space-2)',
-                padding: 'var(--macos-space-2) var(--macos-space-3)',
-                backgroundColor: 'var(--macos-gray-6)',
-                borderRadius: 'var(--macos-radius-medium)',
+                gap: 'var(--1)',
+                padding: 'var(--1) var(--2)',
+                backgroundColor: 'var(--gray-50)',
+                borderRadius: 'var(--rounded-md)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1820,10 +1819,10 @@ const SalesMetrics: React.FC = () => {
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: 'var(--macos-blue)',
+                    backgroundColor: 'var(--blue-500)',
                   }}
                 />
-                <span className="macos-text-caption-1" style={{ color: 'var(--macos-text-secondary)' }}>
+                <span className="text-xs" style={{ color: 'var(--text-muted-foreground)' }}>
                   {comparisonPeriods.period1?.label || 'Período 1'}
                 </span>
               </div>
@@ -1833,10 +1832,10 @@ const SalesMetrics: React.FC = () => {
                     width: '12px',
                     height: '12px',
                     borderRadius: '50%',
-                    backgroundColor: 'var(--macos-gray-4)',
+                    backgroundColor: 'var(--gray-200)',
                   }}
                 />
-                <span className="macos-text-caption-1" style={{ color: 'var(--macos-text-secondary)' }}>
+                <span className="text-xs" style={{ color: 'var(--text-muted-foreground)' }}>
                   {comparisonPeriods.period2?.label || 'Período 2'}
                 </span>
               </div>
@@ -1845,26 +1844,26 @@ const SalesMetrics: React.FC = () => {
 
           {/* Comparison by Customer */}
           {selectedMetrics.has('byCustomer') && (
-            <Card variant="default" padding="none" style={{ marginBottom: 'var(--macos-space-5)' }}>
+            <Card variant="default" padding="none" style={{ marginBottom: 'var(--4)' }}>
               <div
                 style={{
-                  padding: 'var(--macos-space-4)',
-                  borderBottom: '1px solid var(--macos-gray-4)',
+                  padding: 'var(--3)',
+                  borderBottom: '1px solid var(--gray-200)',
                 }}
               >
                 <h3
-                  className="macos-text-title-3"
+                  className="text-lg font-semibold"
                   style={{
                     margin: 0,
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                   }}
                 >
                   Comparación por Cliente
                 </h3>
                 <p
-                  className="macos-text-caption-1"
+                  className="text-xs"
                   style={{
-                    color: 'var(--macos-text-secondary)',
+                    color: 'var(--text-muted-foreground)',
                     margin: '4px 0 0 0',
                   }}
                 >
@@ -1891,10 +1890,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-blue)',
+                          color: 'var(--blue-500)',
                           padding: '2px 6px',
                           backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.current?.totalSales || 0)}
@@ -1912,10 +1911,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-text-secondary)',
+                          color: 'var(--text-muted-foreground)',
                           padding: '2px 6px',
-                          backgroundColor: 'var(--macos-gray-6)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          backgroundColor: 'var(--gray-50)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.previous?.totalSales || 0)}
@@ -1945,7 +1944,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -1978,7 +1977,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -2003,26 +2002,26 @@ const SalesMetrics: React.FC = () => {
 
           {/* Comparison by Type */}
           {selectedMetrics.has('byType') && (
-            <Card variant="default" padding="none" style={{ marginBottom: 'var(--macos-space-5)' }}>
+            <Card variant="default" padding="none" style={{ marginBottom: 'var(--4)' }}>
               <div
                 style={{
-                  padding: 'var(--macos-space-4)',
-                  borderBottom: '1px solid var(--macos-gray-4)',
+                  padding: 'var(--3)',
+                  borderBottom: '1px solid var(--gray-200)',
                 }}
               >
                 <h3
-                  className="macos-text-title-3"
+                  className="text-lg font-semibold"
                   style={{
                     margin: 0,
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                   }}
                 >
                   Comparación por Tipo
                 </h3>
                 <p
-                  className="macos-text-caption-1"
+                  className="text-xs"
                   style={{
-                    color: 'var(--macos-text-secondary)',
+                    color: 'var(--text-muted-foreground)',
                     margin: '4px 0 0 0',
                   }}
                 >
@@ -2049,10 +2048,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-blue)',
+                          color: 'var(--blue-500)',
                           padding: '2px 6px',
                           backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.current?.totalSales || 0)}
@@ -2070,10 +2069,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-text-secondary)',
+                          color: 'var(--text-muted-foreground)',
                           padding: '2px 6px',
-                          backgroundColor: 'var(--macos-gray-6)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          backgroundColor: 'var(--gray-50)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.previous?.totalSales || 0)}
@@ -2103,7 +2102,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -2136,7 +2135,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -2156,26 +2155,26 @@ const SalesMetrics: React.FC = () => {
 
           {/* Comparison by State */}
           {selectedMetrics.has('byState') && (
-            <Card variant="default" padding="none" style={{ marginBottom: 'var(--macos-space-5)' }}>
+            <Card variant="default" padding="none" style={{ marginBottom: 'var(--4)' }}>
               <div
                 style={{
-                  padding: 'var(--macos-space-4)',
-                  borderBottom: '1px solid var(--macos-gray-4)',
+                  padding: 'var(--3)',
+                  borderBottom: '1px solid var(--gray-200)',
                 }}
               >
                 <h3
-                  className="macos-text-title-3"
+                  className="text-lg font-semibold"
                   style={{
                     margin: 0,
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                   }}
                 >
                   Comparación por Estado
                 </h3>
                 <p
-                  className="macos-text-caption-1"
+                  className="text-xs"
                   style={{
-                    color: 'var(--macos-text-secondary)',
+                    color: 'var(--text-muted-foreground)',
                     margin: '4px 0 0 0',
                   }}
                 >
@@ -2205,10 +2204,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-blue)',
+                          color: 'var(--blue-500)',
                           padding: '2px 6px',
                           backgroundColor: 'rgba(0, 122, 255, 0.1)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.current?.totalSales || 0)}
@@ -2226,10 +2225,10 @@ const SalesMetrics: React.FC = () => {
                       <span
                         style={{
                           fontWeight: 600,
-                          color: 'var(--macos-text-secondary)',
+                          color: 'var(--text-muted-foreground)',
                           padding: '2px 6px',
-                          backgroundColor: 'var(--macos-gray-6)',
-                          borderRadius: 'var(--macos-radius-small)',
+                          backgroundColor: 'var(--gray-50)',
+                          borderRadius: 'var(--rounded-sm)',
                         }}
                       >
                         {formatNumber(row.previous?.totalSales || 0)}
@@ -2259,7 +2258,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -2292,7 +2291,7 @@ const SalesMetrics: React.FC = () => {
                             fontWeight: 700,
                             padding: '4px 8px',
                             backgroundColor: bgColor,
-                            borderRadius: 'var(--macos-radius-small)',
+                            borderRadius: 'var(--rounded-sm)',
                             display: 'inline-block',
                           }}
                         >
@@ -2317,15 +2316,15 @@ const SalesMetrics: React.FC = () => {
         <Card variant="default" padding="none">
           <div
             style={{
-              padding: 'var(--macos-space-4)',
-              borderBottom: '1px solid var(--macos-gray-4)',
+              padding: 'var(--3)',
+              borderBottom: '1px solid var(--gray-200)',
             }}
           >
             <h3
-              className="macos-text-title-3"
+              className="text-lg font-semibold"
               style={{
                 margin: 0,
-                color: 'var(--macos-text-primary)',
+                color: 'var(--text-foreground)',
               }}
             >
               Listado de Ventas ({formatNumber(filteredSales.length)})
@@ -2347,7 +2346,7 @@ const SalesMetrics: React.FC = () => {
           padding="large"
           style={{
             textAlign: 'center',
-            backgroundColor: 'var(--macos-gray-6)',
+            backgroundColor: 'var(--gray-50)',
           }}
         >
           <div
@@ -2355,43 +2354,43 @@ const SalesMetrics: React.FC = () => {
               width: '96px',
               height: '96px',
               borderRadius: '50%',
-              backgroundColor: 'var(--macos-gray-5)',
+              backgroundColor: 'var(--gray-100)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto var(--macos-space-5)',
+              margin: '0 auto var(--4)',
             }}
           >
             <BarChart3
               style={{
                 width: '48px',
                 height: '48px',
-                color: 'var(--macos-text-tertiary)',
+                color: 'var(--text-muted-foreground/70)',
               }}
             />
           </div>
           <h3
-            className="macos-text-title-2"
+            className="text-xl font-semibold"
             style={{
-              color: 'var(--macos-text-primary)',
-              margin: '0 0 var(--macos-space-2) 0',
+              color: 'var(--text-foreground)',
+              margin: '0 0 var(--1) 0',
               fontWeight: 600,
             }}
           >
             No se encontraron ventas
           </h3>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
-              color: 'var(--macos-text-secondary)',
-              marginBottom: 'var(--macos-space-5)',
+              color: 'var(--text-muted-foreground)',
+              marginBottom: 'var(--4)',
               maxWidth: '400px',
-              margin: '0 auto var(--macos-space-5)',
+              margin: '0 auto var(--4)',
             }}
           >
             No hay ventas que coincidan con los filtros seleccionados. Intenta ajustar el período, estado, tipo o cliente.
           </p>
-          <div style={{ display: 'flex', gap: 'var(--macos-space-2)', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--1)', justifyContent: 'center' }}>
             <Button variant="secondary" onClick={() => {
               setSelectedState('all');
               setSelectedType('all');

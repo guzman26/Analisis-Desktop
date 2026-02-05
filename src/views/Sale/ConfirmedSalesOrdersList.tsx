@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SalesContext } from '../../contexts/SalesContext';
 import { Sale } from '@/types';
-import SalesCard from '../../components/design-system/SalesCard';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import ReturnBoxesModal from '@/components/ReturnBoxesModal';
 import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
@@ -10,6 +9,7 @@ import {
   WindowContainer,
   Button,
   LoadingOverlay,
+  SalesCard,
 } from '../../components/design-system';
 import { dispatchSale, completeSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';

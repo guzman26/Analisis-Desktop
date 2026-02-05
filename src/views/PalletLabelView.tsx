@@ -123,7 +123,7 @@ const PalletLabelView: React.FC = () => {
   const realBoxCount = getPalletBoxCount(pallet);
 
   return (
-    <WindowContainer title="Etiqueta de Pallet" showTrafficLights={false}>
+    <WindowContainer title="Etiqueta de Pallet" >
       {/* Print Actions - Hidden when printing */}
       <div className="print-actions no-print">
         <Button onClick={handleGoBack} variant="secondary">

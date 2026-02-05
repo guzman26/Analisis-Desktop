@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import './Notification.css';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -142,38 +141,6 @@ export const NotificationContainer: React.FC = () => {
   );
 };
 
-// Hook to use notifications
-export const useNotifications = () => {
-  const context = React.useContext(NotificationContext);
-
-  if (!context) {
-    throw new Error(
-      'useNotifications must be used within NotificationProvider'
-    );
-  }
-
-  const { addNotification } = context;
-
-  const showSuccess = (message: string, duration?: number) => {
-    addNotification(message, 'success', duration);
-  };
-
-  const showError = (message: string, duration?: number) => {
-    addNotification(message, 'error', duration);
-  };
-
-  const showWarning = (message: string, duration?: number) => {
-    addNotification(message, 'warning', duration);
-  };
-
-  const showInfo = (message: string, duration?: number) => {
-    addNotification(message, 'info', duration);
-  };
-
-  return {
-    showSuccess,
-    showError,
-    showWarning,
-    showInfo,
-  };
-};
+// Hook to use notifications - now powered by Sonner
+// Re-export the new Sonner adapter to maintain compatibility with existing imports
+export { useNotifications } from './useNotifications';

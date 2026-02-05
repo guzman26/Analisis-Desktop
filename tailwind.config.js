@@ -1,36 +1,57 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: ['class'],
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+  ],
   theme: {
+    container: {
+      center: true,
+      padding: '2rem',
+      screens: {
+        '2xl': '1400px',
+      },
+    },
     extend: {
       colors: {
-        // macOS system colors
-        macos: {
-          bg: '#F5F5F7',
-          'bg-secondary': '#FFFFFF',
-          'bg-tertiary': '#F9F9F9',
-          text: '#1D1D1F',
-          'text-secondary': '#86868B',
-          border: '#D2D2D7',
-          accent: '#007AFF',
-          'accent-hover': '#0051D5',
-          success: '#34C759',
-          warning: '#FF9500',
-          error: '#FF3B30',
-          sidebar: '#F5F5F7',
-          'sidebar-hover': '#E8E8ED',
+        // shadcn/ui colors (CSS variables)
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
-      },
-      fontFamily: {
-        sf: [
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'SF Pro Display',
-          'SF Pro Text',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif',
-        ],
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
+        muted: {
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
+        },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
+        popover: {
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
+        },
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
       },
       fontSize: {
         xxs: '0.625rem',
@@ -44,18 +65,9 @@ export default {
         '4xl': '2.5rem',
       },
       borderRadius: {
-        macos: '10px',
-        'macos-sm': '6px',
-        'macos-lg': '12px',
-      },
-      boxShadow: {
-        macos: '0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 2px 10px rgba(0, 0, 0, 0.1)',
-        'macos-lg':
-          '0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 10px 40px rgba(0, 0, 0, 0.15)',
-        'macos-inset': 'inset 0 0 0 0.5px rgba(0, 0, 0, 0.05)',
-      },
-      backdropBlur: {
-        macos: '20px',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
@@ -78,5 +90,5 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate')],
 };

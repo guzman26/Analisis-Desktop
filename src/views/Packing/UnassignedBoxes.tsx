@@ -239,7 +239,7 @@ const UnassignedBoxes = () => {
             className={styles.refreshButton}
             onClick={handleToggleSelectionMode}
             disabled={filteredBoxes.length === 0}
-            style={isSelectionMode ? { backgroundColor: 'var(--macos-blue)' } : undefined}
+            style={isSelectionMode ? { backgroundColor: 'var(--blue-500)' } : undefined}
           >
             {isSelectionMode ? <Square size={16} /> : <CheckSquare size={16} />}
             {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CustomerPreferences } from '@/types';
 import { getCustomerPreferences } from '@/api/endpoints';
 import { formatEggCount } from '@/utils/eggCalculations';
-import './CustomerPreferencesPanel.css';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface CustomerPreferencesPanelProps {
   customerId: string;
@@ -39,120 +39,125 @@ const CustomerPreferencesPanel: React.FC<CustomerPreferencesPanelProps> = ({
 
   if (loading) {
     return (
-      <div className={`customer-preferences-panel ${className}`}>
-        <div className="preferences-loading">
-          <div className="loading-spinner"></div>
-          <span>Cargando preferencias...</span>
-        </div>
-      </div>
+      <Card className={className}>
+        <CardContent className="py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+          Cargando preferencias...
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className={`customer-preferences-panel ${className}`}>
-        <div className="preferences-error">{error}</div>
-      </div>
+      <Card className={className}>
+        <CardContent className="py-6 text-sm text-destructive">
+          {error}
+        </CardContent>
+      </Card>
     );
   }
 
   if (!preferences || preferences.totalOrders === 0) {
     return (
-      <div className={`customer-preferences-panel ${className}`}>
-        <div className="preferences-empty">
-          <p>Cliente nuevo - sin historial de compras</p>
-        </div>
-      </div>
+      <Card className={className}>
+        <CardContent className="py-6 text-sm text-muted-foreground">
+          Cliente nuevo - sin historial de compras
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className={`customer-preferences-panel ${className}`}>
-      <div className="preferences-header">
-        <h3>Historial de Compras</h3>
-      </div>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-base">Historial de Compras</CardTitle>
+      </CardHeader>
 
-      <div className="preferences-content">
-        {/* Summary Stats */}
-        <div className="preferences-stats">
-          <div className="stat-item">
-            <span className="stat-label">Órdenes</span>
-            <span className="stat-value">{preferences.totalOrders}</span>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Órdenes</div>
+            <div className="text-lg font-semibold">{preferences.totalOrders}</div>
           </div>
-          <div className="stat-item">
-            <span className="stat-label">Total Cajas</span>
-            <span className="stat-value">{preferences.totalBoxes.toLocaleString('es-CL')}</span>
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Total Cajas</div>
+            <div className="text-lg font-semibold">
+              {preferences.totalBoxes.toLocaleString('es-CL')}
+            </div>
           </div>
-          <div className="stat-item">
-            <span className="stat-label">Total Huevos</span>
-            <span className="stat-value">{formatEggCount(preferences.totalEggs)}</span>
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Total Huevos</div>
+            <div className="text-lg font-semibold">
+              {formatEggCount(preferences.totalEggs)}
+            </div>
           </div>
         </div>
 
-        {/* Average Order Size */}
-        <div className="preferences-section">
-          <h4>Orden Típica</h4>
-          <div className="preference-detail">
-            <span>{preferences.avgBoxesPerOrder} cajas</span>
-            <span className="detail-secondary">
+        <div>
+          <h4 className="text-sm font-medium mb-2">Orden Típica</h4>
+          <div className="text-sm">
+            {preferences.avgBoxesPerOrder} cajas{' '}
+            <span className="text-muted-foreground">
               ({formatEggCount(preferences.avgEggsPerOrder)} huevos)
             </span>
           </div>
         </div>
 
-        {/* Top Calibers */}
         {preferences.topCalibers && preferences.topCalibers.length > 0 && (
-          <div className="preferences-section">
-            <h4>Calibres Preferidos</h4>
-            <div className="preference-list">
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium">Calibres Preferidos</h4>
+            <div className="space-y-3">
               {preferences.topCalibers.map((item, index) => (
-                <div key={index} className="preference-item">
-                  <div className="preference-item-header">
-                    <span className="preference-name">Calibre {item.caliber}</span>
-                    <span className="preference-percentage">{item.percentage}%</span>
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Calibre {item.caliber}</span>
+                    <span className="text-muted-foreground">{item.percentage}%</span>
                   </div>
-                  <div className="preference-bar">
+                  <div className="h-2 rounded-full bg-muted">
                     <div
-                      className="preference-bar-fill"
+                      className="h-2 rounded-full bg-primary"
                       style={{ width: `${item.percentage}%` }}
-                    ></div>
+                    />
                   </div>
-                  <span className="preference-count">{item.count} cajas</span>
+                  <div className="text-xs text-muted-foreground">
+                    {item.count} cajas
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Top Formats */}
         {preferences.topFormats && preferences.topFormats.length > 0 && (
-          <div className="preferences-section">
-            <h4>Formatos Preferidos</h4>
-            <div className="preference-list">
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium">Formatos Preferidos</h4>
+            <div className="space-y-3">
               {preferences.topFormats.map((item, index) => (
-                <div key={index} className="preference-item">
-                  <div className="preference-item-header">
-                    <span className="preference-name">Formato {item.format}</span>
-                    <span className="preference-percentage">{item.percentage}%</span>
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Formato {item.format}</span>
+                    <span className="text-muted-foreground">{item.percentage}%</span>
                   </div>
-                  <div className="preference-bar">
+                  <div className="h-2 rounded-full bg-muted">
                     <div
-                      className="preference-bar-fill"
+                      className="h-2 rounded-full bg-primary"
                       style={{ width: `${item.percentage}%` }}
-                    ></div>
+                    />
                   </div>
-                  <span className="preference-count">{item.count} cajas</span>
+                  <div className="text-xs text-muted-foreground">
+                    {item.count} cajas
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Last Purchase */}
         {preferences.lastPurchase && (
-          <div className="preferences-section">
-            <h4>Última Compra</h4>
-            <div className="preference-detail">
+          <div>
+            <h4 className="text-sm font-medium mb-2">Última Compra</h4>
+            <div className="text-sm">
               {new Date(preferences.lastPurchase).toLocaleDateString('es-CL', {
                 year: 'numeric',
                 month: 'long',
@@ -161,10 +166,9 @@ const CustomerPreferencesPanel: React.FC<CustomerPreferencesPanelProps> = ({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
 export default CustomerPreferencesPanel;
-

@@ -14,7 +14,6 @@ import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
 import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
 import CalibreLegend from '@/components/CalibreLegend';
-import '../../styles/designSystem.css';
 
 interface Metric {
   metricType: string;
@@ -501,11 +500,11 @@ const Metrics: React.FC = () => {
           <span
             style={{
               padding:
-                'var(--macos-space-1) var(--macos-space-2)',
-              borderRadius: 'var(--macos-radius-small)',
+                'var(--0.5) var(--1)',
+              borderRadius: 'var(--rounded-sm)',
               backgroundColor: row.isFinal
-                ? 'var(--macos-green)'
-                : 'var(--macos-orange)',
+                ? 'var(--green-500)'
+                : 'var(--orange-500)',
               color: 'white',
               fontSize: 12,
               fontWeight: 600,
@@ -534,25 +533,25 @@ const Metrics: React.FC = () => {
 
   return (
     <div
-      className="macos-animate-fade-in"
-      style={{ padding: 'var(--macos-space-7)' }}
+      className="animate-fade-in"
+      style={{ padding: 'var(--6)' }}
     >
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Métricas del Sistema
           </h1>
-          <div className="macos-hstack" style={{ gap: 'var(--macos-space-2)' }}>
+          <div className="flex items-center gap-4" style={{ gap: 'var(--1)' }}>
             <Button
               leftIcon={<TrendingUp style={{ width: '16px', height: '16px' }} />}
               variant="secondary"
@@ -584,19 +583,19 @@ const Metrics: React.FC = () => {
 
         {/* Filters */}
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
-            gap: 'var(--macos-space-4)',
+            gap: 'var(--3)',
             alignItems: 'flex-end',
             flexWrap: 'wrap',
           }}
         >
           <div style={{ flex: '1', minWidth: '200px' }}>
             <label
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
                 display: 'block',
               }}
             >
@@ -607,11 +606,11 @@ const Metrics: React.FC = () => {
               onChange={(e) => setMetricType(e.target.value as any)}
               style={{
                 width: '100%',
-                padding: 'var(--macos-space-2) var(--macos-space-3)',
-                borderRadius: 'var(--macos-radius-medium)',
-                border: '1px solid var(--macos-border-primary)',
-                backgroundColor: 'var(--macos-background-primary)',
-                color: 'var(--macos-text-primary)',
+                padding: 'var(--1) var(--2)',
+                borderRadius: 'var(--rounded-md)',
+                border: '1px solid var(--border-border)',
+                backgroundColor: 'var(--bg-background-primary)',
+                color: 'var(--text-foreground)',
                 fontSize: '14px',
               }}
             >
@@ -623,10 +622,10 @@ const Metrics: React.FC = () => {
 
           <div style={{ flex: '1', minWidth: '200px' }}>
             <label
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
                 display: 'block',
               }}
             >
@@ -642,10 +641,10 @@ const Metrics: React.FC = () => {
 
           <div style={{ flex: '1', minWidth: '200px' }}>
             <label
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
                 display: 'block',
               }}
             >
@@ -660,9 +659,9 @@ const Metrics: React.FC = () => {
           </div>
 
           <div
-            className="macos-hstack"
+            className="flex items-center gap-4"
             style={{
-              gap: 'var(--macos-space-3)',
+              gap: 'var(--2)',
               alignItems: 'flex-end',
               flex: 1,
               justifyContent: 'flex-end',
@@ -670,10 +669,10 @@ const Metrics: React.FC = () => {
           >
             <div style={{ minWidth: '220px' }}>
               <label
-                className="macos-text-footnote"
+                className="text-sm"
                 style={{
-                  color: 'var(--macos-text-secondary)',
-                  marginBottom: 'var(--macos-space-1)',
+                  color: 'var(--text-muted-foreground)',
+                  marginBottom: 'var(--0.5)',
                   display: 'block',
                 }}
               >
@@ -704,8 +703,8 @@ const Metrics: React.FC = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 'var(--macos-space-5)',
-            marginBottom: 'var(--macos-space-7)',
+            gap: 'var(--4)',
+            marginBottom: 'var(--6)',
           }}
         >
           <Card variant="flat" padding="medium">
@@ -713,15 +712,15 @@ const Metrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '48px',
                   height: '48px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-blue)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--blue-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -733,18 +732,18 @@ const Metrics: React.FC = () => {
               </div>
               <div style={{ flex: 1 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                   }}
                 >
                   Total Cajas
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                   }}
@@ -760,15 +759,15 @@ const Metrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '48px',
                   height: '48px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-green)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--green-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -780,18 +779,18 @@ const Metrics: React.FC = () => {
               </div>
               <div style={{ flex: 1 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                   }}
                 >
                   Total Pallets
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                   }}
@@ -807,15 +806,15 @@ const Metrics: React.FC = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 'var(--macos-space-3)',
+                gap: 'var(--2)',
               }}
             >
               <div
                 style={{
                   width: '48px',
                   height: '48px',
-                  borderRadius: 'var(--macos-radius-medium)',
-                  backgroundColor: 'var(--macos-indigo)',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--indigo-500)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -827,18 +826,18 @@ const Metrics: React.FC = () => {
               </div>
               <div style={{ flex: 1 }}>
                 <p
-                  className="macos-text-footnote"
+                  className="text-sm"
                   style={{
-                    color: 'var(--macos-text-secondary)',
-                    marginBottom: 'var(--macos-space-1)',
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
                   }}
                 >
                   Período
                 </p>
                 <p
-                  className="macos-text-title-1"
+                  className="text-2xl font-semibold"
                   style={{
-                    color: 'var(--macos-text-primary)',
+                    color: 'var(--text-foreground)',
                     fontWeight: 700,
                     margin: 0,
                   }}
@@ -856,27 +855,27 @@ const Metrics: React.FC = () => {
         <Card
           variant="flat"
           padding="medium"
-          style={{ marginBottom: 'var(--macos-space-5)' }}
+          style={{ marginBottom: 'var(--4)' }}
         >
-          <p style={{ color: 'var(--macos-red)', margin: 0 }}>❌ {error}</p>
+          <p style={{ color: 'var(--red-500)', margin: 0 }}>❌ {error}</p>
         </Card>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div style={{ textAlign: 'center', padding: 'var(--macos-space-10)' }}>
+        <div style={{ textAlign: 'center', padding: 'var(--0.50)' }}>
           <RefreshCw
             style={{
               width: '48px',
               height: '48px',
-              color: 'var(--macos-blue)',
+              color: 'var(--blue-500)',
               animation: 'spin 1s linear infinite',
             }}
           />
           <p
             style={{
-              marginTop: 'var(--macos-space-3)',
-              color: 'var(--macos-text-secondary)',
+              marginTop: 'var(--2)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
             Cargando métricas...
@@ -891,12 +890,12 @@ const Metrics: React.FC = () => {
         title="Personalizar Columnas"
         size="small"
       >
-        <div style={{ padding: 'var(--macos-space-5)' }}>
+        <div style={{ padding: 'var(--4)' }}>
           <p
-            className="macos-text-footnote"
+            className="text-sm"
                   style={{
-              color: 'var(--macos-text-secondary)',
-              marginBottom: 'var(--macos-space-4)',
+              color: 'var(--text-muted-foreground)',
+              marginBottom: 'var(--3)',
                   }}
                 >
             Selecciona las columnas que deseas mostrar en la tabla:
@@ -905,7 +904,7 @@ const Metrics: React.FC = () => {
                     style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: 'var(--macos-space-3)',
+              gap: 'var(--2)',
               maxHeight: '400px',
               overflowY: 'auto',
             }}
@@ -916,15 +915,15 @@ const Metrics: React.FC = () => {
                     style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 'var(--macos-space-3)',
-                  padding: 'var(--macos-space-2)',
+                  gap: 'var(--2)',
+                  padding: 'var(--1)',
                   cursor: 'pointer',
-                  borderRadius: 'var(--macos-radius-small)',
+                  borderRadius: 'var(--rounded-sm)',
                   transition: 'background-color 0.15s',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor =
-                    'var(--macos-gray-6)';
+                    'var(--gray-50)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent';
@@ -938,20 +937,20 @@ const Metrics: React.FC = () => {
                     width: '18px',
                     height: '18px',
                     cursor: 'pointer',
-                    accentColor: 'var(--macos-blue)',
+                    accentColor: 'var(--blue-500)',
                   }}
                 />
                 <span
-                  className="macos-text-body"
-                  style={{ color: 'var(--macos-text-primary)', flex: 1 }}
+                  className="text-base"
+                  style={{ color: 'var(--text-foreground)', flex: 1 }}
                 >
                   {column.header}
                 </span>
                 {column.sortable && (
                   <span
-                    className="macos-text-caption-1"
+                    className="text-xs"
                         style={{
-                      color: 'var(--macos-text-tertiary)',
+                      color: 'var(--text-muted-foreground/70)',
                       fontSize: '11px',
                     }}
                   >
@@ -962,10 +961,10 @@ const Metrics: React.FC = () => {
             ))}
           </div>
           <div
-            className="macos-hstack"
+            className="flex items-center gap-4"
                         style={{
-              marginTop: 'var(--macos-space-5)',
-              gap: 'var(--macos-space-2)',
+              marginTop: 'var(--4)',
+              gap: 'var(--1)',
               justifyContent: 'flex-end',
             }}
           >
@@ -1145,15 +1144,15 @@ const Metrics: React.FC = () => {
             style={{
               width: '64px',
               height: '64px',
-              color: 'var(--macos-text-tertiary)',
-              margin: '0 auto var(--macos-space-4)',
+              color: 'var(--text-muted-foreground/70)',
+              margin: '0 auto var(--3)',
             }}
           />
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
-              color: 'var(--macos-text-secondary)',
-              marginBottom: 'var(--macos-space-4)',
+              color: 'var(--text-muted-foreground)',
+              marginBottom: 'var(--3)',
             }}
           >
             No se encontraron métricas para el período seleccionado

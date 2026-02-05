@@ -21,9 +21,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         className
       )}
     >
-      <div className="flex items-center gap-3 px-4 py-2 rounded-macos-sm bg-white/90 border border-macos-border shadow">
+      <div className="flex items-center gap-3 px-4 py-2 rounded-md bg-white/90 border border-border shadow">
         <svg
-          className="animate-spin h-4 w-4 text-macos-accent"
+          className="animate-spin h-4 w-4 text-primary"
           viewBox="0 0 24 24"
         >
           <circle
@@ -40,7 +40,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
             d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
           ></path>
         </svg>
-        <span className="text-sm text-macos-text-secondary">{text}</span>
+        <span className="text-sm text-muted-foreground">{text}</span>
       </div>
     </div>
   );

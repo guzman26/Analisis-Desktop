@@ -4,9 +4,20 @@ import {
   formatCalibreName,
   ALL_CALIBRE_CODES,
 } from '@/utils/getParamsFromCodigo';
-import { Button, Input, Card } from './design-system';
+import { Button } from './design-system';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Filter, X, Package, Hash } from 'lucide-react';
-import styles from './BoxFilters.module.css';
 
 interface ServerFilters {
   calibre?: string;
@@ -133,59 +144,54 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
     Object.values(serverFilters).some((v) => v !== '' && v !== undefined);
 
   return (
-    <Card variant="flat" className={styles.filtersContainer}>
-      <div className={styles.filtersHeader}>
-        <div className={styles.filtersTitle}>
-          <Filter className="w-5 h-5 text-macos-accent" />
-          <h3>Filtros</h3>
-          {hasActiveFilters && (
-            <span className={styles.activeBadge}>Activos</span>
-          )}
-        </div>
-        <div className={styles.filtersActions}>
-          {disabled && (
-            <span className={styles.activeBadge} style={{ marginRight: 8 }}>
-              Buscando...
-            </span>
-          )}
-          {hasActiveFilters && (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5 text-primary" />
+            <CardTitle className="text-base">Filtros</CardTitle>
+            {hasActiveFilters && <Badge variant="secondary">Activos</Badge>}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {disabled && <Badge variant="outline">Buscando...</Badge>}
+            {hasActiveFilters && (
+              <Button
+                variant="secondary"
+                size="small"
+                leftIcon={<X size={14} />}
+                onClick={clearFilters}
+                disabled={disabled}
+              >
+                Limpiar
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleApplyServerFilters}
+              disabled={disabled}
+            >
+              Aplicar
+            </Button>
             <Button
               variant="secondary"
               size="small"
-              leftIcon={<X size={14} />}
-              onClick={clearFilters}
+              onClick={() => setIsExpanded(!isExpanded)}
               disabled={disabled}
             >
-              Limpiar
+              {isExpanded ? 'Ocultar' : 'Mostrar'}
             </Button>
-          )}
-          <Button
-            variant="primary"
-            size="small"
-            onClick={handleApplyServerFilters}
-            disabled={disabled}
-          >
-            Aplicar
-          </Button>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={() => setIsExpanded(!isExpanded)}
-            disabled={disabled}
-          >
-            {isExpanded ? 'Ocultar' : 'Mostrar'}
-          </Button>
+          </div>
         </div>
-      </div>
+      </CardHeader>
 
       {isExpanded && (
-        <div className={styles.filtersContent}>
-          {/* Búsqueda general */}
-          <div className={styles.searchSection}>
-            <label className={styles.searchLabel}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
               <Hash className="w-4 h-4" />
               Buscar por código, empacadora u operario
-            </label>
+            </Label>
             <Input
               placeholder="Buscar..."
               value={filters.searchTerm}
@@ -196,36 +202,37 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
             />
           </div>
 
-          {/* Filtros en grid */}
-          <div className={styles.filtersGrid}>
-            {/* Filtro por calibre */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
                 <Package className="w-4 h-4" />
                 Calibre
-              </label>
-              <select
-                className={styles.filterSelect}
-                value={filters.calibre}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFilters((prev) => ({ ...prev, calibre: value }));
-                  setServerFilters((prev) => ({ ...prev, calibre: value }));
+              </Label>
+              <Select
+                value={filters.calibre || 'all'}
+                onValueChange={(value) => {
+                  const calibreValue = value === 'all' ? '' : value;
+                  setFilters((prev) => ({ ...prev, calibre: calibreValue }));
+                  setServerFilters((prev) => ({ ...prev, calibre: calibreValue }));
                 }}
                 disabled={disabled}
               >
-                <option value="">Todos los calibres</option>
-                {uniqueCalibres.map((calibre) => (
-                  <option key={calibre} value={calibre}>
-                    {formatCalibreName(calibre)}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos los calibres" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los calibres</SelectItem>
+                  {uniqueCalibres.map((calibre) => (
+                    <SelectItem key={calibre} value={calibre}>
+                      {formatCalibreName(calibre)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Filtro server-side: formato */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Formato</label>
+            <div className="space-y-2">
+              <Label>Formato</Label>
               <Input
                 placeholder="formato o formato_caja"
                 value={serverFilters.formato || ''}
@@ -240,9 +247,8 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               />
             </div>
 
-            {/* Filtro server-side: empresa */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Empresa</label>
+            <div className="space-y-2">
+              <Label>Empresa</Label>
               <Input
                 placeholder="código de empresa"
                 value={serverFilters.empresa || ''}
@@ -256,33 +262,33 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
               />
             </div>
 
-            {/* Filtro server-side: horario */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Horario</label>
-              <select
-                className={styles.filterSelect}
-                value={serverFilters.horario || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
+            <div className="space-y-2">
+              <Label>Horario</Label>
+              <Select
+                value={serverFilters.horario || 'all'}
+                onValueChange={(value) => {
+                  const horarioValue = value === 'all' ? undefined : value;
                   setServerFilters((prev) => ({
                     ...prev,
-                    horario: value || undefined,
-                    horario_proceso: value || undefined,
+                    horario: horarioValue,
+                    horario_proceso: horarioValue,
                   }));
                 }}
                 disabled={disabled}
               >
-                <option value="">Mañana/Tarde</option>
-                <option value="Mañana">Mañana</option>
-                <option value="Tarde">Tarde</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Mañana/Tarde" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Mañana/Tarde</SelectItem>
+                  <SelectItem value="Mañana">Mañana</SelectItem>
+                  <SelectItem value="Tarde">Tarde</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Filtro server-side: código (exacto o contiene) */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                Código (exacto o contiene)
-              </label>
+            <div className="space-y-2">
+              <Label>Código (exacto o contiene)</Label>
               <Input
                 placeholder="Ej: 234 o 1234567890123456"
                 value={serverFilters.codigo || ''}
@@ -297,52 +303,40 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
             </div>
           </div>
 
-          {/* Filtro por tipo de caja */}
-          <div className={styles.typeFilterSection}>
-            <label className={styles.typeFilterLabel}>Tipo de Caja</label>
-            <div className={styles.typeFilterOptions}>
-              <label className={styles.typeFilterOption}>
-                <input
-                  type="radio"
-                  name="customInfo"
-                  value=""
-                  checked={filters.hasCustomInfo === null}
-                  onChange={() =>
-                    setFilters((prev) => ({ ...prev, hasCustomInfo: null }))
-                  }
-                  className={styles.typeFilterRadio}
-                />
-                <span className={styles.typeFilterText}>Todas</span>
-              </label>
-              <label className={styles.typeFilterOption}>
-                <input
-                  type="radio"
-                  name="customInfo"
-                  value="special"
-                  checked={filters.hasCustomInfo === true}
-                  onChange={() =>
-                    setFilters((prev) => ({ ...prev, hasCustomInfo: true }))
-                  }
-                  className={styles.typeFilterRadio}
-                />
-                <span className={styles.typeFilterText}>Solo especiales</span>
-              </label>
-              <label className={styles.typeFilterOption}>
-                <input
-                  type="radio"
-                  name="customInfo"
-                  value="normal"
-                  checked={filters.hasCustomInfo === false}
-                  onChange={() =>
-                    setFilters((prev) => ({ ...prev, hasCustomInfo: false }))
-                  }
-                  className={styles.typeFilterRadio}
-                />
-                <span className={styles.typeFilterText}>Solo normales</span>
-              </label>
-            </div>
+          <div className="space-y-2">
+            <Label>Tipo de Caja</Label>
+            <RadioGroup
+              value={
+                filters.hasCustomInfo === null
+                  ? 'all'
+                  : filters.hasCustomInfo
+                  ? 'special'
+                  : 'normal'
+              }
+              onValueChange={(value) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  hasCustomInfo:
+                    value === 'all' ? null : value === 'special',
+                }));
+              }}
+              className="flex flex-wrap gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="all" id="box-type-all" />
+                <Label htmlFor="box-type-all">Todas</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="special" id="box-type-special" />
+                <Label htmlFor="box-type-special">Solo especiales</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="normal" id="box-type-normal" />
+                <Label htmlFor="box-type-normal">Solo normales</Label>
+              </div>
+            </RadioGroup>
           </div>
-        </div>
+        </CardContent>
       )}
     </Card>
   );

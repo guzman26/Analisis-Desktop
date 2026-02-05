@@ -17,7 +17,6 @@ import { Card, Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
 import { Building2, ChevronDown, ChevronUp, CheckSquare, Square, Trash2, MoveRight } from 'lucide-react';
 import { useNotifications } from '@/components/Notification/Notification';
-import '../../styles/designSystem.css';
 
 const ClosedPallets = () => {
   const { loading } = usePalletContext();
@@ -249,24 +248,24 @@ const ClosedPallets = () => {
   };
 
   return (
-    <div className="macos-animate-fade-in">
+    <div className="animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
       {/* Header */}
-      <div style={{ marginBottom: 'var(--macos-space-7)' }}>
+      <div style={{ marginBottom: 'var(--6)' }}>
         <div
-          className="macos-hstack"
+          className="flex items-center gap-4"
           style={{
             justifyContent: 'space-between',
-            marginBottom: 'var(--macos-space-3)',
+            marginBottom: 'var(--2)',
           }}
         >
           <h1
-            className="macos-text-large-title"
-            style={{ color: 'var(--macos-text-primary)' }}
+            className="text-3xl font-bold"
+            style={{ color: 'var(--text-foreground)' }}
           >
             Pallets Cerrados
           </h1>
-          <div className="macos-hstack">
+          <div className="flex items-center gap-4">
             {/* Botones de selección múltiple */}
             <Button
               leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
@@ -318,8 +317,8 @@ const ClosedPallets = () => {
           </div>
         </div>
         <p
-          className="macos-text-body"
-          style={{ color: 'var(--macos-text-secondary)' }}
+          className="text-base"
+          style={{ color: 'var(--text-muted-foreground)' }}
         >
           Lista de pallets que han sido cerrados en Packing
         </p>
@@ -337,25 +336,25 @@ const ClosedPallets = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--macos-space-5)',
-          marginBottom: 'var(--macos-space-7)',
+          gap: 'var(--4)',
+          marginBottom: 'var(--6)',
         }}
       >
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Pallets
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-blue)',
+                color: 'var(--blue-500)',
                 fontWeight: 700,
               }}
             >
@@ -366,18 +365,18 @@ const ClosedPallets = () => {
         <Card variant="flat">
           <div style={{ textAlign: 'center' }}>
             <p
-              className="macos-text-footnote"
+              className="text-sm"
               style={{
-                color: 'var(--macos-text-secondary)',
-                marginBottom: 'var(--macos-space-1)',
+                color: 'var(--text-muted-foreground)',
+                marginBottom: 'var(--0.5)',
               }}
             >
               Total Cajas
             </p>
             <p
-              className="macos-text-title-1"
+              className="text-2xl font-semibold"
               style={{
-                color: 'var(--macos-green)',
+                color: 'var(--green-500)',
                 fontWeight: 700,
               }}
             >
@@ -394,11 +393,11 @@ const ClosedPallets = () => {
       {allPallets.length === 0 && !loadingMore && !loading ? (
         <Card>
           <p
-            className="macos-text-body"
+            className="text-base"
             style={{
               textAlign: 'center',
-              padding: 'var(--macos-space-8)',
-              color: 'var(--macos-text-secondary)',
+              padding: 'var(--8)',
+              color: 'var(--text-muted-foreground)',
             }}
           >
             No hay pallets cerrados
@@ -409,7 +408,7 @@ const ClosedPallets = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--macos-space-6)',
+            gap: 'var(--5)',
           }}
         >
           {palletsByCompany.map(([empresa, pallets]) => {
@@ -422,10 +421,10 @@ const ClosedPallets = () => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 'var(--macos-space-3)',
-                    marginBottom: isCollapsed ? 0 : 'var(--macos-space-4)',
-                    paddingBottom: 'var(--macos-space-2)',
-                    borderBottom: '1px solid var(--macos-separator)',
+                    gap: 'var(--2)',
+                    marginBottom: isCollapsed ? 0 : 'var(--3)',
+                    paddingBottom: 'var(--1)',
+                    borderBottom: '1px solid var(--border)',
                     cursor: 'pointer',
                     userSelect: 'none',
                     transition: 'margin-bottom 0.2s ease',
@@ -434,19 +433,19 @@ const ClosedPallets = () => {
                   {isCollapsed ? (
                     <ChevronUp
                       size={20}
-                      style={{ color: 'var(--macos-text-secondary)' }}
+                      style={{ color: 'var(--text-muted-foreground)' }}
                     />
                   ) : (
                     <ChevronDown
                       size={20}
-                      style={{ color: 'var(--macos-text-secondary)' }}
+                      style={{ color: 'var(--text-muted-foreground)' }}
                     />
                   )}
-                  <Building2 size={20} style={{ color: 'var(--macos-blue)' }} />
+                  <Building2 size={20} style={{ color: 'var(--blue-500)' }} />
                   <h2
-                    className="macos-text-title-2"
+                    className="text-xl font-semibold"
                     style={{
-                      color: 'var(--macos-text-primary)',
+                      color: 'var(--text-foreground)',
                       fontWeight: 600,
                       margin: 0,
                     }}
@@ -454,12 +453,12 @@ const ClosedPallets = () => {
                     {empresa}
                   </h2>
                   <span
-                    className="macos-text-footnote"
+                    className="text-sm"
                     style={{
-                      color: 'var(--macos-text-tertiary)',
-                      backgroundColor: 'var(--macos-fill-secondary)',
+                      color: 'var(--text-muted-foreground/70)',
+                      backgroundColor: 'hsl(var(--muted))',
                       padding: '2px 8px',
-                      borderRadius: 'var(--macos-radius-sm)',
+                      borderRadius: '0.25rem',
                     }}
                   >
                     {pallets.length}{' '}
@@ -470,7 +469,7 @@ const ClosedPallets = () => {
                 {/* Grid de pallets de esta empresa - solo visible si no está colapsado */}
                 {!isCollapsed && (
                   <div
-                    className="macos-grid"
+                    className="grid gap-4"
                     style={{
                       gridTemplateColumns:
                         'repeat(auto-fill, minmax(320px, 1fr))',
@@ -507,7 +506,7 @@ const ClosedPallets = () => {
 
       {/* Botón Cargar Más */}
       {hasMore && allPallets.length > 0 && (
-        <div style={{ marginTop: 'var(--macos-space-6)', textAlign: 'center' }}>
+        <div style={{ marginTop: 'var(--5)', textAlign: 'center' }}>
           <Button
             variant="secondary"
             size="medium"
@@ -517,10 +516,10 @@ const ClosedPallets = () => {
             {loadingMore ? 'Cargando...' : 'Cargar más pallets'}
           </Button>
           <p
-            className="macos-text-footnote"
+            className="text-sm"
             style={{
-              color: 'var(--macos-text-secondary)',
-              marginTop: 'var(--macos-space-2)',
+              color: 'var(--text-muted-foreground)',
+              marginTop: 'var(--1)',
             }}
           >
             Mostrando {allPallets.length} pallets

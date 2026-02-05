@@ -5,8 +5,8 @@ import { formatDate } from '@/utils/formatDate';
 import { getBoxByCode, getCustomerById } from '@/api/endpoints';
 import { getOperarioFromCodigo } from '@/utils/getParamsFromCodigo';
 import BoxDetailModal from './BoxDetailModal';
-import Button from '@/components/design-system/Button';
-import { Modal } from './design-system';
+import { Button } from '@/components/design-system';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import '@/styles/SaleDetailModal.css';
 
 interface SaleDetailModalProps {
@@ -223,7 +223,11 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   if (!isOpen || !sale) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Detalle de la Venta">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Detalle de la Venta</DialogTitle>
+        </DialogHeader>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
@@ -456,7 +460,8 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
           onClose={handleCloseBoxModal}
         />
       </div>
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 };
 

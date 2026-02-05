@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import Modal from '@/components/design-system/Modal';
-import { Button, Input } from '@/components/design-system';
+import { Button } from '@/components/design-system';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { usePalletContext } from '@/contexts/PalletContext';
 import { Location } from '@/types';
 
@@ -66,82 +68,87 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Nuevo Pallet de Huevo Suelto"
-      size="large"
-    >
-      <form onSubmit={handleSubmit} className="macos-stack" style={{ gap: 12 }}>
-        <div className="macos-hstack" style={{ gap: 12 }}>
-          <Input
-            label="Código base"
-            placeholder="Ej: 123456789"
-            value={baseCode}
-            onChange={(e) => setBaseCode(e.target.value)}
-          />
-          <Input
-            label="Ubicación"
-            placeholder="PACKING"
-            value={ubicacion}
-            onChange={(e) => setUbicacion(e.target.value as Location)}
-          />
-          <Input
-            label="Empresa"
-            placeholder="Ej: 1"
-            value={empresa}
-            onChange={(e) => setEmpresa(e.target.value)}
-          />
-        </div>
-        <div className="macos-hstack" style={{ gap: 12 }}>
-          <Input
-            label="Carritos"
-            type="number"
-            min={0}
-            value={carts}
-            onChange={(e) => setCarts(e.target.value)}
-          />
-          <Input
-            label="Bandejas"
-            type="number"
-            min={0}
-            value={trays}
-            onChange={(e) => setTrays(e.target.value)}
-          />
-          <Input
-            label="Huevos"
-            type="number"
-            min={0}
-            value={eggs}
-            onChange={(e) => setEggs(e.target.value)}
-          />
-        </div>
-        {error && (
-          <div
-            className="macos-text-footnote"
-            style={{ color: 'var(--macos-red)' }}
-          >
-            {error}
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Nuevo Pallet de Huevo Suelto</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Código base</Label>
+              <Input
+                placeholder="Ej: 123456789"
+                value={baseCode}
+                onChange={(e) => setBaseCode(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Ubicación</Label>
+              <Input
+                placeholder="PACKING"
+                value={ubicacion}
+                onChange={(e) => setUbicacion(e.target.value as Location)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Empresa</Label>
+              <Input
+                placeholder="Ej: 1"
+                value={empresa}
+                onChange={(e) => setEmpresa(e.target.value)}
+              />
+            </div>
           </div>
-        )}
-        <div
-          className="macos-hstack"
-          style={{ justifyContent: 'flex-end', gap: 8 }}
-        >
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onClose}
-            disabled={submitting}
-          >
-            Cancelar
-          </Button>
-          <Button type="submit" variant="primary" disabled={submitting}>
-            {submitting ? 'Creando…' : 'Crear Pallet'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Carritos</Label>
+              <Input
+                type="number"
+                min={0}
+                value={carts}
+                onChange={(e) => setCarts(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Bandejas</Label>
+              <Input
+                type="number"
+                min={0}
+                value={trays}
+                onChange={(e) => setTrays(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Huevos</Label>
+              <Input
+                type="number"
+                min={0}
+                value={eggs}
+                onChange={(e) => setEggs(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {error && <div className="text-xs text-destructive">{error}</div>}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" variant="primary" disabled={submitting}>
+              {submitting ? 'Creando…' : 'Crear Pallet'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

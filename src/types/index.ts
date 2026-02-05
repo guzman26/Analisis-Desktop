@@ -26,6 +26,8 @@ export type SaleState =
   | 'CANCELLED';
 export type IssueStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
 export type Priority = 'low' | 'medium' | 'high';
+export type DispatchState = 'DRAFT' | 'APPROVED' | 'CANCELLED';
+export type DispatchDestination = 'Bodega Lomas Altas Capilla' | 'Otro';
 
 // Códigos de calibre válidos (centralizados)
 export type CalibreCode =
@@ -482,4 +484,51 @@ export interface SalesError extends Error {
   code: SalesErrorCode;
   details?: Record<string, any>;
   recoverable?: boolean;
+}
+
+// Dispatch types
+export interface Dispatch {
+  id: string;
+  folio: string;
+  fecha: string;
+  horaLlegada: string;
+  destino: DispatchDestination;
+  patenteCamion: string;
+  nombreChofer: string;
+  despachador: string;
+  cargador: string;
+  numeroSello: string;
+  pallets: string[];
+  estado: DispatchState;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  approvedAt?: string;
+  approvedBy?: string;
+  stateHistory?: Array<{
+    state: DispatchState;
+    timestamp: string;
+    userId: string;
+    notes?: string;
+  }>;
+}
+
+export interface CreateDispatchRequest {
+  fecha: string;
+  horaLlegada: string;
+  destino: DispatchDestination;
+  patenteCamion: string;
+  nombreChofer: string;
+  despachador: string;
+  cargador: string;
+  numeroSello: string;
+  pallets: string[];
+  userId?: string;
+}
+
+export interface GetDispatchesParamsPaginated extends PaginationParams {
+  estado?: DispatchState;
+  destino?: DispatchDestination;
+  startDate?: string;
+  endDate?: string;
 }

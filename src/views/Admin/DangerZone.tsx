@@ -618,7 +618,7 @@ const DangerZone: React.FC = () => {
         onClose={closeModal}
         title="Confirmar Acción Peligrosa"
         size="medium"
-        showTrafficLights={true}
+        
       >
         <div className={styles.modalContent}>
           {selectedAction && (

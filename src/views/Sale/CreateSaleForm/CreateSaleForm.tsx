@@ -51,7 +51,11 @@ const CreateSaleForm: React.FC = () => {
   };
 
   const handleCalibresSelect = (calibres: CalibreSelection[]) => {
-    setState((prev) => ({ ...prev, selectedCalibres: calibres }));
+    setState((prev) => ({
+      ...prev,
+      selectedCalibres: calibres,
+      step: prev.step + 1,
+    }));
   };
 
   const handleSubmit = async (notes?: string) => {
@@ -194,7 +198,8 @@ const CreateSaleForm: React.FC = () => {
         return (
           <BoxSelectionStep
             selectedCalibres={state.selectedCalibres}
-            onSelectionChange={handleCalibresSelect}
+            onNext={handleCalibresSelect}
+            onBack={handleBack}
           />
         );
       case 3:
@@ -232,7 +237,7 @@ const CreateSaleForm: React.FC = () => {
   };
 
   return (
-    <WindowContainer title="Nueva Venta" showTrafficLights={false}>
+    <WindowContainer title="Nueva Venta" >
       <div className="sale-form-header">
         <h1>Nueva Venta</h1>
         <div className="step-indicator">

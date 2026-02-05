@@ -13,11 +13,11 @@ interface ConsolidatedResponse<T = any> {
 
 /**
  * Consolidated Inventory API (/inventory endpoint)
- * Handles all box, pallet, cart, and cartFormat operations
+ * Handles all box, pallet, cart, cartFormat, and dispatch operations
  */
 export const inventory = async <T = any>(
   action: string,
-  resource: 'box' | 'pallet' | 'cart' | 'cartFormat',
+  resource: 'box' | 'pallet' | 'cart' | 'cartFormat' | 'dispatch',
   params: Record<string, any>
 ): Promise<T> => {
   const response = await post<ConsolidatedResponse<T>>('/inventory', {

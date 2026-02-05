@@ -1,10 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Customer } from '@/types';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { Input, Button, Card } from '@/components/design-system';
 import { Modal } from '@/components/design-system';
 import CustomerPreferencesPanel from '@/components/CustomerPreferencesPanel';
+import { FormInput } from '@/components/ui/form-helpers';
+import { Form } from '@/components/ui/form';
 import { Search } from 'lucide-react';
+
+const newCustomerSchema = z.object({
+  name: z.string().min(1, 'Nombre es requerido'),
+  email: z.string().min(1, 'Email es requerido').email('Email inválido'),
+  phone: z.string().min(1, 'Teléfono es requerido'),
+  address: z.string().optional(),
+  taxId: z.string().optional(),
+  contactPerson: z.string().optional(),
+});
+
+type NewCustomerFormValues = z.infer<typeof newCustomerSchema>;
+
+const defaultNewCustomerValues: NewCustomerFormValues = {
+  name: '',
+  email: '',
+  phone: '',
+  address: '',
+  taxId: '',
+  contactPerson: '',
+};
 
 interface CustomerSelectionStepProps {
   selectedCustomer: Customer | null;
@@ -19,20 +44,16 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   const { customers, status, error } = state;
 
   const isLoading = status === 'loading';
-  // Ensure we always work with an array
-  const customerList: any[] = Array.isArray(customers) ? customers : [];
+  const customerList: Customer[] = Array.isArray(customers) ? customers : [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
-  const [newCustomerData, setNewCustomerData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    taxId: '',
-    contactPerson: '',
-  });
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
+
+  const addCustomerForm = useForm<NewCustomerFormValues>({
+    resolver: zodResolver(newCustomerSchema),
+    defaultValues: defaultNewCustomerValues,
+  });
 
   useEffect(() => {
     if (customerList.length === 0) {
@@ -41,47 +62,45 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
   }, [customerList.length, customerAPI]);
 
   const filteredCustomers = customerList.filter(
-    (customer: any) =>
+    (customer) =>
       customer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone?.includes(searchTerm)
   );
 
   const handleCustomerSelect = (customerId: string) => {
-    const customer = customerList.find((c: any) => c.customerId === customerId);
+    const customer = customerList.find((c) => c.customerId === customerId);
     if (customer) {
       onSelect(customer);
     }
   };
 
-  const handleAddCustomer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsCreatingCustomer(true);
-
-    try {
-      const newCustomer = await customerAPI.createCustomer(newCustomerData);
-      onSelect(newCustomer);
-      setShowAddCustomerModal(false);
-      setNewCustomerData({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        taxId: '',
-        contactPerson: '',
-      });
-    } catch (error) {
-      console.error('Error creating customer:', error);
-    } finally {
-      setIsCreatingCustomer(false);
+  const handleAddCustomerSubmit = addCustomerForm.handleSubmit(
+    async (data) => {
+      setIsCreatingCustomer(true);
+      try {
+        const newCustomer = await customerAPI.createCustomer({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          address: data.address ?? '',
+          taxId: data.taxId ?? '',
+          contactPerson: data.contactPerson ?? '',
+        });
+        onSelect(newCustomer);
+        setShowAddCustomerModal(false);
+        addCustomerForm.reset(defaultNewCustomerValues);
+      } catch (err) {
+        console.error('Error creating customer:', err);
+      } finally {
+        setIsCreatingCustomer(false);
+      }
     }
-  };
+  );
 
-  const handleInputChange = (field: string, value: string) => {
-    setNewCustomerData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleCloseAddCustomerModal = () => {
+    setShowAddCustomerModal(false);
+    addCustomerForm.reset(defaultNewCustomerValues);
   };
 
   if (isLoading && customerList.length === 0) {
@@ -100,7 +119,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
         <div className="error">
           Error: {error?.message || 'Error desconocido'}
         </div>
-        <button onClick={customerAPI.fetchCustomers}>Reintentar</button>
+        <button onClick={() => customerAPI.fetchCustomers()}>Reintentar</button>
       </div>
     );
   }
@@ -145,7 +164,7 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
                 No se encontraron clientes
               </p>
             ) : (
-              filteredCustomers.map((customer: any) => (
+              filteredCustomers.map((customer) => (
                 <div
                   key={customer.customerId}
                   onClick={() => handleCustomerSelect(customer.customerId)}
@@ -211,7 +230,6 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
             </div>
           </div>
 
-          {/* Customer Preferences */}
           <CustomerPreferencesPanel customerId={selectedCustomer.customerId} />
         </Card>
       )}
@@ -229,14 +247,14 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
       {showAddCustomerModal && (
         <Modal
           isOpen={showAddCustomerModal}
-          onClose={() => setShowAddCustomerModal(false)}
+          onClose={handleCloseAddCustomerModal}
         >
           <Card variant="elevated" className="p-0">
             <div className="modal-header flex items-center justify-between p-4 border-b border-gray-100">
               <h3 className="text-lg font-medium">Agregar Nuevo Cliente</h3>
               <Button
                 type="button"
-                onClick={() => setShowAddCustomerModal(false)}
+                onClick={handleCloseAddCustomerModal}
                 variant="ghost"
                 className="p-1 h-8 w-8"
               >
@@ -244,128 +262,74 @@ export const CustomerSelectionStep: React.FC<CustomerSelectionStepProps> = ({
               </Button>
             </div>
 
-            <form
-              onSubmit={handleAddCustomer}
-              className="customer-form p-4 space-y-4"
-            >
-              <div className="form-group">
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Nombre *
-                </label>
-                <Input
-                  type="text"
-                  id="name"
-                  value={newCustomerData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  required
-                  className="w-full"
+            <Form {...addCustomerForm}>
+              <form
+                onSubmit={handleAddCustomerSubmit}
+                className="customer-form p-4 space-y-4"
+              >
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="name"
+                  label="Nombre *"
+                  placeholder="Nombre del cliente"
+                  className="form-group"
                 />
-              </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Email *
-                </label>
-                <Input
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="email"
+                  label="Email *"
                   type="email"
-                  id="email"
-                  value={newCustomerData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  required
-                  className="w-full"
+                  placeholder="email@ejemplo.com"
+                  className="form-group"
                 />
-              </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Teléfono *
-                </label>
-                <Input
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="phone"
+                  label="Teléfono *"
                   type="tel"
-                  id="phone"
-                  value={newCustomerData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  required
-                  className="w-full"
+                  placeholder="Teléfono"
+                  className="form-group"
                 />
-              </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="address"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Dirección
-                </label>
-                <Input
-                  type="text"
-                  id="address"
-                  value={newCustomerData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  className="w-full"
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="address"
+                  label="Dirección"
+                  placeholder="Dirección"
+                  className="form-group"
                 />
-              </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="taxId"
-                  className="block text-sm font-medium mb-1"
-                >
-                  RUT
-                </label>
-                <Input
-                  type="text"
-                  id="taxId"
-                  value={newCustomerData.taxId}
-                  onChange={(e) => handleInputChange('taxId', e.target.value)}
-                  className="w-full"
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="taxId"
+                  label="RUT"
+                  placeholder="RUT"
+                  className="form-group"
                 />
-              </div>
-
-              <div className="form-group">
-                <label
-                  htmlFor="contactPerson"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Persona de Contacto
-                </label>
-                <Input
-                  type="text"
-                  id="contactPerson"
-                  value={newCustomerData.contactPerson}
-                  onChange={(e) =>
-                    handleInputChange('contactPerson', e.target.value)
-                  }
-                  className="w-full"
+                <FormInput
+                  control={addCustomerForm.control}
+                  name="contactPerson"
+                  label="Persona de Contacto"
+                  placeholder="Persona de contacto"
+                  className="form-group"
                 />
-              </div>
 
-              <div className="form-actions flex justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
-                <Button
-                  type="button"
-                  onClick={() => setShowAddCustomerModal(false)}
-                  variant="secondary"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isCreatingCustomer}
-                  variant="primary"
-                >
-                  {isCreatingCustomer ? 'Creando...' : 'Crear Cliente'}
-                </Button>
-              </div>
-            </form>
+                <div className="form-actions flex justify-end gap-3 pt-4 border-t border-gray-100 mt-4">
+                  <Button
+                    type="button"
+                    onClick={handleCloseAddCustomerModal}
+                    variant="secondary"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isCreatingCustomer}
+                    variant="primary"
+                  >
+                    {isCreatingCustomer ? 'Creando...' : 'Crear Cliente'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </Card>
         </Modal>
       )}
