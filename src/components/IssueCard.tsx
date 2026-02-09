@@ -3,7 +3,7 @@ import { Button } from '@/components/design-system';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Issue } from '@/types';
-import { updateIssueStatus } from '@/api/endpoints';
+import { issuesApi } from '@/modules/issues';
 
 interface IssueCardProps {
   issue: Issue;
@@ -48,7 +48,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
     setUpdating(newStatus);
     try {
       console.log('issue.id', issue.id);
-      await updateIssueStatus(issue.id, newStatus);
+      await issuesApi.updateStatus(issue.id, newStatus);
       setCurrentStatus(newStatus);
       if (onStatusChange) onStatusChange(newStatus);
     } catch {

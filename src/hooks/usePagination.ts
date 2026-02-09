@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { PaginationParams } from '@/types';
 import { extractDataFromResponse } from '@/utils';
 
@@ -27,17 +27,31 @@ export const usePagination = <T>({
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<Record<string, any>>({});
 
+  // Store unstable values in refs to keep fetchData stable
+  const nextKeyRef = useRef(nextKey);
+  nextKeyRef.current = nextKey;
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
+  const fetchFunctionRef = useRef(fetchFunction);
+  fetchFunctionRef.current = fetchFunction;
+
   const fetchData = useCallback(
-    async (isLoadMore = false, newFilters = filters) => {
-      if (loading) return;
+    async (isLoadMore = false, newFilters?: Record<string, any>) => {
+      if (loadingRef.current) return;
+
+      const activeFilters = newFilters ?? filtersRef.current;
 
       setLoading(true);
       setError(null);
 
       const params: PaginationParams & Record<string, any> = {
         limit,
-        ...newFilters,
-        ...(isLoadMore && nextKey ? { lastEvaluatedKey: nextKey } : {}),
+        ...activeFilters,
+        ...(isLoadMore && nextKeyRef.current
+          ? { lastEvaluatedKey: nextKeyRef.current }
+          : {}),
       };
 
       // Remove empty params
@@ -46,12 +60,12 @@ export const usePagination = <T>({
       });
 
       try {
-        const response = await fetchFunction(params);
+        const response = await fetchFunctionRef.current(params);
 
         // Extract pagination metadata
         const paginationData = response?.data || response;
         const newNextKey = paginationData?.nextKey || null;
-        
+
         // Extract items - handle both direct items array and nested data.items
         let items: T[];
         if (Array.isArray(paginationData?.items)) {
@@ -80,7 +94,7 @@ export const usePagination = <T>({
         setLoading(false);
       }
     },
-    [nextKey, fetchFunction, filters, loading, limit]
+    [limit]
   );
 
   const loadMore = useCallback(() => {

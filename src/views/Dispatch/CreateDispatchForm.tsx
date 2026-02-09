@@ -1,11 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CreateDispatchRequest, DispatchDestination, Dispatch } from '@/types';
-import { Input, Button, Card, WindowContainer, LoadingOverlay } from '../../components/design-system';
+import { CreateDispatchRequest } from '@/types';
+import {
+  Input,
+  Button,
+  Card,
+  WindowContainer,
+  LoadingOverlay,
+} from '../../components/design-system';
+import { CreatableSelect } from '../../components/ui/creatable-select';
 import { useNotifications } from '../../components/Notification';
-import { createDispatch, getDispatchById, getClosedPallets } from '@/api/endpoints';
 import { Pallet } from '@/types';
-import { getPalletByCode } from '@/api/endpoints';
+import { palletsApi } from '@/modules/inventory';
+import {
+  useCreateDispatchMutation,
+  useDispatchDetailQuery,
+  useUpdateDispatchMutation,
+  useTrucks,
+  useDrivers,
+  useDispatchers,
+  useLoaders,
+} from '@/modules/dispatch';
 
 const CreateDispatchForm: React.FC = () => {
   const navigate = useNavigate();
@@ -29,67 +44,88 @@ const CreateDispatchForm: React.FC = () => {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [palletSearchQuery, setPalletSearchQuery] = useState('');
-  const [availablePallets, setAvailablePallets] = useState<Pallet[]>([]);
   const [loadingPallets, setLoadingPallets] = useState(false);
   const [selectedPallets, setSelectedPallets] = useState<Pallet[]>([]);
+  const createDispatchMutation = useCreateDispatchMutation();
+  const updateDispatchMutation = useUpdateDispatchMutation();
+  const {
+    dispatch: loadedDispatch,
+    loading: loadingDispatch,
+    error: dispatchLoadError,
+  } = useDispatchDetailQuery(id);
+
+  // Transport resource hooks
+  const { trucks, loading: loadingTrucks, create: createNewTruck } = useTrucks();
+  const { drivers, loading: loadingDrivers, create: createNewDriver } = useDrivers();
+  const { dispatchers, loading: loadingDispatchers, create: createNewDispatcher } = useDispatchers();
+  const { loaders, loading: loadingLoaders, create: createNewLoader } = useLoaders();
+
+  const truckOptions = useMemo(
+    () => trucks.filter((t) => t.active).map((t) => ({ value: t.id, label: t.patente })),
+    [trucks]
+  );
+  const driverOptions = useMemo(
+    () => drivers.filter((d) => d.active).map((d) => ({ value: d.id, label: d.nombre })),
+    [drivers]
+  );
+  const dispatcherOptions = useMemo(
+    () => dispatchers.filter((d) => d.active).map((d) => ({ value: d.id, label: d.nombre })),
+    [dispatchers]
+  );
+  const loaderOptions = useMemo(
+    () => loaders.filter((l) => l.active).map((l) => ({ value: l.id, label: l.nombre })),
+    [loaders]
+  );
+
+  const handleCreatableChange = (field: keyof CreateDispatchRequest, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (formErrors[field]) {
+      setFormErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
 
   // Load dispatch data if editing
   useEffect(() => {
-    if (id) {
-      setIsEditMode(true);
-      setLoading(true);
-      getDispatchById(id)
-        .then((dispatch: Dispatch) => {
-          // Parse fecha (ISO string) to date input format
-          const fechaDate = new Date(dispatch.fecha);
-          const fechaFormatted = fechaDate.toISOString().split('T')[0];
-          
-          // Parse horaLlegada (ISO string) to time input format
-          const horaLlegadaDate = new Date(dispatch.horaLlegada);
-          const horaLlegadaFormatted = horaLlegadaDate.toTimeString().slice(0, 5);
-          
-          setFormData({
-            fecha: fechaFormatted,
-            horaLlegada: horaLlegadaFormatted,
-            destino: dispatch.destino,
-            patenteCamion: dispatch.patenteCamion,
-            nombreChofer: dispatch.nombreChofer,
-            despachador: dispatch.despachador,
-            cargador: dispatch.cargador,
-            numeroSello: dispatch.numeroSello,
-            pallets: dispatch.pallets,
-          });
-          // Load pallet details for selected pallets
-          loadPalletDetails(dispatch.pallets);
-        })
-        .catch((err) => {
-          console.error('Error loading dispatch:', err);
-          showError('Error al cargar el despacho');
-          navigate('/dispatch/list');
-        })
-        .finally(() => setLoading(false));
+    if (!id) {
+      return;
     }
-  }, [id]);
 
-  // Load available pallets (closed pallets in PACKING)
+    setIsEditMode(true);
+    setLoading(loadingDispatch);
+  }, [id, loadingDispatch]);
+
   useEffect(() => {
-    loadAvailablePallets();
-  }, []);
-
-  const loadAvailablePallets = async () => {
-    setLoadingPallets(true);
-    try {
-      const response = await getClosedPallets({
-        ubicacion: 'PACKING',
-        limit: 100,
-      });
-      setAvailablePallets(response.items || []);
-    } catch (err) {
-      console.error('Error loading pallets:', err);
-    } finally {
-      setLoadingPallets(false);
+    if (!id || !loadedDispatch) {
+      return;
     }
-  };
+
+    const fechaDate = new Date(loadedDispatch.fecha);
+    const fechaFormatted = fechaDate.toISOString().split('T')[0];
+    const horaLlegadaDate = new Date(loadedDispatch.horaLlegada);
+    const horaLlegadaFormatted = horaLlegadaDate.toTimeString().slice(0, 5);
+
+    setFormData({
+      fecha: fechaFormatted,
+      horaLlegada: horaLlegadaFormatted,
+      destino: loadedDispatch.destino,
+      patenteCamion: loadedDispatch.patenteCamion,
+      nombreChofer: loadedDispatch.nombreChofer,
+      despachador: loadedDispatch.despachador,
+      cargador: loadedDispatch.cargador,
+      numeroSello: loadedDispatch.numeroSello,
+      pallets: loadedDispatch.pallets,
+    });
+    void loadPalletDetails(loadedDispatch.pallets);
+  }, [id, loadedDispatch]);
+
+  useEffect(() => {
+    if (!id || !dispatchLoadError) {
+      return;
+    }
+
+    showError('Error al cargar el despacho');
+    navigate('/dispatch/list');
+  }, [dispatchLoadError, id, navigate, showError]);
 
   const loadPalletDetails = async (palletCodes: string[]) => {
     setLoadingPallets(true);
@@ -97,7 +133,7 @@ const CreateDispatchForm: React.FC = () => {
       const pallets: Pallet[] = [];
       for (const code of palletCodes) {
         try {
-          const pallet = await getPalletByCode(code);
+          const pallet = await palletsApi.getByCode(code);
           if (pallet) {
             pallets.push(pallet);
           }
@@ -141,7 +177,7 @@ const CreateDispatchForm: React.FC = () => {
     }
 
     try {
-      const pallet = await getPalletByCode(palletSearchQuery.trim());
+      const pallet = await palletsApi.getByCode(palletSearchQuery.trim());
       if (!pallet) {
         showError('Pallet no encontrado');
         return;
@@ -198,10 +234,6 @@ const CreateDispatchForm: React.FC = () => {
       errors.cargador = 'El cargador es requerido';
     }
 
-    if (!formData.numeroSello.trim()) {
-      errors.numeroSello = 'El número de sello es requerido';
-    }
-
     if (formData.pallets.length === 0) {
       errors.pallets = 'Debe agregar al menos un pallet';
     }
@@ -212,6 +244,11 @@ const CreateDispatchForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isEditMode && loadedDispatch?.estado !== 'DRAFT') {
+      showError('Solo se pueden editar despachos en estado Borrador (DRAFT).');
+      return;
+    }
 
     if (!validateForm()) {
       return;
@@ -224,24 +261,28 @@ const CreateDispatchForm: React.FC = () => {
       const dispatchData: CreateDispatchRequest = {
         ...formData,
         fecha: new Date(formData.fecha).toISOString(),
-        horaLlegada: new Date(`${formData.fecha}T${formData.horaLlegada}`).toISOString(),
-        userId: 'user', // TODO: Get actual user ID
+        horaLlegada: new Date(
+          `${formData.fecha}T${formData.horaLlegada}`
+        ).toISOString(),
       };
 
-      await createDispatch(dispatchData);
-
-      showSuccess(
-        isEditMode
-          ? 'Despacho actualizado exitosamente'
-          : 'Despacho creado exitosamente'
-      );
+      if (isEditMode && id) {
+        await updateDispatchMutation.mutateAsync(id, dispatchData, 'user');
+        showSuccess('Despacho actualizado exitosamente');
+      } else {
+        await createDispatchMutation.mutateAsync({
+          ...dispatchData,
+          userId: 'user', // TODO: Get actual user ID
+        });
+        showSuccess('Despacho creado exitosamente');
+      }
       navigate('/dispatch/list');
     } catch (err) {
-      console.error('Error creating dispatch:', err);
+      console.error('Error saving dispatch:', err);
       showError(
         err instanceof Error
-          ? `Error al crear despacho: ${err.message}`
-          : 'Error desconocido al crear despacho'
+          ? `Error al guardar despacho: ${err.message}`
+          : 'Error desconocido al guardar despacho'
       );
     } finally {
       setIsSubmitting(false);
@@ -252,13 +293,11 @@ const CreateDispatchForm: React.FC = () => {
     navigate('/dispatch/list');
   };
 
-  const filteredAvailablePallets = availablePallets.filter((p) =>
-    p.codigo.toLowerCase().includes(palletSearchQuery.toLowerCase())
-  );
-
   if (loading && isEditMode) {
     return (
-      <WindowContainer title={isEditMode ? 'Editar Despacho' : 'Crear Despacho'}>
+      <WindowContainer
+        title={isEditMode ? 'Editar Despacho' : 'Crear Despacho'}
+      >
         <LoadingOverlay show={true} text="Cargando despacho…" />
       </WindowContainer>
     );
@@ -267,23 +306,63 @@ const CreateDispatchForm: React.FC = () => {
   return (
     <WindowContainer title={isEditMode ? 'Editar Despacho' : 'Crear Despacho'}>
       <Card className="dispatch-form-container" variant="elevated">
-        <div className="dispatch-form-header" style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
+        <div
+          className="dispatch-form-header"
+          style={{ marginBottom: '1.5rem' }}
+        >
+          <h2
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 600,
+              marginBottom: '0.5rem',
+            }}
+          >
             {isEditMode ? 'Editar Despacho' : 'Crear Nuevo Despacho'}
           </h2>
           <p style={{ fontSize: '0.9rem', color: '#666' }}>
-            Complete los datos del despacho para {isEditMode ? 'actualizarlo' : 'crearlo'}
+            Complete los datos del despacho para{' '}
+            {isEditMode ? 'actualizarlo' : 'crearlo'}
           </p>
+          {isEditMode && loadedDispatch?.estado !== 'DRAFT' && (
+            <p style={{ fontSize: '0.9rem', color: '#dc2626' }}>
+              Este despacho está en estado{' '}
+              <strong>{loadedDispatch?.estado}</strong> y no puede editarse.
+            </p>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+        >
           {/* Información Básica */}
-          <Card className="form-section" variant="flat" style={{ padding: '1rem' }}>
-            <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Información Básica</h3>
+          <Card
+            className="form-section"
+            variant="flat"
+            style={{ padding: '1rem' }}
+          >
+            <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>
+              Información Básica
+            </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1rem',
+                marginBottom: '1rem',
+              }}
+            >
               <div>
-                <label htmlFor="fecha" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="fecha"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Fecha *
                 </label>
                 <Input
@@ -295,14 +374,29 @@ const CreateDispatchForm: React.FC = () => {
                   required
                 />
                 {formErrors.fecha && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.fecha}
                   </span>
                 )}
               </div>
 
               <div>
-                <label htmlFor="horaLlegada" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="horaLlegada"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Hora Llegada *
                 </label>
                 <Input
@@ -314,14 +408,29 @@ const CreateDispatchForm: React.FC = () => {
                   required
                 />
                 {formErrors.horaLlegada && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.horaLlegada}
                   </span>
                 )}
               </div>
 
               <div>
-                <label htmlFor="destino" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="destino"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Destino *
                 </label>
                 <select
@@ -337,11 +446,20 @@ const CreateDispatchForm: React.FC = () => {
                     border: '1px solid #d1d5db',
                   }}
                 >
-                  <option value="Bodega Lomas Altas Capilla">Bodega Lomas Altas Capilla</option>
+                  <option value="Bodega Lomas Altas Capilla">
+                    Bodega Lomas Altas Capilla
+                  </option>
                   <option value="Otro">Otro</option>
                 </select>
                 {formErrors.destino && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.destino}
                   </span>
                 )}
@@ -350,53 +468,101 @@ const CreateDispatchForm: React.FC = () => {
           </Card>
 
           {/* Información de Transporte */}
-          <Card className="form-section" variant="flat" style={{ padding: '1rem' }}>
-            <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Información de Transporte</h3>
+          <Card
+            className="form-section"
+            variant="flat"
+            style={{ padding: '1rem' }}
+          >
+            <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>
+              Información de Transporte
+            </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1rem',
+              }}
+            >
               <div>
-                <label htmlFor="patenteCamion" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="patenteCamion"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Patente Camión *
                 </label>
-                <Input
-                  type="text"
-                  id="patenteCamion"
-                  name="patenteCamion"
+                <CreatableSelect
+                  options={truckOptions}
                   value={formData.patenteCamion}
-                  onChange={handleInputChange}
-                  placeholder="Ej: ABC123"
-                  required
+                  onChange={(val) => handleCreatableChange('patenteCamion', val)}
+                  onCreate={async (patente) => { await createNewTruck(patente); }}
+                  placeholder="Seleccionar patente..."
+                  isLoading={loadingTrucks}
                 />
                 {formErrors.patenteCamion && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.patenteCamion}
                   </span>
                 )}
               </div>
 
               <div>
-                <label htmlFor="nombreChofer" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="nombreChofer"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Nombre Chofer *
                 </label>
-                <Input
-                  type="text"
-                  id="nombreChofer"
-                  name="nombreChofer"
+                <CreatableSelect
+                  options={driverOptions}
                   value={formData.nombreChofer}
-                  onChange={handleInputChange}
-                  placeholder="Nombre completo del chofer"
-                  required
+                  onChange={(val) => handleCreatableChange('nombreChofer', val)}
+                  onCreate={async (nombre) => { await createNewDriver(nombre); }}
+                  placeholder="Seleccionar chofer..."
+                  isLoading={loadingDrivers}
                 />
                 {formErrors.nombreChofer && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.nombreChofer}
                   </span>
                 )}
               </div>
 
               <div>
-                <label htmlFor="numeroSello" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
-                  Número de Sello *
+                <label
+                  htmlFor="numeroSello"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Número de Sello
                 </label>
                 <Input
                   type="text"
@@ -405,10 +571,16 @@ const CreateDispatchForm: React.FC = () => {
                   value={formData.numeroSello}
                   onChange={handleInputChange}
                   placeholder="Número de sello"
-                  required
                 />
                 {formErrors.numeroSello && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.numeroSello}
                   </span>
                 )}
@@ -417,45 +589,83 @@ const CreateDispatchForm: React.FC = () => {
           </Card>
 
           {/* Información de Personal */}
-          <Card className="form-section" variant="flat" style={{ padding: '1rem' }}>
+          <Card
+            className="form-section"
+            variant="flat"
+            style={{ padding: '1rem' }}
+          >
             <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Personal</h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1rem',
+              }}
+            >
               <div>
-                <label htmlFor="despachador" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="despachador"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Despachador *
                 </label>
-                <Input
-                  type="text"
-                  id="despachador"
-                  name="despachador"
+                <CreatableSelect
+                  options={dispatcherOptions}
                   value={formData.despachador}
-                  onChange={handleInputChange}
-                  placeholder="Nombre del despachador"
-                  required
+                  onChange={(val) => handleCreatableChange('despachador', val)}
+                  onCreate={async (nombre) => { await createNewDispatcher(nombre); }}
+                  placeholder="Seleccionar despachador..."
+                  isLoading={loadingDispatchers}
                 />
                 {formErrors.despachador && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.despachador}
                   </span>
                 )}
               </div>
 
               <div>
-                <label htmlFor="cargador" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9rem', fontWeight: 500 }}>
+                <label
+                  htmlFor="cargador"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.25rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                  }}
+                >
                   Cargador *
                 </label>
-                <Input
-                  type="text"
-                  id="cargador"
-                  name="cargador"
+                <CreatableSelect
+                  options={loaderOptions}
                   value={formData.cargador}
-                  onChange={handleInputChange}
-                  placeholder="Nombre del cargador"
-                  required
+                  onChange={(val) => handleCreatableChange('cargador', val)}
+                  onCreate={async (nombre) => { await createNewLoader(nombre); }}
+                  placeholder="Seleccionar cargador..."
+                  isLoading={loadingLoaders}
                 />
                 {formErrors.cargador && (
-                  <span style={{ fontSize: '0.85rem', color: '#dc2626', marginTop: '0.25rem', display: 'block' }}>
+                  <span
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#dc2626',
+                      marginTop: '0.25rem',
+                      display: 'block',
+                    }}
+                  >
                     {formErrors.cargador}
                   </span>
                 )}
@@ -464,11 +674,21 @@ const CreateDispatchForm: React.FC = () => {
           </Card>
 
           {/* Pallets */}
-          <Card className="form-section" variant="flat" style={{ padding: '1rem' }}>
+          <Card
+            className="form-section"
+            variant="flat"
+            style={{ padding: '1rem' }}
+          >
             <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Pallets</h3>
 
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  marginBottom: '0.5rem',
+                }}
+              >
                 <Input
                   type="text"
                   placeholder="Buscar pallet por código"
@@ -493,7 +713,14 @@ const CreateDispatchForm: React.FC = () => {
               </div>
 
               {formErrors.pallets && (
-                <span style={{ fontSize: '0.85rem', color: '#dc2626', display: 'block', marginTop: '0.25rem' }}>
+                <span
+                  style={{
+                    fontSize: '0.85rem',
+                    color: '#dc2626',
+                    display: 'block',
+                    marginTop: '0.25rem',
+                  }}
+                >
                   {formErrors.pallets}
                 </span>
               )}
@@ -501,10 +728,18 @@ const CreateDispatchForm: React.FC = () => {
               {/* Selected Pallets */}
               {selectedPallets.length > 0 && (
                 <div style={{ marginTop: '1rem' }}>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 500, marginBottom: '0.5rem' }}>
+                  <div
+                    style={{
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                      marginBottom: '0.5rem',
+                    }}
+                  >
                     Pallets seleccionados ({selectedPallets.length}):
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <div
+                    style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}
+                  >
                     {selectedPallets.map((pallet) => (
                       <div
                         key={pallet.codigo}
@@ -518,7 +753,12 @@ const CreateDispatchForm: React.FC = () => {
                           border: '1px solid #d1d5db',
                         }}
                       >
-                        <span style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        <span
+                          style={{
+                            fontFamily: 'monospace',
+                            fontSize: '0.9rem',
+                          }}
+                        >
                           {pallet.codigo}
                         </span>
                         <span style={{ fontSize: '0.85rem', color: '#666' }}>
@@ -547,7 +787,15 @@ const CreateDispatchForm: React.FC = () => {
           </Card>
 
           {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '0.75rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid #e5e7eb',
+            }}
+          >
             <Button
               type="button"
               onClick={handleCancel}
@@ -559,15 +807,18 @@ const CreateDispatchForm: React.FC = () => {
             <Button
               type="submit"
               variant="primary"
-              disabled={isSubmitting}
+              disabled={
+                isSubmitting ||
+                (isEditMode && loadedDispatch?.estado !== 'DRAFT')
+              }
             >
               {isSubmitting
                 ? isEditMode
                   ? 'Actualizando...'
                   : 'Creando...'
                 : isEditMode
-                ? 'Actualizar Despacho'
-                : 'Crear Despacho'}
+                  ? 'Actualizar Despacho'
+                  : 'Crear Despacho'}
             </Button>
           </div>
         </form>
@@ -577,4 +828,3 @@ const CreateDispatchForm: React.FC = () => {
 };
 
 export default CreateDispatchForm;
-

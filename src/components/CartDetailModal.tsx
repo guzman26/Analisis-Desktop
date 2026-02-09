@@ -10,7 +10,7 @@ import {
 } from '@/utils/getParamsFromCodigo';
 import { Button } from '@/components/design-system';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import {
   Calendar,
   Package,
@@ -23,7 +23,7 @@ import {
   MoveRight,
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { moveCart } from '@/api/endpoints';
+import { cartsApi } from '@/modules/carts';
 import SelectDestinationModal from './SelectDestinationModal';
 
 interface CartDetailModalProps {
@@ -73,7 +73,7 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
     setMoveFeedback(null);
 
     try {
-      await moveCart(cart.codigo, destination);
+      await cartsApi.move(cart.codigo, destination);
       setMoveFeedback({
         type: 'success',
         message: `Carro movido exitosamente a ${destination}`,
@@ -138,7 +138,7 @@ const CartDetailModal = ({ isOpen, onClose, cart, onCartMoved }: CartDetailModal
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent layer={60} className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Detalle del Carro</DialogTitle>
         </DialogHeader>

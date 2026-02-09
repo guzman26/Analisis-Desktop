@@ -9,7 +9,7 @@ import {
   Calendar,
   Columns,
 } from 'lucide-react';
-import { getMetrics } from '@/api/endpoints';
+import { adminMetricsApi } from '@/modules/admin-metrics';
 import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
 import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
@@ -104,7 +104,7 @@ const Metrics: React.FC = () => {
         endDate,
       };
 
-      const response = await getMetrics(params);
+      const response = await adminMetricsApi.getMetrics(params);
 
       // Debug: Log response structure
       console.log('📊 Metrics response:', {

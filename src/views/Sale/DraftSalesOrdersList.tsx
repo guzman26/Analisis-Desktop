@@ -1,6 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SalesContext } from '../../contexts/SalesContext';
 import { Sale } from '@/types';
 import {
   Button,
@@ -10,14 +9,19 @@ import {
 } from '../../components/design-system';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import { useNotifications } from '../../components/Notification';
-import { confirmSale } from '@/api/endpoints';
+import {
+  useConfirmSaleMutation,
+  useConfirmedSalesOrdersInfiniteQuery,
+  useDraftSalesOrdersInfiniteQuery,
+} from '@/modules/sales';
 
 import '@/styles/SalesOrdersList.css';
 
 const SalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
-  const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
-    useContext(SalesContext);
+  const salesOrdersDRAFTPaginated = useDraftSalesOrdersInfiniteQuery();
+  const salesOrdersCONFIRMEDPaginated = useConfirmedSalesOrdersInfiniteQuery();
+  const confirmSaleMutation = useConfirmSaleMutation();
   const { showSuccess, showError } = useNotifications();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -67,14 +71,9 @@ const SalesOrdersList: React.FC = () => {
 
       // Llamar al endpoint real de confirmación
       // El backend retorna el objeto sale confirmado directamente
-      await confirmSale(sale.saleId);
-
-      // Refrescar ambas listas después de confirmar
-      // Esperar un momento para que el backend procese la actualización
-      setTimeout(() => {
-        salesOrdersDRAFTPaginated?.refresh();
-        salesOrdersCONFIRMEDPaginated?.refresh();
-      }, 500);
+      await confirmSaleMutation.mutateAsync(sale.saleId);
+      await salesOrdersDRAFTPaginated.refresh();
+      await salesOrdersCONFIRMEDPaginated.refresh();
 
       showSuccess(`Venta ${sale.saleId} confirmada exitosamente`);
     } catch (error) {
@@ -154,12 +153,13 @@ const SalesOrdersList: React.FC = () => {
         {salesOrdersDRAFTPaginated.hasMore &&
           !salesOrdersDRAFTPaginated.loading && (
             <div className="load-more-section">
-              <button
+              <Button
                 onClick={handleLoadMore}
-                className="btn btn-secondary load-more-btn"
+                variant="secondary"
+                className="load-more-btn"
               >
                 Cargar Más
-              </button>
+              </Button>
             </div>
           )}
 

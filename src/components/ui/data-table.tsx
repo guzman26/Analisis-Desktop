@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowDownUp, ChevronDown, ChevronUp } from 'lucide-react';
+
 import {
   Table,
   TableBody,
@@ -25,16 +26,12 @@ export interface DataTableColumn<T> {
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   data: T[];
-  /** Function to get a stable row id */
   getRowId: (row: T, index: number) => string;
-  /** Optional initial sort configuration */
   initialSort?: {
     columnId: string;
     direction: SortDirection;
   };
-  /** Called when sort changes */
   onSortChange?: (columnId: string, direction: SortDirection) => void;
-  /** Render expanded content for a row. If provided, rows become expandable. */
   renderExpandedContent?: (row: T) => React.ReactNode;
 }
 
@@ -56,24 +53,22 @@ function DataTableInner<T>({
     () => new Set()
   );
 
+  const hasExpansion = Boolean(renderExpandedContent);
+
   const handleHeaderClick = (column: DataTableColumn<T>) => {
     if (!column.sortable || !column.id) return;
 
-    setSortColumn((prevColumn) => {
-      if (prevColumn === column.id) {
-        setSortDirection((prevDirection) =>
-          prevDirection === 'asc' ? 'desc' : 'asc'
-        );
-        const nextDirection =
-          sortDirection === 'asc' ? ('desc' as SortDirection) : 'asc';
-        onSortChange?.(column.id, nextDirection);
-        return prevColumn;
-      }
+    if (sortColumn === column.id) {
+      const nextDirection: SortDirection =
+        sortDirection === 'asc' ? 'desc' : 'asc';
+      setSortDirection(nextDirection);
+      onSortChange?.(column.id, nextDirection);
+      return;
+    }
 
-      setSortDirection('asc');
-      onSortChange?.(column.id, 'asc');
-      return column.id;
-    });
+    setSortColumn(column.id);
+    setSortDirection('asc');
+    onSortChange?.(column.id, 'asc');
   };
 
   const toggleRow = (rowId: string) => {
@@ -91,7 +86,7 @@ function DataTableInner<T>({
   const sortedData = useMemo(() => {
     if (!sortColumn) return data;
 
-    const column = columns.find((c) => c.id === sortColumn);
+    const column = columns.find((item) => item.id === sortColumn);
     if (!column) return data;
 
     const getValue = (row: T) => {
@@ -118,71 +113,74 @@ function DataTableInner<T>({
         return (aValue - bValue) * directionFactor;
       }
 
-      // Handle Date objects
       if (aValue instanceof Date && bValue instanceof Date) {
         return (aValue.getTime() - bValue.getTime()) * directionFactor;
       }
 
-      const aStr = String(aValue).toLocaleLowerCase();
-      const bStr = String(bValue).toLocaleLowerCase();
-      if (aStr < bStr) return -1 * directionFactor;
-      if (aStr > bStr) return 1 * directionFactor;
+      const aString = String(aValue).toLocaleLowerCase();
+      const bString = String(bValue).toLocaleLowerCase();
+
+      if (aString < bString) return -1 * directionFactor;
+      if (aString > bString) return 1 * directionFactor;
       return 0;
     });
-  }, [data, columns, sortColumn, sortDirection]);
+  }, [columns, data, sortColumn, sortDirection]);
 
-  const hasExpansion = !!renderExpandedContent;
+  const renderSortIcon = (column: DataTableColumn<T>) => {
+    if (!column.sortable) return null;
+
+    if (sortColumn !== column.id) {
+      return <ArrowDownUp className="h-3.5 w-3.5 text-muted-foreground/70" />;
+    }
+
+    return sortDirection === 'asc' ? (
+      <ChevronUp className="h-3.5 w-3.5 text-foreground" />
+    ) : (
+      <ChevronDown className="h-3.5 w-3.5 text-foreground" />
+    );
+  };
 
   return (
-    <div className="w-full overflow-x-auto bg-white border border-border rounded-lg">
-      <Table>
+    <div className="w-full overflow-x-auto rounded-xl border border-border/80 bg-card shadow-sm">
+      <Table className="w-full">
         <TableHeader>
-          <TableRow className="bg-white border-b-2 border-border hover:bg-white">
-            {columns.map((column) => {
-              const isNumeric = column.align === 'right';
-              const isSorted = sortColumn === column.id;
-              const showSortIcon = column.sortable;
-
-              return (
-                <TableHead
-                  key={column.id}
+          <TableRow className="hover:bg-transparent">
+            {columns.map((column) => (
+              <TableHead
+                key={column.id}
+                className={cn(
+                  'h-10 whitespace-nowrap px-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground',
+                  column.align === 'right' && 'text-right',
+                  column.align === 'center' && 'text-center',
+                  column.sortable &&
+                    'cursor-pointer select-none transition-colors hover:text-foreground'
+                )}
+                style={{
+                  width: column.width,
+                  textAlign: column.align ?? 'left',
+                }}
+                onClick={() => handleHeaderClick(column)}
+              >
+                <span
                   className={cn(
-                    'font-semibold text-foreground text-xs whitespace-nowrap select-none border-r border-border last:border-r-0',
-                    column.sortable && 'cursor-pointer hover:bg-accent/50',
-                    isNumeric && 'text-right'
+                    'inline-flex items-center gap-1.5',
+                    column.align === 'right' && 'justify-end',
+                    column.align === 'center' && 'justify-center'
                   )}
-                  style={{
-                    width: column.width,
-                    textAlign: column.align ?? 'left',
-                  }}
-                  onClick={() => handleHeaderClick(column)}
                 >
-                  <span className="flex items-center gap-1.5">
-                    {column.header}
-                    {showSortIcon && (
-                      <span className="inline-flex text-[10px] text-muted-foreground">
-                        {isSorted ? (
-                          sortDirection === 'asc' ? (
-                            <ChevronUp className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )
-                        ) : (
-                          <ChevronUp className="w-3 h-3 opacity-30" />
-                        )}
-                      </span>
-                    )}
-                  </span>
-                </TableHead>
-              );
-            })}
+                  {column.header}
+                  {renderSortIcon(column)}
+                </span>
+              </TableHead>
+            ))}
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {sortedData.map((row, index) => {
             const rowId = getRowId(row, index);
             const isExpanded = expandedRowIds.has(rowId);
-            const expandableContent = hasExpansion
+            const expandedContent = hasExpansion
               ? renderExpandedContent?.(row)
               : null;
 
@@ -190,9 +188,8 @@ function DataTableInner<T>({
               <React.Fragment key={rowId}>
                 <TableRow
                   className={cn(
-                    'border-b border-border transition-colors',
-                    index % 2 === 0 ? 'bg-white' : 'bg-muted/50',
-                    hasExpansion && 'cursor-pointer hover:bg-blue-50'
+                    'transition-colors',
+                    hasExpansion && 'cursor-pointer'
                   )}
                   onClick={() => {
                     if (hasExpansion) {
@@ -201,7 +198,6 @@ function DataTableInner<T>({
                   }}
                 >
                   {columns.map((column) => {
-                    const isNumeric = column.align === 'right';
                     let content: React.ReactNode = null;
                     if (column.renderCell) {
                       content = column.renderCell(row);
@@ -217,8 +213,9 @@ function DataTableInner<T>({
                       <TableCell
                         key={column.id}
                         className={cn(
-                          'py-1.5 px-2.5 align-middle border-r border-border last:border-r-0 text-foreground text-[13px] leading-relaxed',
-                          isNumeric && 'text-right tabular-nums'
+                          'px-3 py-2 align-middle text-sm',
+                          column.align === 'right' && 'text-right tabular-nums',
+                          column.align === 'center' && 'text-center'
                         )}
                         style={{ textAlign: column.align ?? 'left' }}
                       >
@@ -227,26 +224,23 @@ function DataTableInner<T>({
                     );
                   })}
                 </TableRow>
-                {hasExpansion && isExpanded && expandableContent && (
-                  <TableRow className="bg-muted/50 border-t border-border hover:bg-muted/50">
-                    <TableCell
-                      colSpan={columns.length}
-                      className="py-3 px-2.5 border-r border-border"
-                    >
-                      <div className="border-t border-border pt-0">
-                        {expandableContent}
-                      </div>
+
+                {hasExpansion && isExpanded && expandedContent && (
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableCell colSpan={columns.length} className="px-3 py-3">
+                      {expandedContent}
                     </TableCell>
                   </TableRow>
                 )}
               </React.Fragment>
             );
           })}
+
           {sortedData.length === 0 && (
             <TableRow className="hover:bg-transparent">
               <TableCell
                 colSpan={columns.length}
-                className="text-center text-muted-foreground py-8"
+                className="py-8 text-center text-muted-foreground"
               >
                 No hay datos para mostrar.
               </TableCell>
@@ -258,7 +252,6 @@ function DataTableInner<T>({
   );
 }
 
-// Generic wrapper to preserve generics when exporting default
 function DataTable<T>(props: DataTableProps<T>) {
   return <DataTableInner {...props} />;
 }

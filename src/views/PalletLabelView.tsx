@@ -15,7 +15,7 @@ import {
 } from '@/utils/company';
 import { WindowContainer, Button } from '@/components/design-system';
 import JsBarcode from 'jsbarcode';
-import { getPalletByCode } from '@/api/endpoints';
+import { palletsApi } from '@/modules/inventory';
 import '@/styles/PalletLabel.css';
 
 const PalletLabelView: React.FC = () => {
@@ -33,7 +33,7 @@ const PalletLabelView: React.FC = () => {
     if (palletCode) {
       const fetchPallet = async () => {
         try {
-          const response = await getPalletByCode(palletCode);
+          const response = await palletsApi.getByCode(palletCode);
           if (response) {
             setPallet(response);
           } else {

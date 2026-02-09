@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/design-system';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/app-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { usePalletContext } from '@/contexts/PalletContext';
+import { usePalletServerState } from '@/modules/inventory';
 import { Location } from '@/types';
 
 interface PalletLooseEggsModalProps {
@@ -17,7 +23,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
   onClose,
   defaultLocation = 'PACKING',
 }) => {
-  const { createLooseEggPallet } = usePalletContext();
+  const { createLooseEggPallet } = usePalletServerState();
   const [baseCode, setBaseCode] = useState('');
   const [ubicacion, setUbicacion] = useState<Location>(defaultLocation);
   const [carts, setCarts] = useState<string>('');
@@ -69,7 +75,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent layer={60} className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Nuevo Pallet de Huevo Suelto</DialogTitle>
         </DialogHeader>

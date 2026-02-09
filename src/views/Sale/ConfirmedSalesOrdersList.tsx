@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SalesContext } from '../../contexts/SalesContext';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import ReturnBoxesModal from '@/components/ReturnBoxesModal';
@@ -11,14 +10,20 @@ import {
   LoadingOverlay,
   SalesCard,
 } from '../../components/design-system';
-import { dispatchSale, completeSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
+import {
+  useCompleteSaleMutation,
+  useConfirmedSalesOrdersInfiniteQuery,
+  useDispatchSaleMutation,
+} from '@/modules/sales';
 
 import '@/styles/SalesOrdersList.css';
 
 const ConfirmedSalesOrdersList: React.FC = () => {
   const navigate = useNavigate();
-  const { salesOrdersCONFIRMEDPaginated } = useContext(SalesContext);
+  const salesOrdersCONFIRMEDPaginated = useConfirmedSalesOrdersInfiniteQuery();
+  const dispatchSaleMutation = useDispatchSaleMutation();
+  const completeSaleMutation = useCompleteSaleMutation();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
@@ -72,12 +77,12 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handleDispatchSale = async (sale: Sale) => {
     try {
-      await dispatchSale(sale.saleId, 'Marcado como despachado');
+      await dispatchSaleMutation.mutateAsync({
+        saleId: sale.saleId,
+        notes: 'Marcado como despachado',
+      });
       showSuccess('Venta marcada como despachada exitosamente');
-      // Esperar un momento para que el backend procese la actualización
-      setTimeout(() => {
-        salesOrdersCONFIRMEDPaginated.refresh();
-      }, 500);
+      await salesOrdersCONFIRMEDPaginated.refresh();
     } catch (error) {
       console.error('Error dispatching sale:', error);
       showError(
@@ -90,12 +95,12 @@ const ConfirmedSalesOrdersList: React.FC = () => {
 
   const handleCompleteSale = async (sale: Sale) => {
     try {
-      await completeSale(sale.saleId, 'Marcado como completado');
+      await completeSaleMutation.mutateAsync({
+        saleId: sale.saleId,
+        notes: 'Marcado como completado',
+      });
       showSuccess('Venta completada exitosamente');
-      // Esperar un momento para que el backend procese la actualización
-      setTimeout(() => {
-        salesOrdersCONFIRMEDPaginated.refresh();
-      }, 500);
+      await salesOrdersCONFIRMEDPaginated.refresh();
     } catch (error) {
       console.error('Error completing sale:', error);
       showError(

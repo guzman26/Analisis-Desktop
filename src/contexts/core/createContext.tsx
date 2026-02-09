@@ -86,24 +86,32 @@ export function useAsyncAction<T>(
   const [data, setData] = React.useState<T | null>(null);
   const [error, setError] = React.useState<Error | null>(null);
 
+  // Store callback refs to avoid unstable dependencies
+  const asyncFnRef = React.useRef(asyncFn);
+  asyncFnRef.current = asyncFn;
+  const onSuccessRef = React.useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const onErrorRef = React.useRef(onError);
+  onErrorRef.current = onError;
+
   const execute = useCallback(async () => {
     setStatus('loading');
     setError(null);
 
     try {
-      const result = await asyncFn();
+      const result = await asyncFnRef.current();
       setData(result);
       setStatus('success');
-      onSuccess?.(result);
+      onSuccessRef.current?.(result);
       return result;
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
       setStatus('error');
-      onError?.(error);
+      onErrorRef.current?.(error);
       throw error;
     }
-  }, [asyncFn, onSuccess, onError]);
+  }, []);
 
   return {
     execute,

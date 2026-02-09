@@ -27,7 +27,12 @@ import {
   GetCartsParams,
   Dispatch,
   CreateDispatchRequest,
+  UpdateDispatchRequest,
   GetDispatchesParamsPaginated,
+  Truck,
+  Driver,
+  Dispatcher,
+  Loader,
 } from '@/types';
 
 // Pallet operations - now using consolidated /inventory endpoint
@@ -686,8 +691,74 @@ export const getDispatchById = (id: string) =>
 export const createDispatch = (data: CreateDispatchRequest) =>
   inventory<Dispatch>('create', 'dispatch', data);
 
+export const updateDispatch = (
+  id: string,
+  updates: UpdateDispatchRequest,
+  userId: string
+) => inventory<Dispatch>('update', 'dispatch', { id, updates, userId });
+
 export const approveDispatch = (id: string, userId: string) =>
   inventory<Dispatch>('approve', 'dispatch', { id, userId });
 
 export const cancelDispatch = (id: string, userId: string, reason?: string) =>
   inventory<Dispatch>('cancel', 'dispatch', { id, userId, reason });
+
+// Truck operations - using consolidated /inventory endpoint
+export const getTrucks = () =>
+  inventory<{ data: Truck[]; pagination: any }>('get', 'truck', {}).then(
+    (res) => res.data || []
+  );
+
+export const createTruck = (data: { patente: string; descripcion?: string }) =>
+  inventory<{ data: Truck }>('create', 'truck', data).then((res) => res.data || res);
+
+export const updateTruck = (id: string, updates: Partial<Truck>) =>
+  inventory<{ data: Truck }>('update', 'truck', { id, updates }).then((res) => res.data || res);
+
+export const deleteTruck = (id: string) =>
+  inventory<any>('delete', 'truck', { id });
+
+// Driver operations - using consolidated /inventory endpoint
+export const getDrivers = () =>
+  inventory<{ data: Driver[]; pagination: any }>('get', 'driver', {}).then(
+    (res) => res.data || []
+  );
+
+export const createDriver = (data: { nombre: string }) =>
+  inventory<{ data: Driver }>('create', 'driver', data).then((res) => res.data || res);
+
+export const updateDriver = (id: string, updates: Partial<Driver>) =>
+  inventory<{ data: Driver }>('update', 'driver', { id, updates }).then((res) => res.data || res);
+
+export const deleteDriver = (id: string) =>
+  inventory<any>('delete', 'driver', { id });
+
+// Dispatcher operations - using consolidated /inventory endpoint
+export const getDispatchers = () =>
+  inventory<{ data: Dispatcher[]; pagination: any }>('get', 'dispatcher', {}).then(
+    (res) => res.data || []
+  );
+
+export const createDispatcher = (data: { nombre: string }) =>
+  inventory<{ data: Dispatcher }>('create', 'dispatcher', data).then((res) => res.data || res);
+
+export const updateDispatcher = (id: string, updates: Partial<Dispatcher>) =>
+  inventory<{ data: Dispatcher }>('update', 'dispatcher', { id, updates }).then((res) => res.data || res);
+
+export const deleteDispatcher = (id: string) =>
+  inventory<any>('delete', 'dispatcher', { id });
+
+// Loader operations - using consolidated /inventory endpoint
+export const getLoaders = () =>
+  inventory<{ data: Loader[]; pagination: any }>('get', 'loader', {}).then(
+    (res) => res.data || []
+  );
+
+export const createLoader = (data: { nombre: string }) =>
+  inventory<{ data: Loader }>('create', 'loader', data).then((res) => res.data || res);
+
+export const updateLoader = (id: string, updates: Partial<Loader>) =>
+  inventory<{ data: Loader }>('update', 'loader', { id, updates }).then((res) => res.data || res);
+
+export const deleteLoader = (id: string) =>
+  inventory<any>('delete', 'loader', { id });

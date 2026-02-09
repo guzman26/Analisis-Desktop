@@ -5,8 +5,7 @@ import {
   ALL_CALIBRE_CODES,
 } from '@/utils/getParamsFromCodigo';
 import { Button } from './design-system';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -17,7 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Filter, X, Package, Hash } from 'lucide-react';
+import { Filter, Package, Hash } from 'lucide-react';
+import FilterHeader from '@/components/shared/FilterHeader';
 
 interface ServerFilters {
   calibre?: string;
@@ -146,25 +146,16 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base">Filtros</CardTitle>
-            {hasActiveFilters && <Badge variant="secondary">Activos</Badge>}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {disabled && <Badge variant="outline">Buscando...</Badge>}
-            {hasActiveFilters && (
-              <Button
-                variant="secondary"
-                size="small"
-                leftIcon={<X size={14} />}
-                onClick={clearFilters}
-                disabled={disabled}
-              >
-                Limpiar
-              </Button>
-            )}
+        <FilterHeader
+          title="Filtros"
+          icon={<Filter className="w-5 h-5" />}
+          hasActive={hasActiveFilters}
+          loadingLabel={disabled ? 'Buscando...' : undefined}
+          onClear={hasActiveFilters ? clearFilters : undefined}
+          onToggle={() => setIsExpanded(!isExpanded)}
+          isExpanded={isExpanded}
+          disabled={disabled}
+          actions={(
             <Button
               variant="primary"
               size="small"
@@ -173,16 +164,8 @@ const BoxFilters: React.FC<BoxFiltersProps> = ({
             >
               Aplicar
             </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setIsExpanded(!isExpanded)}
-              disabled={disabled}
-            >
-              {isExpanded ? 'Ocultar' : 'Mostrar'}
-            </Button>
-          </div>
-        </div>
+          )}
+        />
       </CardHeader>
 
       {isExpanded && (

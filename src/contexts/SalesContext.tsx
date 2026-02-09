@@ -1,4 +1,10 @@
-import React, { createContext, ReactNode, useCallback } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { GetSalesOrdersParamsPaginated, Sale } from '@/types';
 import { getSalesOrders } from '@/api/endpoints';
 import usePagination from '@/hooks/usePagination';
@@ -62,30 +68,51 @@ export const SalesProvider: React.FC<Props> = ({ children }) => {
     },
   });
 
-  const refreshAllSales = useCallback(() => {
-    salesOrdersDRAFTPaginatedHook.refresh({});
-    salesOrdersCONFIRMEDPaginatedHook.refresh({});
-  }, [salesOrdersDRAFTPaginatedHook, salesOrdersCONFIRMEDPaginatedHook]);
+  // Store refresh functions in refs to avoid unstable dependencies
+  const draftRefreshRef = useRef(salesOrdersDRAFTPaginatedHook.refresh);
+  draftRefreshRef.current = salesOrdersDRAFTPaginatedHook.refresh;
+  const confirmedRefreshRef = useRef(salesOrdersCONFIRMEDPaginatedHook.refresh);
+  confirmedRefreshRef.current = salesOrdersCONFIRMEDPaginatedHook.refresh;
 
-  const value: SalesContextType = {
-    salesOrdersDRAFTPaginated: {
-      data: salesOrdersDRAFTPaginatedHook.data,
-      loading: salesOrdersDRAFTPaginatedHook.loading,
-      error: salesOrdersDRAFTPaginatedHook.error,
-      hasMore: salesOrdersDRAFTPaginatedHook.hasMore,
-      loadMore: salesOrdersDRAFTPaginatedHook.loadMore,
-      refresh: () => salesOrdersDRAFTPaginatedHook.refresh({}),
-    },
-    salesOrdersCONFIRMEDPaginated: {
-      data: salesOrdersCONFIRMEDPaginatedHook.data,
-      loading: salesOrdersCONFIRMEDPaginatedHook.loading,
-      error: salesOrdersCONFIRMEDPaginatedHook.error,
-      hasMore: salesOrdersCONFIRMEDPaginatedHook.hasMore,
-      loadMore: salesOrdersCONFIRMEDPaginatedHook.loadMore,
-      refresh: () => salesOrdersCONFIRMEDPaginatedHook.refresh({}),
-    },
-    refreshAllSales,
-  };
+  const refreshAllSales = useCallback(() => {
+    draftRefreshRef.current({});
+    confirmedRefreshRef.current({});
+  }, []);
+
+  const value = useMemo<SalesContextType>(
+    () => ({
+      salesOrdersDRAFTPaginated: {
+        data: salesOrdersDRAFTPaginatedHook.data,
+        loading: salesOrdersDRAFTPaginatedHook.loading,
+        error: salesOrdersDRAFTPaginatedHook.error,
+        hasMore: salesOrdersDRAFTPaginatedHook.hasMore,
+        loadMore: salesOrdersDRAFTPaginatedHook.loadMore,
+        refresh: () => salesOrdersDRAFTPaginatedHook.refresh({}),
+      },
+      salesOrdersCONFIRMEDPaginated: {
+        data: salesOrdersCONFIRMEDPaginatedHook.data,
+        loading: salesOrdersCONFIRMEDPaginatedHook.loading,
+        error: salesOrdersCONFIRMEDPaginatedHook.error,
+        hasMore: salesOrdersCONFIRMEDPaginatedHook.hasMore,
+        loadMore: salesOrdersCONFIRMEDPaginatedHook.loadMore,
+        refresh: () => salesOrdersCONFIRMEDPaginatedHook.refresh({}),
+      },
+      refreshAllSales,
+    }),
+    [
+      salesOrdersDRAFTPaginatedHook.data,
+      salesOrdersDRAFTPaginatedHook.loading,
+      salesOrdersDRAFTPaginatedHook.error,
+      salesOrdersDRAFTPaginatedHook.hasMore,
+      salesOrdersDRAFTPaginatedHook.loadMore,
+      salesOrdersCONFIRMEDPaginatedHook.data,
+      salesOrdersCONFIRMEDPaginatedHook.loading,
+      salesOrdersCONFIRMEDPaginatedHook.error,
+      salesOrdersCONFIRMEDPaginatedHook.hasMore,
+      salesOrdersCONFIRMEDPaginatedHook.loadMore,
+      refreshAllSales,
+    ]
+  );
 
   return (
     <SalesContext.Provider value={value}>{children}</SalesContext.Provider>

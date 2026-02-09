@@ -22,6 +22,9 @@ import {
   Truck,
   BarChart3,
 } from 'lucide-react';
+import { Button } from '@/components/design-system';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface SidebarItem {
   path?: string;
@@ -32,153 +35,165 @@ interface SidebarItem {
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
+  isMobile?: boolean;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const sidebarItems: SidebarItem[] = [
   {
     path: '/',
     label: 'Dashboard',
-    icon: <LayoutDashboard className="w-5 h-5" />,
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     label: 'Packing',
-    icon: <Package className="w-5 h-5" />,
+    icon: <Package className="h-5 w-5" />,
     children: [
       {
         path: '/packing/openPallets',
         label: 'Pallets Abiertos',
-        icon: <ClipboardList className="w-4 h-4" />,
+        icon: <ClipboardList className="h-4 w-4" />,
       },
       {
         path: '/packing/closedPallets',
         label: 'Pallets Cerrados',
-        icon: <CheckSquare className="w-4 h-4" />,
+        icon: <CheckSquare className="h-4 w-4" />,
       },
       {
         path: '/packing/carts',
         label: 'Carros',
-        icon: <ShoppingCart className="w-4 h-4" />,
+        icon: <ShoppingCart className="h-4 w-4" />,
       },
       {
         path: '/packing/unassignedBoxes',
         label: 'Cajas sin Pallet',
-        icon: <Box className="w-4 h-4" />,
+        icon: <Box className="h-4 w-4" />,
       },
     ],
   },
   {
     label: 'Tránsito',
-    icon: <Truck className="w-5 h-5" />,
+    icon: <Truck className="h-5 w-5" />,
     children: [
       {
         path: '/transito/pallets',
         label: 'Pallets en Tránsito',
-        icon: <Tag className="w-4 h-4" />,
+        icon: <Tag className="h-4 w-4" />,
+      },
+      {
+        path: '/transito/carts',
+        label: 'Carros en Tránsito',
+        icon: <ShoppingCart className="h-4 w-4" />,
+      },
+      {
+        path: '/dispatch/list',
+        label: 'Listar Despachos',
+        icon: <FileText className="h-4 w-4" />,
+      },
+      {
+        path: '/dispatch/create',
+        label: 'Crear Despacho',
+        icon: <FileText className="h-4 w-4" />,
       },
     ],
   },
   {
     label: 'Bodega',
-    icon: <Warehouse className="w-5 h-5" />,
+    icon: <Warehouse className="h-5 w-5" />,
     children: [
       {
         path: '/bodega/pallets',
         label: 'Pallets en Bodega',
-        icon: <Tag className="w-4 h-4" />,
+        icon: <Tag className="h-4 w-4" />,
       },
       {
         path: '/bodega/unassignedBoxes',
         label: 'Cajas sin Pallet',
-        icon: <Box className="w-4 h-4" />,
-      },
-    ],
-  },
-  {
-    label: 'Despachos',
-    icon: <Truck className="w-5 h-5" />,
-    children: [
-      {
-        path: '/dispatch/list',
-        label: 'Listar Despachos',
-        icon: <FileText className="w-4 h-4" />,
-      },
-      {
-        path: '/dispatch/create',
-        label: 'Crear Despacho',
-        icon: <FileText className="w-4 h-4" />,
+        icon: <Box className="h-4 w-4" />,
       },
     ],
   },
   {
     label: 'Ventas',
-    icon: <ShoppingCart className="w-5 h-5" />,
+    icon: <ShoppingCart className="h-5 w-5" />,
     children: [
       {
         path: '/sales/new',
         label: 'Nueva Venta',
-        icon: <FileText className="w-4 h-4" />,
+        icon: <FileText className="h-4 w-4" />,
       },
       {
         path: '/sales/customers',
         label: 'Clientes',
-        icon: <UserPlus className="w-4 h-4" />,
+        icon: <UserPlus className="h-4 w-4" />,
       },
       {
         path: '/sales/createCustomer',
         label: 'Crear Cliente',
-        icon: <UserPlus className="w-4 h-4" />,
+        icon: <UserPlus className="h-4 w-4" />,
       },
       {
         path: '/sales/orders',
         label: 'Preventas',
-        icon: <Pin className="w-4 h-4" />,
+        icon: <Pin className="h-4 w-4" />,
       },
       {
         path: '/sales/confirmed',
         label: 'Ventas Confirmadas',
-        icon: <CircleCheck className="w-4 h-4" />,
+        icon: <CircleCheck className="h-4 w-4" />,
       },
     ],
   },
   {
     label: 'Administracion',
-    icon: <Settings className="w-5 h-5" />,
+    icon: <Settings className="h-5 w-5" />,
     children: [
       {
         path: '/admin/issues',
         label: 'Problemas',
-        icon: <Search className="w-4 h-4" />,
+        icon: <Search className="h-4 w-4" />,
       },
       {
         label: 'Métricas',
-        icon: <BarChart3 className="w-4 h-4" />,
+        icon: <BarChart3 className="h-4 w-4" />,
         children: [
           {
             path: '/admin/metrics',
             label: 'Métricas Producción',
-            icon: <BarChart3 className="w-4 h-4" />,
+            icon: <BarChart3 className="h-4 w-4" />,
           },
           {
             path: '/admin/metrics/sales',
             label: 'Métricas Ventas',
-            icon: <BarChart3 className="w-4 h-4" />,
+            icon: <BarChart3 className="h-4 w-4" />,
           },
         ],
       },
       {
         path: '/admin/danger-zone',
         label: 'Zona de Peligro',
-        icon: <AlertTriangle className="w-4 h-4" />,
+        icon: <AlertTriangle className="h-4 w-4" />,
       },
     ],
   },
 ];
 
-const Sidebar = ({ onToggle }: SidebarProps) => {
+const Sidebar = ({
+  onToggle,
+  isMobile = false,
+  mobileOpen = false,
+  onMobileClose,
+}: SidebarProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>(['']);
+  const collapsed = isMobile ? false : isCollapsed;
 
   const toggleSidebar = () => {
+    if (isMobile) {
+      onMobileClose?.();
+      return;
+    }
     const newCollapsedState = !isCollapsed;
     setIsCollapsed(newCollapsedState);
     onToggle?.(newCollapsedState);
@@ -193,8 +208,9 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
   };
 
   useEffect(() => {
+    if (isMobile) return;
     onToggle?.(isCollapsed);
-  }, []);
+  }, [isCollapsed, isMobile, onToggle]);
 
   const renderMenuItem = (item: SidebarItem, depth = 0) => {
     const isExpanded = expandedItems.includes(item.label);
@@ -202,71 +218,32 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
 
     if (hasChildren) {
       return (
-        <li key={item.label} style={{ marginBottom: 'var(--0.5)' }}>
-          <button
-            className="cursor-pointer transition-all"
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'space-between',
-              gap: 'var(--2)',
-              padding: 'var(--2)',
-              color: 'var(--text-foreground)',
-              borderRadius: 'var(--rounded-md)',
-              transition:
-                'all 0.15s ease-out',
-            }}
-            onClick={() => toggleSubfolder(item.label)}
-            title={isCollapsed ? item.label : ''}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--2)',
-              }}
-            >
-              <span style={{ color: 'var(--text-muted-foreground)' }}>
-                {item.icon}
-              </span>
-              {!isCollapsed && (
-                <span
-                  className="text-sm font-medium"
-                  style={{ fontWeight: 500 }}
-                >
-                  {item.label}
-                </span>
-              )}
-            </div>
-            {!isCollapsed && (
-              <div
-                style={{
-                  transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                  transition:
-                    'transform 0.15s ease-out',
-                }}
-              >
-                <ChevronDown
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    color: 'var(--text-muted-foreground)',
-                  }}
-                />
-              </div>
+        <li key={item.label} className="space-y-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'w-full justify-between gap-2 rounded-md px-2 py-2 text-sm font-medium',
+              collapsed && 'justify-center'
             )}
-          </button>
-          {isExpanded && !isCollapsed && (
-            <ul
-              className="animate-slide-in"
-              style={{
-                marginLeft: 'var(--2)',
-                marginTop: 'var(--0.5)',
-                listStyle: 'none',
-                padding: 0,
-              }}
-            >
+            onClick={() => toggleSubfolder(item.label)}
+            title={collapsed ? item.label : ''}
+          >
+            <span className="flex items-center gap-2">
+              <span className="text-muted-foreground">{item.icon}</span>
+              {!collapsed && <span>{item.label}</span>}
+            </span>
+            {!collapsed && (
+              <ChevronDown
+                className={cn(
+                  'h-4 w-4 text-muted-foreground transition-transform',
+                  isExpanded ? 'rotate-0' : '-rotate-90'
+                )}
+              />
+            )}
+          </Button>
+          {!collapsed && isExpanded && (
+            <ul className="space-y-1 pl-4">
               {item.children?.map((child) => renderMenuItem(child, depth + 1))}
             </ul>
           )}
@@ -275,118 +252,82 @@ const Sidebar = ({ onToggle }: SidebarProps) => {
     }
 
     return (
-      <li key={item.path} style={{ marginBottom: 'var(--0.5)' }}>
+      <li key={item.path}>
         <NavLink
           to={item.path!}
-          className={({ isActive }: { isActive: boolean }) => {
-            return `cursor-pointer transition-all ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`;
+          onClick={() => {
+            if (isMobile) onMobileClose?.();
           }}
-          style={({ isActive }: { isActive: boolean }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--2)',
-            padding: 'var(--2)',
-            borderRadius: 'var(--rounded-md)',
-            textDecoration: 'none',
-            transition: 'all 0.15s ease-out',
-            justifyContent: isCollapsed ? 'center' : 'flex-start',
-            paddingLeft:
-              depth > 0
-                ? 'calc(var(--8) + var(--2))'
-                : 'var(--2)',
-            backgroundColor: isActive ? 'var(--blue-500)' : 'transparent',
-            color: isActive
-              ? 'var(--text-white)'
-              : 'var(--text-foreground)',
-          })}
-          title={isCollapsed ? item.label : ''}
+          className={({ isActive }: { isActive: boolean }) =>
+            cn(
+              'flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors',
+              depth > 0 ? 'pl-6' : 'pl-2',
+              isActive
+                ? 'bg-primary text-primary-foreground'
+                : 'text-foreground hover:bg-muted/60',
+              collapsed && 'justify-center'
+            )
+          }
+          title={collapsed ? item.label : ''}
         >
-          <span style={{ flexShrink: 0 }}>{item.icon}</span>
-          {!isCollapsed && (
-            <span
-              className="text-sm font-medium"
-              style={{ fontWeight: 500 }}
-            >
-              {item.label}
-            </span>
-          )}
+          <span className="shrink-0">{item.icon}</span>
+          {!collapsed && <span>{item.label}</span>}
         </NavLink>
       </li>
     );
   };
 
   return (
-    <aside
-      style={{
-        position: 'fixed',
-        left: 0,
-        top: 0,
-        height: '100%',
-        width: isCollapsed
-          ? '16rem'
-          : '20rem',
-        background: 'hsl(var(--muted))',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderRight: '1px solid var(--border-border)',
-        zIndex: '1030',
-        transition: 'width 0.2s ease-out',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: 'var(--4)',
-          borderBottom: '1px solid var(--border-border)',
-          minHeight: '3.5rem',
-        }}
-      >
-        {!isCollapsed && (
-          <h2
-            className="text-base font-semibold"
-            style={{ margin: 0, color: 'var(--text-foreground)' }}
-          >
-            Análisis Desktop
-          </h2>
-        )}
+    <>
+      {isMobile && mobileOpen ? (
         <button
-          className="focus:outline-none focus:ring-2 focus:ring-ring cursor-pointer transition-all"
-          style={{
-            padding: 'var(--1)',
-            borderRadius: 'var(--rounded-md)',
-            color: 'var(--text-muted-foreground)',
-            margin: isCollapsed ? '0 auto' : '0',
-          }}
-          onClick={toggleSidebar}
-          aria-label={isCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
-        >
-          {isCollapsed ? (
-            <ChevronRight style={{ width: '20px', height: '20px' }} />
-          ) : (
-            <ChevronLeft style={{ width: '20px', height: '20px' }} />
-          )}
-        </button>
-      </div>
+          type="button"
+          className="fixed inset-0 z-40 bg-black/35 lg:hidden"
+          onClick={onMobileClose}
+          aria-label="Cerrar menú"
+        />
+      ) : null}
 
-      {/* Navigation */}
-      <nav
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: 'var(--2)',
-        }}
+      <aside
+        className={cn(
+          'sidebar-shell fixed left-0 top-0 z-50 h-screen border-r bg-muted/60 backdrop-blur transition-transform duration-200 ease-out',
+          isMobile ? 'w-72 max-w-[85vw]' : collapsed ? 'w-64' : 'w-80',
+          isMobile ? (mobileOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'
+        )}
       >
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {sidebarItems.map((item) => renderMenuItem(item))}
-        </ul>
-      </nav>
+        <div className="flex min-h-[3.5rem] items-center justify-between border-b px-4 py-3">
+          {!collapsed && (
+            <h2 className="text-base font-semibold">Análisis Desktop</h2>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            aria-label={
+              isMobile
+                ? 'Cerrar sidebar'
+                : collapsed
+                  ? 'Expandir sidebar'
+                  : 'Colapsar sidebar'
+            }
+          >
+            {collapsed ? (
+              <ChevronRight className="h-5 w-5" />
+            ) : (
+              <ChevronLeft className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
 
-    </aside>
+        <ScrollArea className="h-[calc(100vh-3.5rem)]">
+          <nav className="p-2">
+            <ul className="space-y-1">
+              {sidebarItems.map((item) => renderMenuItem(item))}
+            </ul>
+          </nav>
+        </ScrollArea>
+      </aside>
+    </>
   );
 };
 

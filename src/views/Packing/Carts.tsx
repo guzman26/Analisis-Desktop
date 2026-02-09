@@ -2,16 +2,20 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Cart } from '@/types';
 import CartCard from '@/components/CartCard';
 import CartDetailModal from '@/components/CartDetailModal';
+import { cartsApi } from '@/modules/carts';
+import CartsFilters, { Filters } from '@/components/CartsFilters';
+import { Button, LoadingOverlay } from '@/components/design-system';
 import {
-  getCarts,
-  deleteCart,
-} from '@/api/endpoints';
-import CartsFilters, {
-  Filters,
-} from '@/components/CartsFilters';
-import { Card, Button, LoadingOverlay } from '@/components/design-system';
-import { getEmpresaNombre, getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+  getEmpresaNombre,
+  getCalibreFromCodigo,
+} from '@/utils/getParamsFromCodigo';
 import { Building2, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  EmptyStateV2,
+  MetricCardV2,
+  PageHeaderV2,
+  SectionCardV2,
+} from '@/components/app-v2';
 
 const Carts = () => {
   const [allCarts, setAllCarts] = useState<Cart[]>([]);
@@ -58,7 +62,7 @@ const Carts = () => {
           },
         };
 
-        const response = await getCarts(params);
+        const response = await cartsApi.list(params);
         const carts = response.items || [];
 
         if (resetPagination) {
@@ -166,139 +170,52 @@ const Carts = () => {
   }, [cartsByCompany, filters.searchTerm]);
 
   return (
-    <div className="animate-fade-in">
+    <div className="v2-page animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando carros…" />
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--6)' }}>
-        <div
-          className="flex items-center gap-4"
-          style={{
-            justifyContent: 'space-between',
-            marginBottom: 'var(--2)',
-          }}
-        >
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: 'var(--text-foreground)' }}
-          >
-            Carros
-          </h1>
+      <PageHeaderV2
+        title="Carros"
+        description="Lista de carros en Packing."
+        actions={
           <Button variant="secondary" size="medium" onClick={refresh}>
             Refrescar
           </Button>
-        </div>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Lista de carros en Packing
-        </p>
-      </div>
-
-      {/* Filtros */}
-      <CartsFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        disabled={loading || loadingMore}
+        }
       />
 
+      {/* Filtros */}
+      <SectionCardV2 title="Filtros">
+        <CartsFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          disabled={loading || loadingMore}
+        />
+      </SectionCardV2>
+
       {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--6)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Carros
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--blue-500)',
-                fontWeight: 700,
-              }}
-            >
-              {allCarts.length}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Bandejas
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 700,
-              }}
-            >
-              {allCarts.reduce(
-                (sum, cart) => sum + (cart.cantidadBandejas || 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Huevos
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--purple-500)',
-                fontWeight: 700,
-              }}
-            >
-              {allCarts.reduce(
-                (sum, cart) => sum + (cart.cantidadHuevos || 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
+      <div className="v2-grid-stats">
+        <MetricCardV2 label="Total carros" value={allCarts.length} />
+        <MetricCardV2
+          label="Total bandejas"
+          value={allCarts.reduce(
+            (sum, cart) => sum + (cart.cantidadBandejas || 0),
+            0
+          )}
+        />
+        <MetricCardV2
+          label="Total huevos"
+          value={allCarts.reduce(
+            (sum, cart) => sum + (cart.cantidadHuevos || 0),
+            0
+          )}
+        />
       </div>
 
       {/* Carros agrupados por empresa */}
       {allCarts.length === 0 && !loadingMore && !loading ? (
-        <Card>
-          <p
-            className="text-base"
-            style={{
-              textAlign: 'center',
-              padding: 'var(--8)',
-              color: 'var(--text-muted-foreground)',
-            }}
-          >
-            No hay carros
-          </p>
-        </Card>
+        <EmptyStateV2
+          title="No hay carros"
+          description="Cuando se registren carros en Packing aparecerán en esta vista."
+        />
       ) : (
         <div
           style={{
@@ -357,20 +274,13 @@ const Carts = () => {
                       borderRadius: '0.25rem',
                     }}
                   >
-                    {carts.length}{' '}
-                    {carts.length === 1 ? 'carro' : 'carros'}
+                    {carts.length} {carts.length === 1 ? 'carro' : 'carros'}
                   </span>
                 </div>
 
                 {/* Grid de carros de esta empresa - solo visible si no está colapsado */}
                 {!isCollapsed && (
-                  <div
-                    className="grid gap-4"
-                    style={{
-                      gridTemplateColumns:
-                        'repeat(auto-fill, minmax(320px, 1fr))',
-                    }}
-                  >
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {carts.map((cart: Cart) => (
                       <CartCard
                         key={cart.codigo}
@@ -379,7 +289,7 @@ const Carts = () => {
                         setIsModalOpen={setIsModalOpen}
                         onDelete={async (codigo) => {
                           try {
-                            await deleteCart(codigo);
+                            await cartsApi.remove(codigo);
                             refresh();
                           } catch (error) {
                             console.error('Error al eliminar carro:', error);
@@ -397,7 +307,7 @@ const Carts = () => {
 
       {/* Botón Cargar Más */}
       {hasMore && allCarts.length > 0 && (
-        <div style={{ marginTop: 'var(--5)', textAlign: 'center' }}>
+        <div className="mt-5 text-center">
           <Button
             variant="secondary"
             size="medium"
@@ -433,4 +343,3 @@ const Carts = () => {
 };
 
 export default Carts;
-

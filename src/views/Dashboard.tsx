@@ -1,323 +1,147 @@
 import { Link } from 'react-router-dom';
-import { Card } from '@/components/design-system';
 import {
-  Package,
-  Warehouse,
-  ShoppingCart,
-  Settings,
   ArrowRight,
+  Package,
+  Settings,
+  ShoppingCart,
+  Warehouse,
 } from 'lucide-react';
-import ModalDemo from '@/components/examples/ModalDemo';
+import { Badge } from '@/components/ui/badge';
+import {
+  EmptyStateV2,
+  MetricCardV2,
+  PageHeaderV2,
+  SectionCardV2,
+} from '@/components/app-v2';
 
 const Dashboard = () => {
   const quickActions = [
     {
       title: 'Packing',
-      description: 'Gestiona pallets y cajas',
-      icon: <Package style={{ width: '24px', height: '24px' }} />,
+      description: 'Gestiona pallets y cajas.',
+      icon: Package,
       link: '/packing/openPallets',
-      color: 'var(--blue-500)',
+      badge: 'Operación',
     },
     {
       title: 'Bodega',
-      description: 'Control de inventario',
-      icon: <Warehouse style={{ width: '24px', height: '24px' }} />,
+      description: 'Controla inventario y movimientos.',
+      icon: Warehouse,
       link: '/bodega/pallets',
-      color: 'var(--green-500)',
+      badge: 'Inventario',
     },
     {
       title: 'Ventas',
-      description: 'Nueva venta o pedido',
-      icon: <ShoppingCart style={{ width: '24px', height: '24px' }} />,
+      description: 'Crea ventas y administra clientes.',
+      icon: ShoppingCart,
       link: '/sales/new',
-      color: 'var(--purple-500)',
+      badge: 'Comercial',
     },
     {
       title: 'Administración',
-      description: 'Configuración y problemas',
-      icon: <Settings style={{ width: '24px', height: '24px' }} />,
+      description: 'Acceso a configuración y soporte.',
+      icon: Settings,
       link: '/admin/issues',
-      color: 'var(--orange-500)',
+      badge: 'Backoffice',
+    },
+  ];
+
+  const recentActivity = [
+    {
+      title: 'Pallet #P001 cerrado',
+      time: 'Hace 10 minutos',
+      status: 'Completado',
+    },
+    {
+      title: 'Nueva venta registrada',
+      time: 'Hace 25 minutos',
+      status: 'Pendiente',
+    },
+    {
+      title: '15 cajas agregadas a bodega',
+      time: 'Hace 1 hora',
+      status: 'Procesado',
     },
   ];
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--8)' }}>
-        <h1
-          className="text-3xl font-bold"
-          style={{
-            marginBottom: 'var(--1)',
-            color: 'var(--text-foreground)',
-          }}
-        >
-          Bienvenidos a Lomas Altas
-        </h1>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Sistema de gestión de inventario y ventas
-        </p>
-      </div>
+    <div className="v2-page animate-fade-in">
+      <PageHeaderV2
+        title="Bienvenido a Lomas Altas"
+        description="Sistema de gestión operacional para inventario, packing y ventas."
+      />
 
-      {/* Quick Actions Grid */}
-      <div
-        className="grid gap-4"
-        style={{ marginBottom: 'var(--8)' }}
+      <section className="v2-grid-stats">
+        <MetricCardV2 label="Pallets abiertos" value="12" />
+        <MetricCardV2 label="Ventas del día" value="8" />
+        <MetricCardV2 label="Cajas sin pallet" value="24" />
+      </section>
+
+      <SectionCardV2
+        title="Acciones rápidas"
+        subtitle="Atajos para los flujos más frecuentes del equipo"
       >
-        {quickActions.map((action) => (
-          <Link
-            key={action.title}
-            to={action.link}
-            style={{ textDecoration: 'none' }}
-          >
-            <Card isPressable isHoverable style={{ height: '100%' }}>
-              <div className="flex flex-col gap-4">
-                <div
-                  style={{
-                    padding: 'var(--3)',
-                    borderRadius: '0.75rem',
-                    backgroundColor: action.color,
-                    color: 'var(--text-white)',
-                    width: 'fit-content',
-                  }}
+        <div className="grid gap-3 lg:grid-cols-2">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+
+            return (
+              <Link
+                key={action.title}
+                to={action.link}
+                className="group rounded-xl border bg-card p-4 transition-all duration-150 hover:-translate-y-px hover:border-foreground/20 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-2">
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg border bg-muted">
+                      <Icon className="h-4 w-4 text-foreground" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {action.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {action.description}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="mt-3 rounded-full px-2 py-0.5 text-[11px]"
                 >
-                  {action.icon}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h3
-                    className="text-base font-semibold"
-                    style={{
-                      marginBottom: 'var(--0.5)',
-                      color: 'var(--text-foreground)',
-                    }}
-                  >
-                    {action.title}
-                  </h3>
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: 'var(--text-muted-foreground)' }}
-                  >
-                    {action.description}
-                  </p>
-                </div>
-                <ArrowRight
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    color: 'var(--text-muted-foreground)',
-                    alignSelf: 'flex-end',
-                  }}
-                />
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
-
-      {/* Stats Section */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--8)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Pallets Abiertos
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--blue-500)',
-                fontWeight: 700,
-              }}
-            >
-              12
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Ventas del Día
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 700,
-              }}
-            >
-              8
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Cajas sin Pallet
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--orange-500)',
-                fontWeight: 700,
-              }}
-            >
-              24
-            </p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <h2
-          className="text-xl font-semibold"
-          style={{
-            marginBottom: 'var(--4)',
-            color: 'var(--text-foreground)',
-          }}
-        >
-          Actividad Reciente
-        </h2>
-        <div className="flex flex-col gap-4">
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingBottom: 'var(--2)',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <div>
-              <p
-                className="text-sm font-medium"
-                style={{
-                  fontWeight: 500,
-                  color: 'var(--text-foreground)',
-                  marginBottom: 'var(--0.5)',
-                }}
-              >
-                Pallet #P001 cerrado
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: 'var(--text-muted-foreground)' }}
-              >
-                Hace 10 minutos
-              </p>
-            </div>
-            <span
-              className="text-xs"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 500,
-              }}
-            >
-              Completado
-            </span>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingBottom: 'var(--2)',
-              borderBottom: '1px solid var(--border)',
-            }}
-          >
-            <div>
-              <p
-                className="text-sm font-medium"
-                style={{
-                  fontWeight: 500,
-                  color: 'var(--text-foreground)',
-                  marginBottom: 'var(--0.5)',
-                }}
-              >
-                Nueva venta registrada
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: 'var(--text-muted-foreground)' }}
-              >
-                Hace 25 minutos
-              </p>
-            </div>
-            <span
-              className="text-xs"
-              style={{
-                color: 'var(--blue-500)',
-                fontWeight: 500,
-              }}
-            >
-              Pendiente
-            </span>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <p
-                className="text-sm font-medium"
-                style={{
-                  fontWeight: 500,
-                  color: 'var(--text-foreground)',
-                  marginBottom: 'var(--0.5)',
-                }}
-              >
-                15 cajas agregadas a bodega
-              </p>
-              <p
-                className="text-xs"
-                style={{ color: 'var(--text-muted-foreground)' }}
-              >
-                Hace 1 hora
-              </p>
-            </div>
-            <span
-              className="text-xs"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 500,
-              }}
-            >
-              Procesado
-            </span>
-          </div>
+                  {action.badge}
+                </Badge>
+              </Link>
+            );
+          })}
         </div>
-      </Card>
-      <ModalDemo />
+      </SectionCardV2>
+
+      <SectionCardV2 title="Actividad reciente">
+        {recentActivity.length === 0 ? (
+          <EmptyStateV2
+            title="Sin actividad reciente"
+            description="Cuando haya movimientos de pallets, ventas o despachos aparecerán aquí."
+          />
+        ) : (
+          <div className="divide-y rounded-lg border">
+            {recentActivity.map((item) => (
+              <div
+                key={item.title}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-foreground">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{item.time}</p>
+                </div>
+                <span className="v2-chip">{item.status}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </SectionCardV2>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { Cart } from '@/types';
 import { Button } from '@/components/design-system';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import StatCard from '@/components/shared/StatCard';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -93,28 +94,22 @@ const CartCard = ({
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-3 text-sm">
-            <div className="rounded-md border p-3">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Package size={16} className="text-primary" />
-                Bandejas
-              </div>
-              <div className="text-lg font-semibold">{cart.cantidadBandejas || 0}</div>
-            </div>
-            <div className="rounded-md border p-3">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Layers size={16} className="text-purple-500" />
-                Huevos
-              </div>
-              <div className="text-lg font-semibold">{cart.cantidadHuevos || 0}</div>
-            </div>
-            <div className="rounded-md border p-3">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Layers size={16} className="text-green-500" />
-                Calibre
-              </div>
-              <div className="text-lg font-semibold">{calibre || 'N/A'}</div>
-            </div>
+          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+            <StatCard
+              label="Bandejas"
+              value={cart.cantidadBandejas || 0}
+              icon={<Package size={16} className="text-primary" />}
+            />
+            <StatCard
+              label="Huevos"
+              value={cart.cantidadHuevos || 0}
+              icon={<Layers size={16} className="text-purple-500" />}
+            />
+            <StatCard
+              label="Calibre"
+              value={calibre || 'N/A'}
+              icon={<Layers size={16} className="text-green-500" />}
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">

@@ -486,6 +486,40 @@ export interface SalesError extends Error {
   recoverable?: boolean;
 }
 
+// Transport resource types
+export interface Truck {
+  id: string;
+  patente: string;
+  descripcion?: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Driver {
+  id: string;
+  nombre: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Dispatcher {
+  id: string;
+  nombre: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Loader {
+  id: string;
+  nombre: string;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Dispatch types
 export interface Dispatch {
   id: string;
@@ -524,6 +558,18 @@ export interface CreateDispatchRequest {
   numeroSello: string;
   pallets: string[];
   userId?: string;
+}
+
+export interface UpdateDispatchRequest {
+  fecha?: string;
+  horaLlegada?: string;
+  destino?: DispatchDestination;
+  patenteCamion?: string;
+  nombreChofer?: string;
+  despachador?: string;
+  cargador?: string;
+  numeroSello?: string;
+  pallets?: string[];
 }
 
 export interface GetDispatchesParamsPaginated extends PaginationParams {

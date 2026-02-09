@@ -1,13 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Customer, CustomerFormData } from '@/types';
-import {
-  getCustomers,
-  getCustomerById,
-  getCustomerByEmail,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
-} from '@/api/endpoints';
+import { customersApi } from '@/modules/customers';
 import { extractDataFromResponse } from '@/utils';
 import {
   createContextFactory,
@@ -207,7 +200,7 @@ const { Provider, useContext } = createContextFactory<
     fetchCustomers: async () => {
       dispatch(customerActions.fetchStart());
       try {
-        const response = await getCustomers();
+        const response = await customersApi.list();
         // Ensure we always pass an array of customers, regardless of response shape
         const responseData = Array.isArray(response)
           ? response
@@ -222,7 +215,7 @@ const { Provider, useContext } = createContextFactory<
 
     getCustomerById: async (id: string) => {
       try {
-        return await getCustomerById(id);
+        return await customersApi.getById(id);
       } catch (error) {
         console.error('Error fetching customer by ID:', error);
         return null;
@@ -231,7 +224,7 @@ const { Provider, useContext } = createContextFactory<
 
     getCustomerByEmail: async (email: string) => {
       try {
-        return await getCustomerByEmail(email);
+        return await customersApi.getByEmail(email);
       } catch (error) {
         console.error('Error fetching customer by email:', error);
         return null;
@@ -241,7 +234,7 @@ const { Provider, useContext } = createContextFactory<
     createCustomer: async (data: CustomerFormData) => {
       dispatch(customerActions.createStart());
       try {
-        const newCustomer = await createCustomer(data);
+        const newCustomer = await customersApi.create(data);
         dispatch(customerActions.createSuccess(newCustomer));
         return newCustomer;
       } catch (error) {
@@ -253,7 +246,7 @@ const { Provider, useContext } = createContextFactory<
     updateCustomer: async (id: string, data: Partial<CustomerFormData>) => {
       dispatch(customerActions.updateStart(id));
       try {
-        const updatedCustomer = await updateCustomer(id, data);
+        const updatedCustomer = await customersApi.update(id, data);
         dispatch(customerActions.updateSuccess(id, updatedCustomer));
         return updatedCustomer;
       } catch (error) {
@@ -265,7 +258,7 @@ const { Provider, useContext } = createContextFactory<
     deleteCustomer: async (id: string) => {
       dispatch(customerActions.deleteStart(id));
       try {
-        await deleteCustomer(id);
+        await customersApi.remove(id);
         dispatch(customerActions.deleteSuccess(id));
       } catch (error) {
         dispatch(customerActions.deleteError(id, error as Error));

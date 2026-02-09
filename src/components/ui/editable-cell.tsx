@@ -1,6 +1,16 @@
-import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { AlertCircle, Check, Loader2, RotateCw } from 'lucide-react';
+
 import { useDebouncedUpdate } from '@/hooks/useDebouncedUpdate';
-import './EditableCell.css';
+import { cn } from '@/lib/utils';
+import { Input } from './input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './select';
 
 export type EditableCellType = 'text' | 'email' | 'tel' | 'select';
 
@@ -10,7 +20,7 @@ export interface EditableCellProps {
   type?: EditableCellType;
   options?: Array<{ value: string; label: string }>;
   placeholder?: string;
-  validate?: (value: string) => string | null; // Retorna mensaje de error o null si es válido
+  validate?: (value: string) => string | null;
   className?: string;
   disabled?: boolean;
 }
@@ -22,96 +32,57 @@ const EditableCell: React.FC<EditableCellProps> = ({
   options,
   placeholder,
   validate,
-  className = '',
+  className,
   disabled = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [localValue, setLocalValue] = useState(initialValue || '');
-  const inputRef = useRef<HTMLInputElement | HTMLSelectElement>(null);
 
-  const {
-    value,
-    setValue,
-    state,
-    error,
-    retry,
-  } = useDebouncedUpdate(initialValue, {
-    delay: 500,
-    onUpdate: async (newValue) => {
-      if (validate) {
-        const validationError = validate(newValue);
-        if (validationError) {
-          throw new Error(validationError);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const selectTriggerRef = useRef<HTMLButtonElement>(null);
+
+  const { value, setValue, state, error, retry } = useDebouncedUpdate(
+    initialValue,
+    {
+      delay: 500,
+      onUpdate: async (newValue) => {
+        if (validate) {
+          const validationError = validate(newValue);
+          if (validationError) {
+            throw new Error(validationError);
+          }
         }
-      }
-      await onUpdate(newValue);
-    },
-    onError: (err) => {
-      console.error('Error updating cell:', err);
-    },
-  });
+        await onUpdate(newValue);
+      },
+      onError: (updateError) => {
+        console.error('Error updating cell:', updateError);
+      },
+    }
+  );
 
-  // Sincronizar valor local cuando cambia el valor del hook
   useEffect(() => {
     setLocalValue(value || '');
   }, [value]);
 
-  // Sincronizar cuando cambia el valor inicial externamente
   useEffect(() => {
     if (!isEditing && initialValue !== value) {
       setLocalValue(initialValue || '');
     }
   }, [initialValue, isEditing, value]);
 
-  // Auto-focus cuando entra en modo edición
   useEffect(() => {
-    if (isEditing && inputRef.current) {
-      if (inputRef.current instanceof HTMLInputElement) {
-        inputRef.current.focus();
-        inputRef.current.select();
-      } else if (inputRef.current instanceof HTMLSelectElement) {
-        inputRef.current.focus();
-      }
-    }
-  }, [isEditing]);
+    if (!isEditing) return;
 
-  const handleClick = () => {
-    if (!disabled) {
-      setIsEditing(true);
-    }
-  };
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    // Si el valor cambió, actualizarlo
-    if (localValue !== value) {
-      setValue(localValue);
-    } else {
-      // Si no cambió pero hay un error, resetear
-      if (state === 'error') {
-        setLocalValue(value);
-      }
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      inputRef.current?.blur();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setLocalValue(value); // Revertir cambios
-      setIsEditing(false);
-    }
-  };
-
-  const handleChange = (newValue: string) => {
-    setLocalValue(newValue);
     if (type === 'select') {
-      // Para select, actualizar inmediatamente
-      setValue(newValue);
+      const timeoutId = setTimeout(() => {
+        selectTriggerRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
-  };
+
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [isEditing, type]);
 
   const getInputType = () => {
     switch (type) {
@@ -124,116 +95,199 @@ const EditableCell: React.FC<EditableCellProps> = ({
     }
   };
 
-  const getStateClass = () => {
-    switch (state) {
-      case 'pending':
-        return 'editable-cell-pending';
-      case 'saving':
-        return 'editable-cell-saving';
-      case 'saved':
-        return 'editable-cell-saved';
-      case 'error':
-        return 'editable-cell-error';
-      default:
-        return '';
+  const startEditing = () => {
+    if (disabled) return;
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setLocalValue(value || '');
+    setIsEditing(false);
+  };
+
+  const commitEditing = () => {
+    setIsEditing(false);
+    if (localValue !== value) {
+      setValue(localValue);
+      return;
+    }
+    if (state === 'error') {
+      setLocalValue(value || '');
     }
   };
 
-  const renderStateIndicator = () => {
-    if (state === 'saving' || state === 'pending') {
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitEditing();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelEditing();
+    }
+  };
+
+  const handleSelectKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelEditing();
+    }
+  };
+
+  const handleSelectChange = (newValue: string) => {
+    setLocalValue(newValue);
+    setValue(newValue);
+    setIsEditing(false);
+  };
+
+  const selectedOptionLabel =
+    type === 'select' && options
+      ? options.find((option) => option.value === value)?.label || value
+      : value;
+
+  const renderStatusIndicator = () => {
+    if (state === 'pending' || state === 'saving') {
       return (
-        <span className="editable-cell-indicator saving" title="Guardando...">
-          <span className="spinner"></span>
-        </span>
+        <Loader2
+          className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground"
+          aria-label="Guardando"
+        />
       );
     }
+
     if (state === 'saved') {
       return (
-        <span className="editable-cell-indicator saved" title="Guardado">
-          ✓
-        </span>
+        <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-label="Guardado" />
       );
     }
+
     if (state === 'error') {
       return (
-        <span className="editable-cell-indicator error" title={error?.message || 'Error'}>
-          ⚠
-        </span>
+        <div className="flex items-center gap-1">
+          <AlertCircle
+            className="h-3.5 w-3.5 shrink-0 text-destructive"
+            aria-label={error?.message || 'Error'}
+          />
+          <button
+            type="button"
+            className="rounded-sm p-0.5 text-destructive transition-colors hover:bg-destructive/10"
+            onClick={(event) => {
+              event.stopPropagation();
+              retry();
+            }}
+            title="Reintentar"
+            aria-label="Reintentar"
+          >
+            <RotateCw className="h-3 w-3" />
+          </button>
+        </div>
       );
     }
+
     return null;
   };
 
+  const stateClasses = cn({
+    'border-primary/40 bg-primary/5': state === 'pending' || state === 'saving',
+    'border-emerald-300 bg-emerald-50/60': state === 'saved',
+    'border-destructive/40 bg-destructive/5': state === 'error',
+  });
+
   if (disabled) {
     return (
-      <div className={`editable-cell disabled ${className}`}>
-        <span>{value || placeholder || '-'}</span>
+      <div
+        className={cn(
+          'flex min-h-8 items-center rounded-md border border-transparent px-2 py-1 text-sm text-muted-foreground opacity-70',
+          className
+        )}
+      >
+        {selectedOptionLabel || placeholder || '-'}
       </div>
     );
   }
 
   if (isEditing && type === 'select' && options) {
     return (
-      <div className={`editable-cell editing ${getStateClass()} ${className}`}>
-        <select
-          ref={inputRef as React.RefObject<HTMLSelectElement>}
+      <div
+        className={cn(
+          'flex min-h-8 items-center gap-2 rounded-md border bg-background px-2 py-1',
+          stateClasses,
+          className
+        )}
+      >
+        <Select
           value={localValue}
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          className="editable-cell-input"
+          onValueChange={handleSelectChange}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsEditing(false);
+            }
+          }}
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        {renderStateIndicator()}
+          <SelectTrigger
+            ref={selectTriggerRef}
+            className="h-7 w-full border-0 px-0 py-0 text-sm shadow-none focus:ring-0 focus:ring-offset-0"
+            onKeyDown={handleSelectKeyDown}
+          >
+            <SelectValue placeholder={placeholder || '-'} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {renderStatusIndicator()}
       </div>
     );
   }
 
   if (isEditing) {
     return (
-      <div className={`editable-cell editing ${getStateClass()} ${className}`}>
-        <input
-          ref={inputRef as React.RefObject<HTMLInputElement>}
+      <div
+        className={cn(
+          'flex min-h-8 items-center gap-2 rounded-md border bg-background px-2 py-1 shadow-sm',
+          stateClasses,
+          className
+        )}
+      >
+        <Input
+          ref={inputRef}
           type={getInputType()}
           value={localValue}
-          onChange={(e) => handleChange(e.target.value)}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
+          onChange={(event) => setLocalValue(event.target.value)}
+          onBlur={commitEditing}
+          onKeyDown={handleInputKeyDown}
           placeholder={placeholder}
-          className="editable-cell-input"
+          className="h-7 border-0 px-0 py-0 text-sm shadow-none focus-visible:ring-0"
         />
-        {renderStateIndicator()}
-        {state === 'error' && (
-          <button
-            className="editable-cell-retry"
-            onClick={retry}
-            title="Reintentar"
-          >
-            ↻
-          </button>
-        )}
+        {renderStatusIndicator()}
       </div>
     );
   }
 
   return (
     <div
-      className={`editable-cell ${getStateClass()} ${className}`}
-      onClick={handleClick}
-      title={error ? error.message : state === 'saved' ? 'Guardado' : 'Click para editar'}
+      className={cn(
+        'group flex min-h-8 cursor-pointer items-center gap-2 rounded-md border border-transparent px-2 py-1 transition-colors hover:border-border hover:bg-muted/40',
+        stateClasses,
+        className
+      )}
+      onClick={startEditing}
+      title={error?.message || 'Click para editar'}
     >
-      <span className="editable-cell-value">
-        {value || <span className="editable-cell-placeholder">{placeholder || '-'}</span>}
+      <span className="min-w-0 flex-1 truncate text-sm">
+        {selectedOptionLabel || (
+          <span className="text-muted-foreground italic">{placeholder || '-'}</span>
+        )}
       </span>
-      {renderStateIndicator()}
+      {renderStatusIndicator()}
     </div>
   );
 };
 
 export default EditableCell;
-

@@ -1,43 +1,130 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { usePalletContext } from '@/contexts/PalletContext';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Pallet, Location } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import {
-  closePallet,
-  movePallet,
-  deletePallet,
-  getClosedPallets,
-} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import ClosedPalletsFilters, {
   Filters,
 } from '@/components/ClosedPalletsFilters';
 import SelectDestinationModal from '@/components/SelectDestinationModal';
-import { Card, Button, LoadingOverlay } from '@/components/design-system';
+import { Button, LoadingOverlay } from '@/components/design-system';
 import { getEmpresaNombre } from '@/utils/getParamsFromCodigo';
-import { Building2, ChevronDown, ChevronUp, CheckSquare, Square, Trash2, MoveRight } from 'lucide-react';
+import {
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  CheckSquare,
+  Square,
+  Trash2,
+  MoveRight,
+} from 'lucide-react';
 import { useNotifications } from '@/components/Notification/Notification';
+import {
+  EmptyStateV2,
+  MetricCardV2,
+  PageHeaderV2,
+  SectionCardV2,
+} from '@/components/app-v2';
+import {
+  palletsApi,
+  useClosedPalletsInfiniteQuery,
+  usePalletServerState,
+} from '@/modules/inventory';
+import { isDataV2Enabled } from '@/config/dataFlags';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error && error.message) return error.message;
+  return fallback;
+};
 
 const ClosedPallets = () => {
-  const { loading } = usePalletContext();
+  const { loading, closePallet, movePallet, deletePallet } =
+    usePalletServerState();
+  const dataV2Enabled = isDataV2Enabled('packing');
+
   const { showSuccess, showError } = useNotifications();
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [allPallets, setAllPallets] = useState<Pallet[]>([]);
-  const [nextKey, setNextKey] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
   const [collapsedCompanies, setCollapsedCompanies] = useState<Set<string>>(
     new Set()
   );
-  
+
+  const [legacyPallets, setLegacyPallets] = useState<Pallet[]>([]);
+  const [legacyNextKey, setLegacyNextKey] = useState<string | null>(null);
+  const [legacyLoadingMore, setLegacyLoadingMore] = useState(false);
+
+  // Store legacyNextKey in a ref to avoid recreating loadLegacyPallets on every fetch
+  const legacyNextKeyRef = useRef(legacyNextKey);
+  legacyNextKeyRef.current = legacyNextKey;
+
   // Estados para selección múltiple
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(new Set());
+  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(
+    new Set()
+  );
   const [isMovingSelected, setIsMovingSelected] = useState(false);
   const [isDeletingSelected, setIsDeletingSelected] = useState(false);
   const [showDestinationModal, setShowDestinationModal] = useState(false);
+
+  const closedQuery = useClosedPalletsInfiniteQuery('PACKING', filters, {
+    enabled: dataV2Enabled,
+  });
+
+  // Store closedQuery methods in refs to avoid unstable dependencies
+  const closedQueryRefetchRef = useRef(closedQuery.refetch);
+  closedQueryRefetchRef.current = closedQuery.refetch;
+  const closedQueryFetchNextPageRef = useRef(closedQuery.fetchNextPage);
+  closedQueryFetchNextPageRef.current = closedQuery.fetchNextPage;
+
+  const loadLegacyPallets = useCallback(
+    async (append = false) => {
+      setLegacyLoadingMore(true);
+      try {
+        const response = await palletsApi.getClosedByLocation('PACKING', {
+          ...filters,
+          limit: 200,
+          lastKey: append ? (legacyNextKeyRef.current ?? undefined) : undefined,
+        });
+
+        const items = response.items || [];
+        setLegacyPallets((prev) => (append ? [...prev, ...items] : items));
+        setLegacyNextKey(response.nextKey || null);
+      } catch (error) {
+        console.error('Error al cargar pallets:', error);
+      } finally {
+        setLegacyLoadingMore(false);
+      }
+    },
+    [filters]
+  );
+
+  useEffect(() => {
+    if (dataV2Enabled) return;
+    void loadLegacyPallets(false);
+  }, [dataV2Enabled, loadLegacyPallets]);
+
+  const allPallets = useMemo(() => {
+    if (!dataV2Enabled) return legacyPallets;
+    return (closedQuery.data?.pages ?? []).flatMap((page) => page.items ?? []);
+  }, [closedQuery.data?.pages, dataV2Enabled, legacyPallets]);
+
+  const hasMore = dataV2Enabled
+    ? Boolean(closedQuery.hasNextPage)
+    : Boolean(legacyNextKey);
+  const loadingMore = dataV2Enabled
+    ? Boolean(closedQuery.isFetchingNextPage)
+    : legacyLoadingMore;
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+
+    if (dataV2Enabled) {
+      await closedQueryFetchNextPageRef.current();
+      return;
+    }
+
+    await loadLegacyPallets(true);
+  }, [dataV2Enabled, hasMore, loadLegacyPallets, loadingMore]);
 
   // Función para alternar el estado de colapso de una empresa
   const toggleCompany = useCallback((empresa: string) => {
@@ -52,68 +139,15 @@ const ClosedPallets = () => {
     });
   }, []);
 
-  // Función para cargar pallets con filtros
-  const loadPallets = useCallback(
-    async (resetPagination = false, currentNextKey?: string | null) => {
-      setLoadingMore(true);
-
-      try {
-        const params = {
-          ubicacion: 'PACKING' as const,
-          limit: 200, // Aumentado de 50 a 200 para cargar más pallets por tanda
-          lastKey: resetPagination ? undefined : currentNextKey || undefined,
-          ...filters,
-        };
-
-        const response = await getClosedPallets(params);
-        const pallets = response.items || [];
-
-        if (resetPagination) {
-          setAllPallets(pallets);
-        } else {
-          setAllPallets((prev) => [...prev, ...pallets]);
-        }
-
-        setNextKey(response.nextKey || null);
-        setHasMore(!!response.nextKey);
-      } catch (error) {
-        console.error('Error al cargar pallets:', error);
-      } finally {
-        setLoadingMore(false);
-      }
-    },
-    [filters]
-  );
-
-  // Cargar pallets iniciales
-  useEffect(() => {
-    loadPallets(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Cuando cambian los filtros, resetear paginado y recargar
-  useEffect(() => {
-    setNextKey(null);
-    setAllPallets([]);
-    setHasMore(true);
-    loadPallets(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
-
-  // Función para cargar más pallets (con filtros activos)
-  const loadMore = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
-    await loadPallets(false, nextKey);
-  }, [hasMore, loadingMore, loadPallets, nextKey]);
-
-  // Create refresh function
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     setFilters({});
-    setNextKey(null);
-    setAllPallets([]);
-    setHasMore(true);
-    loadPallets(true);
-  }, [loadPallets]);
+    if (dataV2Enabled) {
+      await closedQueryRefetchRef.current();
+      return;
+    }
+    setLegacyNextKey(null);
+    await loadLegacyPallets(false);
+  }, [dataV2Enabled, loadLegacyPallets]);
 
   // Agrupar pallets por empresa
   const palletsByCompany = useMemo(() => {
@@ -128,24 +162,19 @@ const ClosedPallets = () => {
     });
 
     // Ordenar las empresas alfabéticamente
-    const sortedEntries = Object.entries(groups).sort(([a], [b]) =>
-      a.localeCompare(b, 'es')
-    );
-
-    return sortedEntries;
+    return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b, 'es'));
   }, [allPallets]);
 
   // Handlers para selección múltiple
   const handleToggleSelectionMode = () => {
     setIsSelectionMode(!isSelectionMode);
     if (isSelectionMode) {
-      // Limpiar selección al salir del modo
       setSelectedPalletCodes(new Set());
     }
   };
 
   const handleSelectionChange = (codigo: string, selected: boolean) => {
-    setSelectedPalletCodes(prev => {
+    setSelectedPalletCodes((prev) => {
       const newSet = new Set(prev);
       if (selected) {
         newSet.add(codigo);
@@ -158,11 +187,9 @@ const ClosedPallets = () => {
 
   const handleSelectAll = () => {
     if (selectedPalletCodes.size === allPallets.length) {
-      // Deseleccionar todos
       setSelectedPalletCodes(new Set());
     } else {
-      // Seleccionar todos
-      setSelectedPalletCodes(new Set(allPallets.map(p => p.codigo)));
+      setSelectedPalletCodes(new Set(allPallets.map((p) => p.codigo)));
     }
   };
 
@@ -187,18 +214,21 @@ const ClosedPallets = () => {
       }
 
       if (movedCount > 0) {
-        showSuccess(`Se movieron exitosamente ${movedCount} pallet(s) a ${destination}`);
+        showSuccess(
+          `Se movieron exitosamente ${movedCount} pallet(s) a ${destination}`
+        );
       }
       if (errorCount > 0) {
         showError(`No se pudieron mover ${errorCount} pallet(s)`);
       }
 
-      // Limpiar selección y refrescar
       setSelectedPalletCodes(new Set());
       setIsSelectionMode(false);
-      refresh();
-    } catch (error: any) {
-      showError(error.message || 'Error al mover los pallets seleccionados');
+      await refresh();
+    } catch (error) {
+      showError(
+        getErrorMessage(error, 'Error al mover los pallets seleccionados')
+      );
     } finally {
       setIsMovingSelected(false);
     }
@@ -236,39 +266,34 @@ const ClosedPallets = () => {
         showError(`No se pudieron eliminar ${errorCount} pallet(s)`);
       }
 
-      // Limpiar selección y refrescar
       setSelectedPalletCodes(new Set());
       setIsSelectionMode(false);
-      refresh();
-    } catch (error: any) {
-      showError(error.message || 'Error al eliminar los pallets seleccionados');
+      await refresh();
+    } catch (error) {
+      showError(
+        getErrorMessage(error, 'Error al eliminar los pallets seleccionados')
+      );
     } finally {
       setIsDeletingSelected(false);
     }
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="v2-page animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--6)' }}>
-        <div
-          className="flex items-center gap-4"
-          style={{
-            justifyContent: 'space-between',
-            marginBottom: 'var(--2)',
-          }}
-        >
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: 'var(--text-foreground)' }}
-          >
-            Pallets Cerrados
-          </h1>
-          <div className="flex items-center gap-4">
-            {/* Botones de selección múltiple */}
+      <PageHeaderV2
+        title="Pallets Cerrados"
+        description="Lista de pallets que han sido cerrados en Packing."
+        actions={
+          <>
             <Button
-              leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
+              leftIcon={
+                isSelectionMode ? (
+                  <Square style={{ width: '16px', height: '16px' }} />
+                ) : (
+                  <CheckSquare style={{ width: '16px', height: '16px' }} />
+                )
+              }
               variant={isSelectionMode ? 'primary' : 'secondary'}
               size="medium"
               onClick={handleToggleSelectionMode}
@@ -276,146 +301,98 @@ const ClosedPallets = () => {
             >
               {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}
             </Button>
-            
+
             {isSelectionMode && (
               <>
                 <Button
-                  leftIcon={<CheckSquare style={{ width: '16px', height: '16px' }} />}
+                  leftIcon={
+                    <CheckSquare style={{ width: '16px', height: '16px' }} />
+                  }
                   variant="secondary"
                   size="medium"
                   onClick={handleSelectAll}
                   disabled={allPallets.length === 0}
                 >
-                  {selectedPalletCodes.size === allPallets.length ? 'Deseleccionar Todos' : 'Seleccionar Todos'}
+                  {selectedPalletCodes.size === allPallets.length
+                    ? 'Deseleccionar Todos'
+                    : 'Seleccionar Todos'}
                 </Button>
                 <Button
-                  leftIcon={<MoveRight style={{ width: '16px', height: '16px' }} />}
+                  leftIcon={
+                    <MoveRight style={{ width: '16px', height: '16px' }} />
+                  }
                   variant="secondary"
                   size="medium"
                   onClick={() => setShowDestinationModal(true)}
                   disabled={isMovingSelected || selectedPalletCodes.size === 0}
                 >
-                  {isMovingSelected ? 'Moviendo...' : `Mover (${selectedPalletCodes.size})`}
+                  {isMovingSelected
+                    ? 'Moviendo...'
+                    : `Mover (${selectedPalletCodes.size})`}
                 </Button>
                 <Button
-                  leftIcon={<Trash2 style={{ width: '16px', height: '16px' }} />}
+                  leftIcon={
+                    <Trash2 style={{ width: '16px', height: '16px' }} />
+                  }
                   variant="danger"
                   size="medium"
                   onClick={handleDeleteSelectedPallets}
-                  disabled={isDeletingSelected || selectedPalletCodes.size === 0}
+                  disabled={
+                    isDeletingSelected || selectedPalletCodes.size === 0
+                  }
                 >
-                  {isDeletingSelected ? 'Eliminando...' : `Eliminar (${selectedPalletCodes.size})`}
+                  {isDeletingSelected
+                    ? 'Eliminando...'
+                    : `Eliminar (${selectedPalletCodes.size})`}
                 </Button>
               </>
             )}
 
             {!isSelectionMode && (
-              <Button variant="secondary" size="medium" onClick={refresh}>
+              <Button
+                variant="secondary"
+                size="medium"
+                onClick={() => void refresh()}
+              >
                 Refrescar
               </Button>
             )}
-          </div>
-        </div>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Lista de pallets que han sido cerrados en Packing
-        </p>
-      </div>
-
-      {/* Filtros */}
-      <ClosedPalletsFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        disabled={loading || loadingMore}
+          </>
+        }
       />
 
-      {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--6)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Pallets
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--blue-500)',
-                fontWeight: 700,
-              }}
-            >
-              {allPallets.length}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Cajas
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 700,
-              }}
-            >
-              {allPallets.reduce(
-                (sum, pallet) => sum + (pallet.cantidadCajas || 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
+      <SectionCardV2 title="Filtros">
+        <ClosedPalletsFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          disabled={loading || loadingMore}
+        />
+      </SectionCardV2>
+
+      <div className="v2-grid-stats">
+        <MetricCardV2 label="Total pallets" value={allPallets.length} />
+        <MetricCardV2
+          label="Total cajas"
+          value={allPallets.reduce(
+            (sum, pallet) => sum + (pallet.cantidadCajas || 0),
+            0
+          )}
+        />
       </div>
 
-      {/* Pallets agrupados por empresa */}
       {allPallets.length === 0 && !loadingMore && !loading ? (
-        <Card>
-          <p
-            className="text-base"
-            style={{
-              textAlign: 'center',
-              padding: 'var(--8)',
-              color: 'var(--text-muted-foreground)',
-            }}
-          >
-            No hay pallets cerrados
-          </p>
-        </Card>
+        <EmptyStateV2
+          title="No hay pallets cerrados"
+          description="Ajusta los filtros o refresca la vista para verificar nuevos resultados."
+        />
       ) : (
         <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--5)',
-          }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--5)' }}
         >
           {palletsByCompany.map(([empresa, pallets]) => {
             const isCollapsed = collapsedCompanies.has(empresa);
             return (
               <div key={empresa}>
-                {/* Encabezado del grupo - clickeable para colapsar */}
                 <div
                   onClick={() => toggleCompany(empresa)}
                   style={{
@@ -466,15 +443,8 @@ const ClosedPallets = () => {
                   </span>
                 </div>
 
-                {/* Grid de pallets de esta empresa - solo visible si no está colapsado */}
                 {!isCollapsed && (
-                  <div
-                    className="grid gap-4"
-                    style={{
-                      gridTemplateColumns:
-                        'repeat(auto-fill, minmax(320px, 1fr))',
-                    }}
-                  >
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {pallets.map((pallet: Pallet) => (
                       <PalletCard
                         key={pallet.codigo}
@@ -482,11 +452,11 @@ const ClosedPallets = () => {
                         setSelectedPallet={setSelectedPallet}
                         setIsModalOpen={setIsModalOpen}
                         closePallet={closePallet}
-                        fetchActivePallets={refresh}
+                        fetchActivePallets={() => void refresh()}
                         onDelete={async (codigo) => {
                           try {
                             await deletePallet(codigo);
-                            refresh();
+                            await refresh();
                           } catch (error) {
                             console.error('Error al eliminar pallet:', error);
                           }
@@ -504,13 +474,12 @@ const ClosedPallets = () => {
         </div>
       )}
 
-      {/* Botón Cargar Más */}
       {hasMore && allPallets.length > 0 && (
-        <div style={{ marginTop: 'var(--5)', textAlign: 'center' }}>
+        <div className="mt-5 text-center">
           <Button
             variant="secondary"
             size="medium"
-            onClick={loadMore}
+            onClick={() => void loadMore()}
             disabled={loadingMore}
           >
             {loadingMore ? 'Cargando...' : 'Cargar más pallets'}
@@ -542,7 +511,7 @@ const ClosedPallets = () => {
             );
             setIsModalOpen(false);
             setSelectedPallet(null);
-            refresh();
+            await refresh();
           } catch (error) {
             console.error('Error al mover pallet:', error);
           }

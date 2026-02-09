@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from './card';
 import { cn } from '@/lib/utils';
 
 type Variant = 'default' | 'elevated' | 'flat';
@@ -45,8 +52,8 @@ export interface CardExtendedProps extends React.HTMLAttributes<HTMLDivElement> 
 const paddingMap: Record<Padding, string> = {
   none: 'p-0',
   small: 'p-2',
-  medium: 'p-4',
-  large: 'p-6',
+  medium: 'p-3.5',
+  large: 'p-5',
 };
 
 /**
@@ -98,12 +105,14 @@ export const CardExtended = React.forwardRef<HTMLDivElement, CardExtendedProps>(
       <Card
         ref={ref}
         className={cn(
+          'rounded-xl border border-border/80 bg-card shadow-sm',
           paddingMap[padding],
-          isHoverable && 'hover:shadow-lg transition-shadow cursor-pointer',
+          isHoverable &&
+            'cursor-pointer transition-all duration-150 hover:-translate-y-px hover:shadow-md',
           isPressable && 'active:scale-[0.98] transition-transform',
           isSelected && 'ring-2 ring-primary border-primary',
           variant === 'elevated' && 'shadow-md',
-          variant === 'flat' && 'shadow-none border-0 bg-muted/50',
+          variant === 'flat' && 'shadow-none border bg-muted/40',
           className
         )}
         onClick={onClick}

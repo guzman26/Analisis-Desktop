@@ -1,107 +1,4 @@
-/* shadcn/ui CSS Variables */
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 221 83% 53%; /* #007AFF - macOS blue */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%; /* #FF3B30 - macOS red */
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 221 83% 53%;
-  }
-}
-
-/* CSS Variables - Sistema de Colores */
-:root {
-  /* Colores Primarios */
-  --color-primary: #1976d2;
-  --color-primary-light: #e3f2fd;
-  --color-primary-dark: #1565c0;
-
-  /* Colores de Fondo */
-  --color-background: #f8f9fa;
-  --color-background-white: #ffffff;
-  --color-background-light: #f5f5f5;
-  --color-background-card: #ffffff;
-
-  /* Colores de Texto */
-  --color-text-primary: #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted: #6c757d;
-  --color-text-dark: #212529;
-
-  /* Colores de Borde */
-  --color-border: #e0e0e0;
-  --color-border-light: #e9ecef;
-  --color-border-muted: #dddddd;
-
-  /* Colores de Estado */
-  --color-success: #28a745;
-  --color-success-light: #d4edda;
-  --color-success-dark: #1e7e34;
-  --color-warning: #fd7e14;
-  --color-error: #ff5722;
-  --color-info: #17a2b8;
-  --color-blue: #007bff;
-  --color-text-light: #f8f9fa;
-
-  /* Colores de Ubicación */
-  --color-packing: #4caf50;
-  --color-transito: #ff9800;
-  --color-bodega: #2196f3;
-  --color-venta: #9c27b0;
-
-  /* Colores de Estado */
-  --color-abierto: #4caf50;
-  --color-cerrado: #919090;
-
-  /* Colores de Hover */
-  --color-hover-light: #f5f5f5;
-  --color-hover-primary: #1565c0;
-  --color-hover-warning: #fff3e0;
-
-  /* Colores de Scrollbar */
-  --color-scrollbar-track: #f1f1f1;
-  --color-scrollbar-thumb: #c1c1c1;
-  --color-scrollbar-thumb-hover: #a8a8a8;
-}
-
-/* Global Loading Styles */
+/* Global loading styles */
 .route-loading-container {
   display: flex;
   flex-direction: column;
@@ -115,7 +12,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid var(--color-border);
-  border-top: 3px solid var(--color-primary);
+  border-top: 3px solid hsl(var(--primary));
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
@@ -125,6 +22,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -136,7 +34,6 @@
   margin: 0;
 }
 
-/* Global Reset and Base Styles */
 * {
   box-sizing: border-box;
 }
@@ -144,8 +41,6 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-background);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }

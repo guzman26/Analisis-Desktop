@@ -1,6 +1,6 @@
-import React, { createContext, ReactNode } from 'react';
+import React, { createContext, ReactNode, useMemo } from 'react';
 import { Issue, GetIssuesParamsPaginated } from '@/types';
-import { getIssues } from '@/api/endpoints';
+import { issuesApi } from '@/modules/issues';
 import usePagination from '@/hooks/usePagination';
 import { extractDataFromResponse } from '@/utils/extractDataFromResponse';
 
@@ -28,7 +28,7 @@ interface Props {
 export const IssuesProvider: React.FC<Props> = ({ children }) => {
   const issuesPaginatedHook = usePagination<Issue>({
     fetchFunction: async (params: GetIssuesParamsPaginated) => {
-      const response = await getIssues(params);
+      const response = await issuesApi.list(params);
       const rawIssues = await extractDataFromResponse(response);
       // Map backend fields to Issue type
       const issues: Issue[] = rawIssues.map((raw: any) => ({
@@ -42,16 +42,25 @@ export const IssuesProvider: React.FC<Props> = ({ children }) => {
     },
   });
 
-  const value: IssuesContextType = {
-    adminIssuesPaginated: {
-      data: issuesPaginatedHook.data,
-      loading: issuesPaginatedHook.loading,
-      error: issuesPaginatedHook.error,
-      hasMore: issuesPaginatedHook.hasMore,
-      loadMore: issuesPaginatedHook.loadMore,
-      refresh: () => issuesPaginatedHook.refresh({}),
-    },
-  };
+  const value = useMemo<IssuesContextType>(
+    () => ({
+      adminIssuesPaginated: {
+        data: issuesPaginatedHook.data,
+        loading: issuesPaginatedHook.loading,
+        error: issuesPaginatedHook.error,
+        hasMore: issuesPaginatedHook.hasMore,
+        loadMore: issuesPaginatedHook.loadMore,
+        refresh: () => issuesPaginatedHook.refresh({}),
+      },
+    }),
+    [
+      issuesPaginatedHook.data,
+      issuesPaginatedHook.loading,
+      issuesPaginatedHook.error,
+      issuesPaginatedHook.hasMore,
+      issuesPaginatedHook.loadMore,
+    ]
+  );
 
   return (
     <IssuesContext.Provider value={value}>{children}</IssuesContext.Provider>

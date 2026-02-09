@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, MapPin, Tag, Clipboard, Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
-import { deleteBox } from '@/api/endpoints';
+import { boxesApi } from '@/modules/inventory';
 import { clsx } from 'clsx';
 
 interface BoxCardProps {
@@ -93,7 +93,7 @@ const BoxCard = ({
   const handleDelete = async () => {
     try {
       setDeleting(true);
-      await deleteBox(box.codigo);
+      await boxesApi.remove(box.codigo);
       setShowDeleteModal(false);
 
       // Llamar al callback de eliminación si existe

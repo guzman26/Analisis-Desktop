@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Pallet } from '@/types';
-import { getBoxByCode, getPalletByCode } from '@/api/endpoints';
+import { boxesApi, palletsApi } from '@/modules/inventory';
 import { Button } from './design-system';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import { Input } from '@/components/ui/input';
 import PalletDetailModal from './PalletDetailModal';
 import { Search, AlertCircle, Loader2 } from 'lucide-react';
@@ -58,7 +58,7 @@ const ScanBoxToFindPalletModal = ({
 
     try {
       // Buscar la caja por código
-      const box = await getBoxByCode(boxCode.trim());
+      const box = await boxesApi.getByCode(boxCode.trim());
 
       if (!box) {
         setError('Caja no encontrada en el sistema');
@@ -76,7 +76,7 @@ const ScanBoxToFindPalletModal = ({
       }
 
       // Buscar el pallet
-      const pallet = await getPalletByCode(box.palletId);
+      const pallet = await palletsApi.getByCode(box.palletId);
 
       if (!pallet) {
         setError('Pallet no encontrado en el sistema');
@@ -116,7 +116,7 @@ const ScanBoxToFindPalletModal = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-xl">
+        <DialogContent layer={60} className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Buscar Pallet por Código de Caja</DialogTitle>
           </DialogHeader>
@@ -213,8 +213,6 @@ const ScanBoxToFindPalletModal = ({
 };
 
 export default ScanBoxToFindPalletModal;
-
-
 
 
 

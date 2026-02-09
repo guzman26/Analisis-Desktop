@@ -13,7 +13,7 @@ import {
 } from '@/utils';
 import { Button } from '@/components/design-system';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import {
   Calendar,
   Package,
@@ -27,6 +27,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import InfoRow from '@/components/shared/InfoRow';
 
 interface BoxDetailModalProps {
   isOpen: boolean;
@@ -87,34 +88,9 @@ const BoxDetailModal = ({ isOpen, onClose, box }: BoxDetailModalProps) => {
       (box.estado?.toLowerCase() ?? '') as keyof typeof statusColors
     ] || statusColors.default;
 
-  const InfoRow = ({
-    icon,
-    label,
-    value,
-    className,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    value: React.ReactNode;
-    className?: string;
-  }) => (
-    <div
-      className={clsx(
-        'flex items-start gap-3 p-3 rounded-md hover:bg-muted/40 transition-colors',
-        className
-      )}
-    >
-      <div className="text-muted-foreground mt-0.5">{icon}</div>
-      <div className="flex-1">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-base font-medium">{value}</p>
-      </div>
-    </div>
-  );
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl">
+      <DialogContent layer={70} className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>Detalles de Caja {box.codigo}</DialogTitle>
         </DialogHeader>

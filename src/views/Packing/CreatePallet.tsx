@@ -1,9 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card } from '@/components/design-system';
-import { usePalletContext } from '@/contexts/PalletContext';
-import { formatCalibreName, ALL_CALIBRE_CODES } from '@/utils/getParamsFromCodigo';
+import { Button } from '@/components/design-system';
+import { usePalletServerState } from '@/modules/inventory';
+import {
+  formatCalibreName,
+  ALL_CALIBRE_CODES,
+} from '@/utils/getParamsFromCodigo';
 import generatePalletCode from '@/utils/generatePalletCode';
+import { PageHeaderV2, SectionCardV2 } from '@/components/app-v2';
 
 // Opciones UI
 const TURNOS = [
@@ -31,7 +35,7 @@ const EMPRESAS = [
 // Nota: el backend espera el código base (11 dígitos). El sufijo de 3 dígitos lo agrega el servidor.
 
 const CreatePallet: React.FC = () => {
-  const { createPallet } = usePalletContext();
+  const { createPallet } = usePalletServerState();
   const navigate = useNavigate();
 
   const [turnos, setTurnos] = React.useState<string[]>([]);
@@ -98,25 +102,12 @@ const CreatePallet: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in">
-      <Card variant="flat">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <h1
-              className="text-3xl font-bold"
-              style={{ color: 'var(--text-foreground)' }}
-            >
-              Crear Pallet
-            </h1>
-            <span
-              className="px-2 py-0.5 rounded-md bg-green-500-transparentize-6 text-sm"
-              style={{ color: 'var(--green-500)' }}
-            >
-              Nuevo
-            </span>
-          </div>
-        </div>
-
+    <div className="v2-page animate-fade-in">
+      <PageHeaderV2
+        title="Crear Pallet"
+        description="Define turno, calibre, formato y empresa para generar un nuevo pallet."
+      />
+      <SectionCardV2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Turnos (Múltiples) */}
           <div>
@@ -257,7 +248,7 @@ const CreatePallet: React.FC = () => {
             {submitting ? 'Creando…' : 'Crear Pallet'}
           </Button>
         </div>
-      </Card>
+      </SectionCardV2>
     </div>
   );
 };

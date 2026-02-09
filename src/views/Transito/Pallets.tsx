@@ -1,33 +1,30 @@
-import { useEffect, useState } from 'react';
-import { usePalletContext } from '@/contexts/PalletContext';
+import { useCallback, useState } from 'react';
+import { usePalletServerState } from '@/modules/inventory';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
-import {
-  closePallet,
-  movePallet,
-  moveAllPalletsFromTransitToBodega,
-} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import { Card, Button, LoadingOverlay } from '@/components/design-system';
+import { Button, LoadingOverlay } from '@/components/design-system';
 import { useNotifications } from '@/components/Notification/Notification';
+import { EmptyStateV2, MetricCardV2, PageHeaderV2 } from '@/components/app-v2';
 
 const TransitoPallets = () => {
-  const { closedPalletsInTransit, fetchClosedPalletsInTransit, loading } =
-    usePalletContext();
+  const {
+    closedPalletsInTransit,
+    fetchClosedPalletsInTransit,
+    closePallet,
+    movePallet,
+    moveAllPalletsFromTransitToBodega,
+    loading,
+  } = usePalletServerState();
   const { showSuccess, showError } = useNotifications();
 
   // Create refresh function
-  const refresh = () => {
-    fetchClosedPalletsInTransit();
-  };
+  const refresh = useCallback(() => {
+    void fetchClosedPalletsInTransit();
+  }, [fetchClosedPalletsInTransit]);
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMovingAll, setIsMovingAll] = useState(false);
-
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    refresh();
-  }, []);
 
   // Manejar mover todos los pallets a bodega
   const handleMoveAllToBodega = async () => {
@@ -52,7 +49,12 @@ const TransitoPallets = () => {
       } else {
         const errorMsg =
           result.errors && result.errors.length > 0
-            ? `${result.message}. Errores: ${result.errors.map((e) => `${e.palletCode}: ${e.error}`).join(', ')}`
+            ? `${result.message}. Errores: ${result.errors
+                .map(
+                  (errorItem: { palletCode?: string; error?: string }) =>
+                    `${errorItem.palletCode}: ${errorItem.error}`
+                )
+                .join(', ')}`
             : result.message;
         showError(errorMsg);
       }
@@ -71,24 +73,13 @@ const TransitoPallets = () => {
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="v2-page animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--6)' }}>
-        <div
-          className="flex items-center gap-4"
-          style={{
-            justifyContent: 'space-between',
-            marginBottom: 'var(--2)',
-          }}
-        >
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: 'var(--text-foreground)' }}
-          >
-            Pallets en Tránsito
-          </h1>
-          <div style={{ display: 'flex', gap: 'var(--2)' }}>
+      <PageHeaderV2
+        title="Pallets en Tránsito"
+        description="Pallets cerrados actualmente en tránsito."
+        actions={
+          <>
             {closedPalletsInTransit.length > 0 && (
               <Button
                 variant="primary"
@@ -102,89 +93,33 @@ const TransitoPallets = () => {
             <Button variant="secondary" size="medium" onClick={refresh}>
               Refrescar
             </Button>
-          </div>
-        </div>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Pallets cerrados actualmente en tránsito
-        </p>
-      </div>
+          </>
+        }
+      />
 
       {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--6)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Pallets
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{ color: 'var(--blue-500)', fontWeight: 700 }}
-            >
-              {closedPalletsInTransit.length}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Cajas
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{ color: 'var(--green-500)', fontWeight: 700 }}
-            >
-              {closedPalletsInTransit.reduce(
-                (sum, pallet) => sum + (pallet.cantidadCajas || 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
+      <div className="v2-grid-stats">
+        <MetricCardV2
+          label="Total pallets"
+          value={closedPalletsInTransit.length}
+        />
+        <MetricCardV2
+          label="Total cajas"
+          value={closedPalletsInTransit.reduce(
+            (sum, pallet) => sum + (pallet.cantidadCajas || 0),
+            0
+          )}
+        />
       </div>
 
       {/* Content */}
       {closedPalletsInTransit.length === 0 ? (
-        <Card>
-          <p
-            className="text-base"
-            style={{
-              textAlign: 'center',
-              padding: 'var(--8)',
-              color: 'var(--text-muted-foreground)',
-            }}
-          >
-            No hay pallets en tránsito
-          </p>
-        </Card>
+        <EmptyStateV2
+          title="No hay pallets en tránsito"
+          description="Cuando se despachen pallets aparecerán en esta vista."
+        />
       ) : (
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          }}
-        >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {closedPalletsInTransit.map((pallet: Pallet) => (
             <PalletCard
               key={pallet.codigo}

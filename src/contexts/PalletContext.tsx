@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode,
 } from 'react';
 import {
@@ -609,15 +610,24 @@ export const useSelectedPallet = () => {
 };
 
 export const useFilteredPallets = () => {
-  const { closedPalletsInBodega, loading, error, fetchClosedPalletsInBodega } = usePalletContext();
-  
+  const { closedPalletsInBodega, loading, error, fetchClosedPalletsInBodega } =
+    usePalletContext();
+
+  // Prevent repeated fetch attempts (e.g. when API returns empty or errors)
+  const hasFetchedRef = useRef(false);
+
   // Auto-fetch on mount if not already loaded
   useEffect(() => {
-    if (closedPalletsInBodega.length === 0 && !loading) {
+    if (
+      !hasFetchedRef.current &&
+      closedPalletsInBodega.length === 0 &&
+      !loading
+    ) {
+      hasFetchedRef.current = true;
       fetchClosedPalletsInBodega();
     }
   }, [closedPalletsInBodega.length, loading, fetchClosedPalletsInBodega]);
-  
+
   return {
     pallets: closedPalletsInBodega,
     loading,

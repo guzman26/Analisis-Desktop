@@ -1,37 +1,36 @@
 import { useEffect, useState } from 'react';
-import { usePalletContext } from '@/contexts/PalletContext';
+import { usePalletServerState } from '@/modules/inventory';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import PalletLooseEggsModal from '@/components/PalletLooseEggsModal';
-import {
-  Card,
-  Button,
-  Input,
-  LoadingOverlay,
-} from '@/components/design-system';
+import { Button, Input, LoadingOverlay } from '@/components/design-system';
 import { Search, Plus, Filter, Lock, CheckSquare, Square } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import {
-  closePallet,
-  movePallet,
-  deletePallet,
-  closeAllOpenPallets,
-} from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
 import { useNotifications } from '@/components/Notification/Notification';
+import {
+  EmptyStateV2,
+  MetricCardV2,
+  PageHeaderV2,
+  SectionCardV2,
+} from '@/components/app-v2';
 
 const OpenPallets = () => {
   const {
     openPallets: activePalletsPaginated,
     fetchActivePallets,
+    closePallet,
+    movePallet,
+    deletePallet,
+    closeAllOpenPallets,
     loading,
-  } = usePalletContext();
+  } = usePalletServerState();
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotifications();
 
   // Create refresh function
   const refresh = () => {
-    fetchActivePallets();
+    void fetchActivePallets();
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,12 +42,12 @@ const OpenPallets = () => {
   const [isClosingAll, setIsClosingAll] = useState(false);
   // Estado para selección múltiple
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(new Set());
+  const [selectedPalletCodes, setSelectedPalletCodes] = useState<Set<string>>(
+    new Set()
+  );
   const [isClosingSelected, setIsClosingSelected] = useState(false);
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  // No mount fetch needed — usePalletServerState auto-fetches open pallets for packing routes
 
   // Keep local state in sync when the paginated pallets change
   useEffect(() => {
@@ -110,7 +109,7 @@ const OpenPallets = () => {
   };
 
   const handleSelectionChange = (codigo: string, selected: boolean) => {
-    setSelectedPalletCodes(prev => {
+    setSelectedPalletCodes((prev) => {
       const newSet = new Set(prev);
       if (selected) {
         newSet.add(codigo);
@@ -127,7 +126,7 @@ const OpenPallets = () => {
       setSelectedPalletCodes(new Set());
     } else {
       // Seleccionar todos
-      setSelectedPalletCodes(new Set(filteredPallets.map(p => p.codigo)));
+      setSelectedPalletCodes(new Set(filteredPallets.map((p) => p.codigo)));
     }
   };
 
@@ -176,27 +175,21 @@ const OpenPallets = () => {
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="v2-page animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--6)' }}>
-        <div
-          className="flex items-center gap-4"
-          style={{
-            justifyContent: 'space-between',
-            marginBottom: 'var(--2)',
-          }}
-        >
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: 'var(--text-foreground)' }}
-          >
-            Pallets Abiertos
-          </h1>
-          <div className="flex items-center gap-4">
-            {/* Botones de selección múltiple */}
+      <PageHeaderV2
+        title="Pallets Abiertos"
+        description="Gestiona los pallets actualmente abiertos en el sistema."
+        actions={
+          <>
             <Button
-              leftIcon={isSelectionMode ? <Square style={{ width: '16px', height: '16px' }} /> : <CheckSquare style={{ width: '16px', height: '16px' }} />}
+              leftIcon={
+                isSelectionMode ? (
+                  <Square style={{ width: '16px', height: '16px' }} />
+                ) : (
+                  <CheckSquare style={{ width: '16px', height: '16px' }} />
+                )
+              }
               variant={isSelectionMode ? 'primary' : 'secondary'}
               size="medium"
               onClick={handleToggleSelectionMode}
@@ -204,17 +197,21 @@ const OpenPallets = () => {
             >
               {isSelectionMode ? 'Cancelar Selección' : 'Seleccionar'}
             </Button>
-            
+
             {isSelectionMode && (
               <>
                 <Button
-                  leftIcon={<CheckSquare style={{ width: '16px', height: '16px' }} />}
+                  leftIcon={
+                    <CheckSquare style={{ width: '16px', height: '16px' }} />
+                  }
                   variant="secondary"
                   size="medium"
                   onClick={handleSelectAll}
                   disabled={filteredPallets.length === 0}
                 >
-                  {selectedPalletCodes.size === filteredPallets.length ? 'Deseleccionar Todos' : 'Seleccionar Todos'}
+                  {selectedPalletCodes.size === filteredPallets.length
+                    ? 'Deseleccionar Todos'
+                    : 'Seleccionar Todos'}
                 </Button>
                 <Button
                   leftIcon={<Lock style={{ width: '16px', height: '16px' }} />}
@@ -223,7 +220,9 @@ const OpenPallets = () => {
                   onClick={handleCloseSelectedPallets}
                   disabled={isClosingSelected || selectedPalletCodes.size === 0}
                 >
-                  {isClosingSelected ? 'Cerrando...' : `Cerrar Seleccionados (${selectedPalletCodes.size})`}
+                  {isClosingSelected
+                    ? 'Cerrando...'
+                    : `Cerrar Seleccionados (${selectedPalletCodes.size})`}
                 </Button>
               </>
             )}
@@ -240,7 +239,9 @@ const OpenPallets = () => {
                   {isClosingAll ? 'Cerrando...' : 'Cerrar Todos'}
                 </Button>
                 <Button
-                  leftIcon={<Filter style={{ width: '16px', height: '16px' }} />}
+                  leftIcon={
+                    <Filter style={{ width: '16px', height: '16px' }} />
+                  }
                   variant="secondary"
                   size="medium"
                 >
@@ -259,144 +260,55 @@ const OpenPallets = () => {
                   variant="secondary"
                   size="medium"
                   onClick={() => setIsLooseEggsModalOpen(true)}
-                  style={{ marginLeft: 'var(--1)' }}
                 >
                   Nuevo Pallet (Huevo suelto)
                 </Button>
               </>
             )}
-          </div>
-        </div>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Gestiona los pallets actualmente abiertos en el sistema
-        </p>
-      </div>
+          </>
+        }
+      />
 
-      {/* Search Bar */}
-      <div style={{ marginBottom: 'var(--5)' }}>
+      <SectionCardV2 className="py-3">
         <Input
           placeholder="Buscar por nombre o ID..."
           value={searchTerm}
           onChange={(e) => handleSearch(e.target.value)}
           leftIcon={<Search style={{ width: '16px', height: '16px' }} />}
-          style={{ maxWidth: '400px' }}
+          className="max-w-md"
+        />
+      </SectionCardV2>
+
+      <div className="v2-grid-stats">
+        <MetricCardV2 label="Total pallets" value={filteredPallets.length} />
+        <MetricCardV2
+          label="Total cajas"
+          value={filteredPallets.reduce(
+            (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
+            0
+          )}
+        />
+        <MetricCardV2
+          label="Promedio por pallet"
+          value={
+            filteredPallets.length > 0
+              ? Math.round(
+                  filteredPallets.reduce(
+                    (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
+                    0
+                  ) / filteredPallets.length
+                )
+              : 0
+          }
         />
       </div>
 
-      {/* Stats Cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--6)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Pallets
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--blue-500)',
-                fontWeight: 700,
-              }}
-            >
-              {filteredPallets.length}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Cajas
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--green-500)',
-                fontWeight: 700,
-              }}
-            >
-              {filteredPallets.reduce(
-                (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Promedio por Pallet
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{
-                color: 'var(--orange-500)',
-                fontWeight: 700,
-              }}
-            >
-              {filteredPallets.length > 0
-                ? Math.round(
-                    filteredPallets.reduce(
-                      (sum, pallet) => sum + (pallet.cantidadCajas ?? 0),
-                      0
-                    ) / filteredPallets.length
-                  )
-                : 0}
-            </p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Pallets List */}
-      <Card>
-        <h2
-          className="text-xl font-semibold"
-          style={{
-            marginBottom: 'var(--4)',
-            color: 'var(--text-foreground)',
-          }}
-        >
-          Lista de Pallets
-        </h2>
-
+      <SectionCardV2 title="Lista de pallets">
         {filteredPallets.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: 'var(--8)',
-              color: 'var(--text-muted-foreground)',
-            }}
-          >
-            <p className="text-base">
-              No se encontraron pallets abiertos
-            </p>
-          </div>
+          <EmptyStateV2
+            title="No se encontraron pallets abiertos"
+            description="Crea un pallet nuevo o ajusta los filtros para continuar."
+          />
         ) : (
           <div className="flex flex-col gap-4">
             {filteredPallets.map((pallet) => (
@@ -429,7 +341,7 @@ const OpenPallets = () => {
             ))}
           </div>
         )}
-      </Card>
+      </SectionCardV2>
 
       <PalletDetailModal
         pallet={selectedPallet}

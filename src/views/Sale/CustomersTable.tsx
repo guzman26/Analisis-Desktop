@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { useNotifications } from '@/components/Notification/Notification';
 import { Customer, CustomerStatus } from '@/types';
@@ -11,9 +12,16 @@ import {
   Button,
   LoadingOverlay,
   EditableCell,
+  Input,
 } from '@/components/design-system';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Search, Trash2, ShoppingCart, FileText, Download } from 'lucide-react';
-import './CustomersTable.css';
 
 const CustomersTable: React.FC = () => {
   const navigate = useNavigate();
@@ -31,14 +39,12 @@ const CustomersTable: React.FC = () => {
     null
   );
 
-  // Cargar clientes al montar
   useEffect(() => {
     if (customers.length === 0 && status === 'idle') {
       customerAPI.fetchCustomers();
     }
   }, [customers.length, status, customerAPI]);
 
-  // Validación de email
   const validateEmail = (email: string): string | null => {
     if (!email.trim()) {
       return 'El email es requerido';
@@ -50,7 +56,6 @@ const CustomersTable: React.FC = () => {
     return null;
   };
 
-  // Validación de teléfono
   const validatePhone = (phone: string): string | null => {
     if (!phone.trim()) {
       return 'El teléfono es requerido';
@@ -58,7 +63,6 @@ const CustomersTable: React.FC = () => {
     return null;
   };
 
-  // Validación de nombre
   const validateName = (name: string): string | null => {
     if (!name.trim()) {
       return 'El nombre es requerido';
@@ -66,7 +70,6 @@ const CustomersTable: React.FC = () => {
     return null;
   };
 
-  // Manejar actualización de campo
   const handleFieldUpdate = async (
     customerId: string,
     field: keyof Customer,
@@ -74,15 +77,15 @@ const CustomersTable: React.FC = () => {
   ) => {
     try {
       await customerAPI.updateCustomer(customerId, { [field]: newValue });
-      // El contexto ya actualiza la lista automáticamente
-    } catch (error) {
+    } catch (updateError) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Error al actualizar cliente';
+        updateError instanceof Error
+          ? updateError.message
+          : 'Error al actualizar cliente';
       throw new Error(errorMessage);
     }
   };
 
-  // Manejar eliminación de cliente
   const handleDelete = async (customerId: string, customerName: string) => {
     if (
       !window.confirm(
@@ -96,22 +99,21 @@ const CustomersTable: React.FC = () => {
     try {
       await customerAPI.deleteCustomer(customerId);
       showSuccess(`Cliente "${customerName}" eliminado exitosamente`);
-      // Refrescar lista
       await customerAPI.fetchCustomers();
-    } catch (error) {
+    } catch (deleteError) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Error al eliminar cliente';
+        deleteError instanceof Error
+          ? deleteError.message
+          : 'Error al eliminar cliente';
       showError(errorMessage);
     } finally {
       setDeletingCustomerId(null);
     }
   };
 
-  // Filtrar y ordenar clientes
   const filteredAndSortedCustomers = useMemo(() => {
     let filtered = customers;
 
-    // Aplicar búsqueda
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -122,7 +124,6 @@ const CustomersTable: React.FC = () => {
       );
     }
 
-    // Aplicar filtro de estado
     if (statusFilter !== 'ALL') {
       filtered = filtered.filter(
         (customer) => customer.status === statusFilter
@@ -132,7 +133,6 @@ const CustomersTable: React.FC = () => {
     return filtered;
   }, [customers, searchTerm, statusFilter]);
 
-  // Exportar a CSV
   const handleExportCSV = () => {
     const headers = [
       'ID',
@@ -181,7 +181,6 @@ const CustomersTable: React.FC = () => {
     showSuccess('Clientes exportados exitosamente');
   };
 
-  // Definir columnas
   const columns: DataTableColumn<Customer>[] = [
     {
       id: 'name',
@@ -312,43 +311,46 @@ const CustomersTable: React.FC = () => {
       id: 'actions',
       header: 'Acciones',
       sortable: false,
-      width: '15%',
+      width: '12%',
+      align: 'right',
       renderCell: (customer) => (
-        <div className="customers-table-actions">
+        <div className="flex items-center justify-end gap-1">
           <Button
             variant="ghost"
             size="small"
-            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              e.stopPropagation();
+            className="h-8 w-8 p-0"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
               navigate(`/sales/new?customerId=${customer.customerId}`);
             }}
             title="Crear venta para este cliente"
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="small"
-            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              e.stopPropagation();
-              // TODO: Navegar a historial de compras
+            className="h-8 w-8 p-0"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
               showSuccess(`Ver historial de ${customer.name}`);
             }}
             title="Ver historial de compras"
           >
-            <FileText className="w-4 h-4" />
+            <FileText className="h-4 w-4" />
           </Button>
           <Button
             variant="danger"
             size="small"
-            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-              e.stopPropagation();
+            className="h-8 w-8 p-0"
+            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
               handleDelete(customer.customerId, customer.name);
             }}
             disabled={deletingCustomerId === customer.customerId}
             title="Eliminar cliente"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       ),
@@ -361,68 +363,74 @@ const CustomersTable: React.FC = () => {
   };
 
   return (
-    <div className="customers-table-page">
+    <div className="v2-page space-y-6 p-2">
       <LoadingOverlay
         show={status === 'loading' && customers.length === 0}
-        text="Cargando clientes…"
+        text="Cargando clientes..."
       />
-      <div className="customers-table-header">
-        <div>
-          <h1>Gestión de Clientes</h1>
-          <p className="customers-table-subtitle">
-            Edite los campos directamente en la tabla. Los cambios se guardan
-            automáticamente.
-          </p>
-        </div>
-        <div className="customers-table-header-actions">
-          <Button
-            variant="secondary"
-            onClick={handleExportCSV}
-            leftIcon={<Download className="w-4 h-4" />}
-          >
-            Exportar CSV
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => navigate('/sales/createCustomer')}
-          >
-            Nuevo Cliente
-          </Button>
-        </div>
-      </div>
 
-      <Card variant="default" padding="medium">
-        <div className="customers-table-filters">
-          <div className="customers-table-search">
-            <Search className="w-4 h-4 customers-table-search-icon" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, email o teléfono..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="customers-table-search-input"
-            />
+      <Card variant="flat" className="space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold">Gestión de Clientes</h1>
+            <p className="text-sm text-muted-foreground">
+              Edite los campos directamente en la tabla. Los cambios se guardan
+              automáticamente.
+            </p>
           </div>
-          <div className="customers-table-status-filter">
-            <label htmlFor="status-filter">Estado:</label>
-            <select
-              id="status-filter"
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as CustomerStatus | 'ALL')
-              }
-              className="customers-table-status-select"
+          <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:justify-end">
+            <Button
+              variant="secondary"
+              onClick={handleExportCSV}
+              leftIcon={<Download className="h-4 w-4" />}
             >
-              <option value="ALL">Todos</option>
-              <option value="ACTIVE">Activos</option>
-              <option value="INACTIVE">Inactivos</option>
-            </select>
+              Exportar CSV
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/sales/createCustomer')}
+            >
+              Nuevo Cliente
+            </Button>
           </div>
         </div>
 
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <Input
+            placeholder="Buscar por nombre, email o teléfono..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            leftIcon={<Search className="h-4 w-4" />}
+            containerClassName="w-full md:max-w-md"
+          />
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Estado:</span>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) =>
+                setStatusFilter(value as CustomerStatus | 'ALL')
+              }
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todos</SelectItem>
+                <SelectItem value="ACTIVE">Activos</SelectItem>
+                <SelectItem value="INACTIVE">Inactivos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </Card>
+
+      <Card variant="default" padding="medium" className="space-y-4">
         {error ? (
-          <div className="customers-table-error">
-            <p>Error al cargar clientes: {error.message}</p>
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-4">
+            <p className="mb-3 text-sm text-destructive">
+              Error al cargar clientes: {error.message}
+            </p>
             <Button
               variant="secondary"
               onClick={() => customerAPI.fetchCustomers()}
@@ -432,12 +440,10 @@ const CustomersTable: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="customers-table-info">
-              <span>
-                Mostrando {filteredAndSortedCustomers.length} de{' '}
-                {customers.length} cliente(s)
-              </span>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Mostrando {filteredAndSortedCustomers.length} de{' '}
+              {customers.length} cliente(s)
+            </p>
             <DataTable<Customer>
               columns={columns}
               data={filteredAndSortedCustomers}

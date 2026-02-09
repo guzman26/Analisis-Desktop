@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { handleApiError } from './apiUtils';
 import { Status } from './createContext';
 
@@ -49,42 +49,53 @@ export function usePaginatedData<T, P = Record<string, any>>(
   const [error, setError] = useState<Error | null>(null);
   const [params] = useState<P>(initialParams);
 
+  // Store currentPage in a ref to avoid recreating fetchData on page changes
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
+
+  // Store fetchFunction and preprocessData in refs for stable callbacks
+  const fetchFunctionRef = useRef(fetchFunction);
+  fetchFunctionRef.current = fetchFunction;
+  const preprocessDataRef = useRef(preprocessData);
+  preprocessDataRef.current = preprocessData;
+
   const fetchData = useCallback(
-    async (page = currentPage, reset = false) => {
+    async (page?: number, reset = false) => {
+      const targetPage = page ?? currentPageRef.current;
       setStatus('loading');
       setError(null);
 
       try {
-        const response = await fetchFunction({
+        const response = await fetchFunctionRef.current({
           ...params,
-          page,
+          page: targetPage,
           pageSize,
         });
 
         let processedData = response.data;
-        if (preprocessData) {
-          processedData = preprocessData(processedData);
+        if (preprocessDataRef.current) {
+          processedData = preprocessDataRef.current(processedData);
         }
 
         setData((prev) =>
           reset ? processedData : [...prev, ...processedData]
         );
         setHasMore(response.hasMore ?? processedData.length === pageSize);
-        setCurrentPage(page);
+        setCurrentPage(targetPage);
         setStatus('success');
       } catch (err) {
         setError(handleApiError(err));
         setStatus('error');
       }
     },
-    [fetchFunction, currentPage, pageSize, params, preprocessData]
+    [pageSize, params]
   );
 
   const loadMore = useCallback(async () => {
     if (status !== 'loading' && hasMore) {
-      await fetchData(currentPage + 1);
+      await fetchData(currentPageRef.current + 1);
     }
-  }, [fetchData, currentPage, status, hasMore]);
+  }, [fetchData, status, hasMore]);
 
   const refresh = useCallback(async () => {
     setCurrentPage(initialPage);
@@ -143,26 +154,36 @@ export function useDataFetch<T, P = void>(
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<Error | null>(null);
 
+  // Store callback refs to avoid unstable dependencies
+  const fetchFunctionRef = useRef(fetchFunction);
+  fetchFunctionRef.current = fetchFunction;
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+
   const execute = useCallback(
     async (params?: P) => {
       setStatus('loading');
       setError(null);
 
       try {
-        const result = await fetchFunction(params ?? (initialParams as P));
+        const result = await fetchFunctionRef.current(
+          params ?? (initialParams as P)
+        );
         setData(result);
         setStatus('success');
-        onSuccess?.(result);
+        onSuccessRef.current?.(result);
         return result;
       } catch (err) {
         const errorObj = handleApiError(err);
         setError(errorObj);
         setStatus('error');
-        onError?.(errorObj);
+        onErrorRef.current?.(errorObj);
         throw errorObj;
       }
     },
-    [fetchFunction, initialParams, onSuccess, onError]
+    [initialParams]
   );
 
   useEffect(() => {
@@ -193,27 +214,32 @@ export function useDataMutation<T, P>(
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<Error | null>(null);
 
-  const execute = useCallback(
-    async (params: P) => {
-      setStatus('loading');
-      setError(null);
+  // Store callback refs to avoid unstable dependencies
+  const mutationFunctionRef = useRef(mutationFunction);
+  mutationFunctionRef.current = mutationFunction;
+  const onSuccessRef = useRef(onSuccess);
+  onSuccessRef.current = onSuccess;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
-      try {
-        const result = await mutationFunction(params);
-        setData(result);
-        setStatus('success');
-        onSuccess?.(result, params);
-        return result;
-      } catch (err) {
-        const errorObj = handleApiError(err);
-        setError(errorObj);
-        setStatus('error');
-        onError?.(errorObj, params);
-        throw errorObj;
-      }
-    },
-    [mutationFunction, onSuccess, onError]
-  );
+  const execute = useCallback(async (params: P) => {
+    setStatus('loading');
+    setError(null);
+
+    try {
+      const result = await mutationFunctionRef.current(params);
+      setData(result);
+      setStatus('success');
+      onSuccessRef.current?.(result, params);
+      return result;
+    } catch (err) {
+      const errorObj = handleApiError(err);
+      setError(errorObj);
+      setStatus('error');
+      onErrorRef.current?.(errorObj, params);
+      throw errorObj;
+    }
+  }, []);
 
   const reset = useCallback(() => {
     setData(null);

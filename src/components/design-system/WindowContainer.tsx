@@ -1,4 +1,7 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { getViewFromPath, isViewV2 } from '@/config/uiFlags';
+import { cn } from '@/lib/utils';
 
 export interface WindowContainerProps {
   title: string;
@@ -13,6 +16,29 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   fullscreen = true,
   className = '',
 }) => {
+  const location = useLocation();
+  const activeView = getViewFromPath(location.pathname);
+  const isV2View = activeView ? isViewV2(activeView) : false;
+
+  if (isV2View) {
+    return (
+      <div
+        className={cn(
+          'v2-page flex min-h-screen flex-col gap-4',
+          fullscreen && 'h-screen',
+          className
+        )}
+      >
+        <header className="rounded-xl border bg-card px-4 py-3">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+            {title}
+          </h1>
+        </header>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex flex-col min-h-screen ${fullscreen ? 'h-screen' : ''} ${className}`}

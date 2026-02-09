@@ -1,5 +1,5 @@
 import { Button, Card } from './design-system';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import { PalletAuditResult, AuditIssue } from '@/types';
 import {
   CheckCircle,
@@ -80,7 +80,7 @@ const PalletAuditModal = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-lg">
+        <DialogContent layer={70} className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Auditoría de Pallet</DialogTitle>
           </DialogHeader>
@@ -101,7 +101,7 @@ const PalletAuditModal = ({
   if (!auditResult) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-lg">
+        <DialogContent layer={70} className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Error en Auditoría</DialogTitle>
           </DialogHeader>
@@ -124,7 +124,7 @@ const PalletAuditModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent layer={70} className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Auditoría de Pallet</DialogTitle>
         </DialogHeader>

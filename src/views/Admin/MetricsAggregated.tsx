@@ -11,7 +11,7 @@ import {
   Calendar,
   CalendarDays,
 } from 'lucide-react';
-import { getMetrics } from '@/api/endpoints';
+import { adminMetricsApi } from '@/modules/admin-metrics';
 import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
 import PeriodSelector from '@/components/PeriodSelector';
@@ -70,7 +70,7 @@ const MetricsAggregated: React.FC = () => {
         endDate: endDate.toISOString().split('T')[0],
       };
 
-      const response = await getMetrics(params);
+      const response = await adminMetricsApi.getMetrics(params);
       setAllMetrics(response.metrics || []);
       showSuccess(`Métricas cargadas: ${response.count} registros encontrados`);
     } catch (err: any) {
@@ -796,4 +796,3 @@ const MetricsAggregated: React.FC = () => {
 };
 
 export default MetricsAggregated;
-

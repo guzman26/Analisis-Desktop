@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/design-system';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,7 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X, Package, Search, Clock, Building2 } from 'lucide-react';
+import { Filter, Package, Search, Clock, Building2 } from 'lucide-react';
+import FilterHeader from '@/components/shared/FilterHeader';
 
 export type Filters = {
   fechaDesde?: string;
@@ -99,25 +99,16 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base">Filtros</CardTitle>
-            {hasActive && <Badge variant="secondary">Activos</Badge>}
-          </div>
-          <div className="flex items-center gap-2">
-            {hasActive && (
-              <Button
-                variant="secondary"
-                size="small"
-                leftIcon={<X size={14} />}
-                onClick={clearAll}
-                disabled={disabled}
-              >
-                Limpiar
-              </Button>
-            )}
-            {expanded && (
+        <FilterHeader
+          title="Filtros"
+          icon={<Filter className="w-5 h-5" />}
+          hasActive={hasActive}
+          onClear={hasActive ? clearAll : undefined}
+          onToggle={() => setExpanded((v) => !v)}
+          isExpanded={expanded}
+          disabled={disabled}
+          actions={
+            expanded ? (
               <Button
                 variant="primary"
                 size="small"
@@ -126,17 +117,9 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
               >
                 Aplicar
               </Button>
-            )}
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => setExpanded((v) => !v)}
-              disabled={disabled}
-            >
-              {expanded ? 'Ocultar' : 'Mostrar'}
-            </Button>
-          </div>
-        </div>
+            ) : undefined
+          }
+        />
       </CardHeader>
 
       {expanded && (

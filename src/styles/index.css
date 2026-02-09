@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Reset and Base Styles */
 *,
 *::before,
 *::after {
@@ -16,63 +15,46 @@
 }
 
 html,
-body {
+body,
+#root {
   height: 100%;
 }
 
 body {
   line-height: 1.5;
-  font-family: var(--macos-font-family);
-  background: var(--macos-window-bg);
-  color: var(--macos-text-primary);
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
-#root {
-  height: 100%;
-}
-
-/* Remove default list styles */
 ul,
 ol {
   list-style: none;
   padding: 0;
 }
 
-/* Remove default button styles */
-button {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-}
-
-/* Remove default input styles */
 input,
 textarea,
 select {
   font: inherit;
 }
 
-/* Improve text rendering */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: var(--macos-font-family-display);
-  line-height: var(--macos-line-height-tight);
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  line-height: 1.25;
   font-weight: 600;
 }
 
-/* Focus styles for better accessibility */
 :focus-visible {
-  outline: 2px solid var(--macos-blue);
+  outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
-/* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }

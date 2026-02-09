@@ -1,0 +1,134 @@
+:root {
+  --text-foreground: hsl(var(--foreground));
+  --text-muted-foreground: hsl(var(--muted-foreground));
+  --blue-500: #111111;
+  --green-500: #0f7b0f;
+  --orange-500: #b45309;
+  --gray-50: #fafafa;
+  --gray-100: #f4f4f5;
+  --gray-200: #e4e4e7;
+  --gray-300: #d4d4d8;
+  --gray-400: #a1a1aa;
+  --gray-500: #71717a;
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-light: hsl(var(--secondary));
+  --color-primary-dark: hsl(var(--foreground));
+
+  --color-background: hsl(var(--background));
+  --color-background-white: hsl(var(--card));
+  --color-background-light: hsl(var(--secondary));
+  --color-background-card: hsl(var(--card));
+
+  --color-text-primary: hsl(var(--foreground));
+  --color-text-secondary: hsl(var(--muted-foreground));
+  --color-text-muted: hsl(var(--muted-foreground));
+  --color-text-dark: hsl(var(--foreground));
+  --color-text-light: hsl(var(--primary-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-border-light: hsl(var(--border));
+  --color-border-muted: hsl(var(--border));
+
+  --color-success: #16a34a;
+  --color-success-light: #dcfce7;
+  --color-success-dark: #166534;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+  --color-blue: #2563eb;
+
+  --color-packing: #16a34a;
+  --color-transito: #d97706;
+  --color-bodega: #2563eb;
+  --color-venta: #6d28d9;
+
+  --color-open: #16a34a;
+  --color-abierto: #16a34a;
+  --color-closed: #71717a;
+  --color-cerrado: #71717a;
+
+  --color-hover-light: hsl(var(--secondary));
+  --color-hover-primary: hsl(var(--foreground));
+  --color-hover-warning: #fffbeb;
+
+  --color-scrollbar-track: #f1f5f9;
+  --color-scrollbar-thumb: #cbd5e1;
+  --color-scrollbar-thumb-hover: #94a3b8;
+
+  --macos-window-bg: hsl(var(--background));
+  --macos-bg: hsl(var(--background));
+  --macos-bg-primary: hsl(var(--background));
+  --macos-bg-secondary: hsl(var(--card));
+  --macos-bg-tertiary: hsl(var(--secondary));
+
+  --macos-text: hsl(var(--foreground));
+  --macos-text-primary: hsl(var(--foreground));
+  --macos-text-secondary: hsl(var(--muted-foreground));
+  --macos-text-tertiary: hsl(var(--muted-foreground));
+
+  --macos-accent: hsl(var(--primary));
+  --macos-accent-transparentize-9: rgba(15, 23, 42, 0.1);
+  --macos-success: #16a34a;
+  --macos-warning: #d97706;
+  --macos-error: #dc2626;
+  --macos-blue: #2563eb;
+  --macos-blue-transparentize-6: rgba(37, 99, 235, 0.12);
+  --macos-green: #16a34a;
+  --macos-green-transparentize-6: rgba(22, 163, 74, 0.12);
+  --macos-orange: #d97706;
+  --macos-purple: #6d28d9;
+  --macos-red: #dc2626;
+
+  --macos-border: hsl(var(--border));
+  --macos-border-primary: hsl(var(--border));
+
+  --macos-gray-1: #fafafa;
+  --macos-gray-2: #f4f4f5;
+  --macos-gray-3: #e4e4e7;
+  --macos-gray-4: #d4d4d8;
+  --macos-gray-5: #a1a1aa;
+  --macos-gray-6: #71717a;
+
+  --macos-radius-sm: 0.25rem;
+  --macos-radius-small: 0.375rem;
+  --macos-radius-medium: 0.5rem;
+  --macos-radius-large: 0.75rem;
+  --macos-radius-round: 9999px;
+  --macos-radius-full: 9999px;
+
+  --macos-space-1: 0.25rem;
+  --macos-space-2: 0.5rem;
+  --macos-space-3: 0.75rem;
+  --macos-space-4: 1rem;
+  --macos-space-5: 1.25rem;
+  --macos-space-6: 1.5rem;
+  --macos-space-8: 2rem;
+  --macos-space-10: 2.5rem;
+
+  --macos-font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  --macos-font-family-display: 'Geist', system-ui, -apple-system, sans-serif;
+  --macos-font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --macos-font-body: 0.9375rem;
+  --macos-font-callout: 1rem;
+  --macos-font-caption: 0.75rem;
+  --macos-font-footnote: 0.8125rem;
+  --macos-font-subheadline: 0.875rem;
+  --macos-font-title-2: 1.125rem;
+  --macos-font-title-3: 1rem;
+
+  --macos-font-size-caption-1: 0.75rem;
+  --macos-font-size-footnote: 0.8125rem;
+  --macos-font-size-subheadline: 0.875rem;
+  --macos-font-size-title-1: 1.5rem;
+  --macos-font-size-title-3: 1rem;
+
+  --macos-line-height-tight: 1.25;
+  --macos-line-height-relaxed: 1.6;
+
+  --macos-duration-fast: 0.2s;
+  --macos-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --macos-shadow-small: 0 1px 2px rgb(15 23 42 / 0.08);
+  --macos-shadow-medium: 0 8px 24px rgb(15 23 42 / 0.12);
+}

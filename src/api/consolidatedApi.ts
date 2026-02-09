@@ -17,7 +17,7 @@ interface ConsolidatedResponse<T = any> {
  */
 export const inventory = async <T = any>(
   action: string,
-  resource: 'box' | 'pallet' | 'cart' | 'cartFormat' | 'dispatch',
+  resource: 'box' | 'pallet' | 'cart' | 'cartFormat' | 'dispatch' | 'truck' | 'driver' | 'dispatcher' | 'loader',
   params: Record<string, any>
 ): Promise<T> => {
   const response = await post<ConsolidatedResponse<T>>('/inventory', {

@@ -1,21 +1,31 @@
 import { useEffect, useState, useMemo } from 'react';
-import { usePalletContext } from '@/contexts/PalletContext';
+import { usePalletServerState } from '@/modules/inventory';
 import { Pallet } from '@/types';
 import PalletDetailModal from '@/components/PalletDetailModal';
 import ScanBoxToFindPalletModal from '@/components/ScanBoxToFindPalletModal';
-import { closePallet, movePallet } from '@/api/endpoints';
 import PalletCard from '@/components/PalletCard';
-import { Card, Button, LoadingOverlay } from '@/components/design-system';
+import { Button, LoadingOverlay } from '@/components/design-system';
 import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
 import { ScanLine } from 'lucide-react';
+import {
+  EmptyStateV2,
+  MetricCardV2,
+  PageHeaderV2,
+  SectionCardV2,
+} from '@/components/app-v2';
 
 const BodegaPallets = () => {
-  const { closedPalletsInBodega, fetchClosedPalletsInBodega, loading } =
-    usePalletContext();
+  const {
+    closedPalletsInBodega,
+    fetchClosedPalletsInBodega,
+    closePallet,
+    movePallet,
+    loading,
+  } = usePalletServerState();
 
   // Create refresh function
   const refresh = () => {
-    fetchClosedPalletsInBodega();
+    void fetchClosedPalletsInBodega();
   };
   const [selectedPallet, setSelectedPallet] = useState<Pallet | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,24 +62,13 @@ const BodegaPallets = () => {
   }, []); // Dependencias vacías para que solo se ejecute una vez al montar
 
   return (
-    <div className="animate-fade-in">
+    <div className="v2-page animate-fade-in">
       <LoadingOverlay show={loading} text="Cargando pallets…" />
-      {/* Header */}
-      <div style={{ marginBottom: 'var(--6)' }}>
-        <div
-          className="flex items-center gap-4"
-          style={{
-            justifyContent: 'space-between',
-            marginBottom: 'var(--2)',
-          }}
-        >
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: 'var(--text-foreground)' }}
-          >
-            Pallets en Bodega
-          </h1>
-          <div style={{ display: 'flex', gap: 'var(--1)' }}>
+      <PageHeaderV2
+        title="Pallets en Bodega"
+        description="Pallets cerrados actualmente almacenados en Bodega."
+        actions={
+          <>
             <Button
               variant="primary"
               size="medium"
@@ -81,92 +80,35 @@ const BodegaPallets = () => {
             <Button variant="secondary" size="medium" onClick={refresh}>
               Refrescar
             </Button>
-          </div>
-        </div>
-        <p
-          className="text-base"
-          style={{ color: 'var(--text-muted-foreground)' }}
-        >
-          Pallets cerrados actualmente almacenados en Bodega
-        </p>
-      </div>
+          </>
+        }
+      />
 
       {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 'var(--4)',
-          marginBottom: 'var(--6)',
-        }}
-      >
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Pallets
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{ color: 'var(--blue-500)', fontWeight: 700 }}
-            >
-              {closedPalletsInBodega.length}
-            </p>
-          </div>
-        </Card>
-        <Card variant="flat">
-          <div style={{ textAlign: 'center' }}>
-            <p
-              className="text-sm"
-              style={{
-                color: 'var(--text-muted-foreground)',
-                marginBottom: 'var(--0.5)',
-              }}
-            >
-              Total Cajas
-            </p>
-            <p
-              className="text-2xl font-semibold"
-              style={{ color: 'var(--green-500)', fontWeight: 700 }}
-            >
-              {closedPalletsInBodega.reduce(
-                (sum, pallet) => sum + (pallet.cantidadCajas || 0),
-                0
-              )}
-            </p>
-          </div>
-        </Card>
+      <div className="v2-grid-stats">
+        <MetricCardV2
+          label="Total pallets"
+          value={closedPalletsInBodega.length}
+        />
+        <MetricCardV2
+          label="Total cajas"
+          value={closedPalletsInBodega.reduce(
+            (sum, pallet) => sum + (pallet.cantidadCajas || 0),
+            0
+          )}
+        />
       </div>
 
       {/* Content */}
       {closedPalletsInBodega.length === 0 ? (
-        <Card>
-          <p
-            className="text-base"
-            style={{
-              textAlign: 'center',
-              padding: 'var(--8)',
-              color: 'var(--text-muted-foreground)',
-            }}
-          >
-            No hay pallets en bodega
-          </p>
-        </Card>
+        <EmptyStateV2
+          title="No hay pallets en bodega"
+          description="Cuando se cierren pallets y se muevan a Bodega aparecerán aquí."
+        />
       ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--6)',
-          }}
-        >
+        <div className="flex flex-col gap-6">
           {palletsByCalibre.map(({ calibre, pallets }) => (
-            <div key={calibre}>
+            <SectionCardV2 key={calibre}>
               {/* Header del grupo de calibre */}
               <div
                 style={{
@@ -206,12 +148,7 @@ const BodegaPallets = () => {
               </div>
 
               {/* Grid de pallets para este calibre */}
-              <div
-                className="grid gap-4"
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                }}
-              >
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {pallets.map((pallet: Pallet) => (
                   <PalletCard
                     key={pallet.codigo}
@@ -223,7 +160,7 @@ const BodegaPallets = () => {
                   />
                 ))}
               </div>
-            </div>
+            </SectionCardV2>
           ))}
         </div>
       )}

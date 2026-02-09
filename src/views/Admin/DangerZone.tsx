@@ -1,18 +1,5 @@
 import React, { useState } from 'react';
-import {
-  deleteAllBoxes,
-  deletePackingBoxesAsync,
-  deleteAllBoxesAsync,
-  deletePackingPalletsAsync,
-  deletePalletsAndAssignedBoxesAsync,
-  deleteUnassignedBoxesAsync,
-  deleteBoxesByLocationAsync,
-  backfillMetrics,
-  calculateMetricsForDate,
-  moveAllPalletsFromBodegaToVenta,
-  moveAllPalletsFromTransitToVenta,
-  moveAllPalletsFromTransitToBodega,
-} from '@/api/endpoints';
+import { adminOpsApi } from '@/modules/admin-ops';
 import { Button, Card, Modal } from '@/components/design-system';
 import {
   AlertTriangle,
@@ -27,6 +14,21 @@ import {
 import { clsx } from 'clsx';
 import styles from './DangerZone.module.css';
 import { Location } from '@/types';
+
+const {
+  deleteAllBoxes,
+  deletePackingBoxes: deletePackingBoxesAsync,
+  deleteAllBoxesAsync,
+  deletePackingPallets: deletePackingPalletsAsync,
+  deletePalletsAndAssignedBoxes: deletePalletsAndAssignedBoxesAsync,
+  deleteUnassignedBoxes: deleteUnassignedBoxesAsync,
+  deleteBoxesByLocation: deleteBoxesByLocationAsync,
+  backfillMetrics,
+  calculateMetricsForDate,
+  moveAllPalletsFromBodegaToVenta,
+  moveAllPalletsFromTransitToVenta,
+  moveAllPalletsFromTransitToBodega,
+} = adminOpsApi;
 
 interface DangerAction {
   id: string;

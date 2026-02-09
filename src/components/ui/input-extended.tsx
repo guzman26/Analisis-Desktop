@@ -71,10 +71,11 @@ export const InputWithLabel = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    const inputId = id || React.useId();
+    const generatedId = React.useId();
+    const inputId = id || generatedId;
 
     return (
-      <div className={cn('space-y-2', containerClassName)}>
+      <div className={cn('space-y-1.5', containerClassName)}>
         {label && <Label htmlFor={inputId}>{label}</Label>}
         <div className="relative">
           {leftIcon && (
@@ -86,13 +87,20 @@ export const InputWithLabel = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
+              'h-9 rounded-lg border-input bg-background/90 text-sm',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
               error && 'border-destructive focus-visible:ring-destructive',
               className
             )}
             aria-invalid={!!error}
-            aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
+            aria-describedby={
+              error
+                ? `${inputId}-error`
+                : helperText
+                  ? `${inputId}-helper`
+                  : undefined
+            }
             {...props}
           />
           {rightIcon && (

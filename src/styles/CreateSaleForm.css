@@ -1486,3 +1486,39 @@
   color: var(--color-text-primary);
   font-size: 14px;
 }
+
+/* V2 overrides (only applied in migrated modules) */
+.ui-v2-module .sale-form-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0;
+  border-bottom: 0;
+  text-align: left;
+}
+
+.ui-v2-module .sale-form-header h1 {
+  color: hsl(var(--foreground));
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.ui-v2-module .step-title {
+  color: hsl(var(--foreground));
+  font-size: 1rem;
+}
+
+.ui-v2-module .step-counter {
+  color: hsl(var(--muted-foreground));
+}
+
+.ui-v2-module .sale-form-controls {
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 1rem;
+}
+
+.ui-v2-module .create-sale-form,
+.ui-v2-module .selected-customer-info,
+.ui-v2-module .sale-type-section,
+.ui-v2-module .box-pricing-item {
+  border-color: hsl(var(--border));
+  background: hsl(var(--card));
+}

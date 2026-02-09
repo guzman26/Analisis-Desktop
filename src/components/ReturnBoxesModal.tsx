@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Sale, ReturnReason } from '@/types';
-import { returnBoxes } from '@/api/endpoints';
+import { salesApi } from '@/modules/sales';
 import { useNotifications } from './Notification/Notification';
 import { Button } from './design-system';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -101,7 +101,7 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      await returnBoxes({
+      await salesApi.returnBoxes({
         saleId: sale.saleId,
         boxIds: selectedBoxes,
         reason,
@@ -135,7 +135,7 @@ const ReturnBoxesModal: React.FC<ReturnBoxesModalProps> = ({
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="max-w-5xl">
+      <DialogContent layer={60} className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>Devolver Cajas</DialogTitle>
         </DialogHeader>

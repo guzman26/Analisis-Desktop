@@ -13,7 +13,7 @@ import {
   Filter,
   X,
 } from 'lucide-react';
-import { getSalesOrders, getCustomers } from '@/api/endpoints';
+import { adminMetricsApi } from '@/modules/admin-metrics';
 import { useNotifications } from '@/components/Notification/Notification';
 import PeriodSelector from '@/components/PeriodSelector';
 import {
@@ -114,7 +114,7 @@ const SalesMetrics: React.FC = () => {
       const startDate = new Date();
       startDate.setFullYear(startDate.getFullYear() - 1);
 
-      const response = await getSalesOrders({
+      const response = await adminMetricsApi.getSalesOrders({
         filters: {
           // We'll fetch all and filter client-side for flexibility
         },
@@ -177,7 +177,7 @@ const SalesMetrics: React.FC = () => {
   // Fetch customers for filter
   const fetchCustomers = useCallback(async () => {
     try {
-      const response = await getCustomers();
+      const response = await adminMetricsApi.getCustomers();
       
       // Validate and filter customers
       let customersData: Customer[] = [];
@@ -2410,4 +2410,3 @@ const SalesMetrics: React.FC = () => {
 };
 
 export default SalesMetrics;
-

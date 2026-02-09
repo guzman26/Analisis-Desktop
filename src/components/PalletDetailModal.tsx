@@ -1,41 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Pallet, PalletAuditResult } from '@/types';
-import {
-  formatCalibreName,
-  getCalibreFromCodigo,
-  getTurnoNombre,
-  getEmpresaNombre,
-  getOperarioFromCodigo,
-  getContadorFromCodigo,
-} from '@/utils/getParamsFromCodigo';
-import {
-  getBoxByCode,
-  auditPallet,
-  moveBoxBetweenPallets,
-  moveMultipleBoxesBetweenPallets,
-} from '@/api/endpoints';
-import { getPalletBoxes, getPalletBoxCount } from '@/utils/palletHelpers';
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Pallet } from '@/types';
+import { formatDate } from '@/utils/formatDate';
+import { getCalibreFromCodigo } from '@/utils/getParamsFromCodigo';
+
 import BoxDetailModal from './BoxDetailModal';
 import PalletAuditModal from './PalletAuditModal';
-import { formatDate } from '@/utils/formatDate';
-import { Button, Card } from './design-system';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import SelectTargetPalletModal from './SelectTargetPalletModal';
-import {
-  CheckCircle,
-  Calendar,
-  Package,
-  Layers,
-  MapPin,
-  MoveRight,
-  PackageX,
-  Hash,
-  Printer,
-  Building2,
-  Clock,
-} from 'lucide-react';
-import { clsx } from 'clsx';
+import PalletActionsTab from './pallet-detail/PalletActionsTab';
+import PalletBoxesTab from './pallet-detail/PalletBoxesTab';
+import PalletDetailHeader from './pallet-detail/PalletDetailHeader';
+import PalletFooterActions from './pallet-detail/PalletFooterActions';
+import PalletOverviewTab from './pallet-detail/PalletOverviewTab';
+import { usePalletDetailController } from './pallet-detail/usePalletDetailController';
 
 interface PalletDetailModalProps {
   pallet: Pallet | null;
@@ -53,663 +34,168 @@ const PalletDetailModal = ({
   onMovePallet,
 }: PalletDetailModalProps) => {
   const navigate = useNavigate();
-  const [showMoveOptions, setShowMoveOptions] = useState(false);
-  const [showBoxDetailModal, setShowBoxDetailModal] = useState(false);
-  const [selectedBox, setSelectedBox] = useState<Box | null>(null);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedBoxCodes, setSelectedBoxCodes] = useState<Set<string>>(
-    new Set()
+  const [activeTab, setActiveTab] = useState<'overview' | 'boxes' | 'actions'>(
+    'overview'
   );
-  const [isMovingBoxes, setIsMovingBoxes] = useState(false);
-  const [moveFeedback, setMoveFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
-  const [showSelectTargetModal, setShowSelectTargetModal] = useState(false);
 
-  // Estados para auditoría
-  const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditResult, setAuditResult] = useState<PalletAuditResult | null>(
-    null
-  );
-  const [isAuditing, setIsAuditing] = useState(false);
+  const {
+    boxCodes,
+    realBoxCount,
+    boxesSummary,
+    moveLocations,
 
-  const calibre = getCalibreFromCodigo(pallet?.codigo || '');
+    selectionMode,
+    selectedBoxCodes,
+    isMovingBoxes,
+    moveFeedback,
+    showSelectTargetModal,
 
-  // Close modal on Escape key
+    showBoxDetailModal,
+    selectedBox,
+
+    showAuditModal,
+    auditResult,
+    isAuditing,
+
+    setShowSelectTargetModal,
+    setShowBoxDetailModal,
+
+    handleBoxClick,
+    toggleBoxSelection,
+    toggleSelectionMode,
+    toggleSelectAll,
+    handleConfirmTargetPallet,
+    startAuditBeforeClose,
+    confirmCloseAfterAudit,
+    cancelAudit,
+  } = usePalletDetailController({
+    pallet,
+    isOpen,
+    onClosePallet,
+  });
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
+      setActiveTab('overview');
     }
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'auto';
-    };
-  }, [isOpen, onClose]);
+  }, [isOpen, pallet?.codigo]);
 
   if (!isOpen || !pallet) return null;
 
-  const moveLocations = ['TRANSITO', 'BODEGA', 'VENTA'].filter(
-    (loc) => loc !== pallet.ubicacion
-  );
-
-  const handleBoxClick = async (codigo: string) => {
-    if (selectionMode) {
-      setSelectedBoxCodes((prev) => {
-        const next = new Set(prev);
-        if (next.has(codigo)) next.delete(codigo);
-        else next.add(codigo);
-        return next;
-      });
-      return;
-    }
-    try {
-      const boxData = await getBoxByCode(codigo);
-      if (boxData) {
-        setSelectedBox(boxData);
-        setShowBoxDetailModal(true);
-      } else {
-        console.warn('No box data found for codigo:', codigo);
-      }
-    } catch (error) {
-      console.error('Error fetching box details:', error);
-    }
-  };
-
-  const toggleSelectAll = () => {
-    if (!pallet) return;
-    const boxes = getPalletBoxes(pallet);
-    if (selectedBoxCodes.size === boxes.length) {
-      setSelectedBoxCodes(new Set());
-    } else {
-      setSelectedBoxCodes(new Set(boxes));
-    }
-  };
-
-  const handleConfirmTargetPallet = async (targetPalletCode: string) => {
-    if (!pallet) return;
-    if (!targetPalletCode || selectedBoxCodes.size === 0) return;
-
-    setShowSelectTargetModal(false);
-    setIsMovingBoxes(true);
-    setMoveFeedback(null);
-
-    try {
-      const codes = Array.from(selectedBoxCodes);
-      
-      // Usar endpoint batch si hay múltiples cajas, o individual si es una sola
-      if (codes.length > 1) {
-        await moveMultipleBoxesBetweenPallets(codes, targetPalletCode);
-        
-        // Optimistic local update: remover todas las cajas movidas
-        const boxes = getPalletBoxes(pallet);
-        const filteredBoxes = boxes.filter(
-          (c: string) => !selectedBoxCodes.has(c)
-        );
-        if (pallet.boxes) {
-          (pallet as any).boxes = filteredBoxes;
-        }
-        if (pallet.cajas) {
-          (pallet as any).cajas = filteredBoxes;
-        }
-        setSelectedBoxCodes(new Set());
-        setSelectionMode(false);
-        
-        setMoveFeedback({
-          type: 'success',
-          message: `✓ Se movieron ${codes.length} caja(s) correctamente al pallet ${targetPalletCode}.`,
-        });
-      } else {
-        // Una sola caja - usar endpoint individual
-        await moveBoxBetweenPallets(codes[0], targetPalletCode);
-        
-        // Optimistic local update
-        const boxes = getPalletBoxes(pallet);
-        const filteredBoxes = boxes.filter(
-          (c: string) => !selectedBoxCodes.has(c)
-        );
-        if (pallet.boxes) {
-          (pallet as any).boxes = filteredBoxes;
-        }
-        if (pallet.cajas) {
-          (pallet as any).cajas = filteredBoxes;
-        }
-        setSelectedBoxCodes(new Set());
-        setSelectionMode(false);
-        
-        setMoveFeedback({
-          type: 'success',
-          message: `✓ Se movió 1 caja correctamente al pallet ${targetPalletCode}.`,
-        });
-      }
-    } catch (error: any) {
-      // Extraer el mensaje de error correctamente de la respuesta del API
-      let errorMessage = 'Error al mover cajas';
-      
-      // Intentar extraer el mensaje en el orden correcto de prioridad
-      if (error?.error?.message && typeof error.error.message === 'string') {
-        // Estructura de error del API: { error: { message: "..." } }
-        errorMessage = error.error.message;
-      } else if (error?.message && typeof error.message === 'string') {
-        // Error estándar de JavaScript
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        // Error es un string directamente
-        errorMessage = error;
-      }
-      
-      // Log para debugging en desarrollo
-      console.error('Error al mover cajas entre pallets:', error);
-      
-      setMoveFeedback({
-        type: 'error',
-        message: errorMessage,
-      });
-    } finally {
-      setIsMovingBoxes(false);
-    }
-  };
-
-  // Función para transformar respuesta de API al formato esperado
-  const transformAuditResponse = (apiResponse: any): PalletAuditResult => {
-    const accuracy = apiResponse.accuracy * 100;
-    const passed = apiResponse.isAccurate;
-    const missingCount = apiResponse.missing?.count || 0;
-    const extraCount = apiResponse.extra?.count || 0;
-    
-    // Calcular grade basado en accuracy
-    let grade: 'EXCELLENT' | 'GOOD' | 'WARNING' | 'CRITICAL';
-    if (accuracy >= 95) grade = 'EXCELLENT';
-    else if (accuracy >= 80) grade = 'GOOD';
-    else if (accuracy >= 60) grade = 'WARNING';
-    else grade = 'CRITICAL';
-
-    // Crear issues basado en lo que falta/sobra
-    const issues: any[] = [];
-    if (missingCount > 0) {
-      issues.push({
-        type: 'MISSING_BOXES',
-        severity: missingCount > 5 ? 'CRITICAL' : 'WARNING',
-        message: `Faltan ${missingCount} caja${missingCount !== 1 ? 's' : ''} en el pallet`,
-        details: { count: missingCount, boxes: apiResponse.missing.boxes },
-      });
-    }
-    if (extraCount > 0) {
-      issues.push({
-        type: 'EXTRA_BOXES',
-        severity: 'WARNING',
-        message: `Hay ${extraCount} caja${extraCount !== 1 ? 's' : ''} extra en el pallet`,
-        details: { count: extraCount, boxes: apiResponse.extra.boxes },
-      });
-    }
-
-    return {
-      passed,
-      grade,
-      score: Math.round(accuracy),
-      summary: {
-        capacityPassed: missingCount === 0 && extraCount === 0,
-        uniquenessPassed: extraCount === 0,
-        sequencePassed: true, // La API actual no valida secuencia
-        totalIssues: issues.length,
-        criticalIssues: issues.filter(i => i.severity === 'CRITICAL').length,
-        warningIssues: issues.filter(i => i.severity === 'WARNING').length,
-      },
-      issues,
-    };
-  };
-
-  // Función para iniciar auditoría antes de cerrar pallet
-  const handleClosePalletWithAudit = async () => {
-    if (!pallet) return;
-
-    setIsAuditing(true);
-    setShowAuditModal(true);
-
-    try {
-      const auditData = await auditPallet(pallet.codigo);
-      // Transformar respuesta de API al formato esperado
-      const transformedResult = transformAuditResponse(auditData);
-      setAuditResult(transformedResult);
-    } catch (error) {
-      console.error('Error durante la auditoría:', error);
-      // Crear un resultado de error para mostrar en el modal
-      setAuditResult({
-        passed: false,
-        grade: 'CRITICAL' as const,
-        score: 0,
-        summary: {
-          capacityPassed: false,
-          uniquenessPassed: false,
-          sequencePassed: false,
-          totalIssues: 1,
-          criticalIssues: 1,
-          warningIssues: 0,
-        },
-        issues: [
-          {
-            type: 'AUDIT_ERROR' as const,
-            severity: 'CRITICAL' as const,
-            message:
-              error instanceof Error
-                ? error.message
-                : 'Error del servidor durante la auditoría',
-            details: {
-              errorType: 'API_ERROR',
-              palletCode: pallet.codigo,
-            },
-          },
-        ],
-      });
-    } finally {
-      setIsAuditing(false);
-    }
-  };
-
-  // Función para confirmar el cierre después de la auditoría
-  const handleConfirmClose = () => {
-    if (!pallet) return;
-
-    setShowAuditModal(false);
-    setAuditResult(null);
-    onClosePallet?.(pallet.codigo);
-  };
-
-  // Función para cancelar el cierre
-  const handleCancelAudit = () => {
-    setShowAuditModal(false);
-    setAuditResult(null);
-    setIsAuditing(false);
-  };
-
-  // Format date for display
   const formattedDate = pallet.fechaCreacion
     ? formatDate(pallet.fechaCreacion)
     : 'N/A';
+  const calibre = getCalibreFromCodigo(pallet.codigo);
 
-  // === Visual helpers ===
-  const locationColors = {
-    packing: 'bg-blue-100 text-blue-700 border-blue-200',
-    bodega: 'bg-green-100 text-green-700 border-green-200',
-    venta: 'bg-purple-100 text-purple-700 border-purple-200',
-    transito: 'bg-orange-100 text-orange-700 border-orange-200',
-    default: 'bg-gray-100 text-gray-700 border-gray-200',
-  } as const;
-
-  const statusColors = {
-    open: 'bg-green-100 text-green-700 border-green-200',
-    closed: 'bg-blue-100 text-blue-700 border-blue-200',
-    default: 'bg-gray-100 text-gray-700 border-gray-200',
-  } as const;
-
-  // Reusable row (mirrors BoxDetailModal)
-  const InfoRow = ({
-    icon,
-    label,
-    value,
-    className,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    value: React.ReactNode;
-    className?: string;
-  }) => (
-    <div
-      className={clsx(
-        'flex items-start gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors',
-        className
-      )}
-    >
-      <div className="text-muted-foreground mt-0.5">{icon}</div>
-      <div className="flex-1">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-base font-medium text-foreground">{value}</p>
-      </div>
-    </div>
-  );
-
-  const locationColor =
-    locationColors[
-      pallet.ubicacion.toLowerCase() as keyof typeof locationColors
-    ] || locationColors.default;
-
-  const statusColor =
-    statusColors[pallet.estado as keyof typeof statusColors] ||
-    statusColors.default;
-
-  // Obtener cantidad real de cajas
-  const realBoxCount = getPalletBoxCount(pallet);
-  
-  // Mostrar resumen de cajas como cantidad/capacidad (ej: 2/60)
-  const boxesSummary =
-    typeof pallet.maxBoxes === 'number' && !Number.isNaN(pallet.maxBoxes)
-      ? `${realBoxCount}/${pallet.maxBoxes}`
-      : String(realBoxCount);
+  const handleToggleSelectionMode = () => {
+    if (!selectionMode) {
+      setActiveTab('boxes');
+    }
+    toggleSelectionMode();
+  };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent
+          layer={60}
+          className="flex h-[90vh] w-[95vw] max-w-5xl flex-col overflow-hidden bg-background p-0"
+        >
+          <DialogHeader className="sr-only">
             <DialogTitle>Detalles de Pallet {pallet.codigo}</DialogTitle>
           </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Status Badges */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex gap-2">
-              <span
-                className={clsx(
-                  'px-3 py-1.5 text-sm font-medium rounded-md border inline-flex items-center gap-2',
-                  locationColor
-                )}
+          <PalletDetailHeader pallet={pallet} boxesSummary={boxesSummary} />
+
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              setActiveTab(value as 'overview' | 'boxes' | 'actions')
+            }
+            className="flex min-h-0 flex-1 flex-col px-6 pt-4"
+          >
+            <TabsList className="w-full justify-start sm:w-auto">
+              <TabsTrigger value="overview">Resumen</TabsTrigger>
+              <TabsTrigger value="boxes">Cajas ({realBoxCount})</TabsTrigger>
+              <TabsTrigger value="actions">Acciones</TabsTrigger>
+            </TabsList>
+
+            <div className="min-h-0 flex-1 overflow-hidden pb-4">
+              <TabsContent
+                value="overview"
+                className="mt-3 h-full min-h-0 data-[state=inactive]:hidden"
               >
-                <MapPin className="w-4 h-4" />
-                {pallet.ubicacion}
-              </span>
-              <span
-                className={clsx(
-                  'px-3 py-1.5 text-sm font-medium rounded-md border',
-                  statusColor
-                )}
+                <ScrollArea className="h-full pr-3">
+                  <PalletOverviewTab
+                    pallet={pallet}
+                    formattedDate={formattedDate}
+                    calibre={calibre}
+                    realBoxCount={realBoxCount}
+                  />
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent
+                value="boxes"
+                className="mt-3 h-full min-h-0 data-[state=inactive]:hidden"
               >
-                {pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
-              </span>
+                <ScrollArea className="h-full pr-3">
+                  <PalletBoxesTab
+                    boxCodes={boxCodes}
+                    selectionMode={selectionMode}
+                    selectedBoxCodes={selectedBoxCodes}
+                    isMovingBoxes={isMovingBoxes}
+                    moveFeedback={moveFeedback}
+                    onBoxClick={handleBoxClick}
+                    onToggleBoxSelection={toggleBoxSelection}
+                    onToggleSelectAll={toggleSelectAll}
+                    onOpenTargetModal={() => setShowSelectTargetModal(true)}
+                  />
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent
+                value="actions"
+                className="mt-3 h-full min-h-0 data-[state=inactive]:hidden"
+              >
+                <ScrollArea className="h-full pr-3">
+                  <PalletActionsTab
+                    pallet={pallet}
+                    moveLocations={moveLocations}
+                    onMovePallet={onMovePallet}
+                  />
+                </ScrollArea>
+              </TabsContent>
             </div>
-            <span className="text-sm text-muted-foreground">
-              Cajas:{' '}
-              <span className="font-medium text-primary">
-                {boxesSummary}
-              </span>
-            </span>
-          </div>
+          </Tabs>
 
-          {/* Main Information */}
-          <Card variant="flat" padding="none">
-            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
-              <div className="space-y-1">
-                <InfoRow
-                  icon={<Package className="w-5 h-5" />}
-                  label="Calibre"
-                  value={formatCalibreName(calibre)}
-                />
-                <InfoRow
-                  icon={<Calendar className="w-5 h-5" />}
-                  label="Fecha de Creación"
-                  value={formattedDate}
-                />
-              </div>
-              <div className="space-y-1">
-                <InfoRow
-                  icon={<Layers className="w-5 h-5" />}
-                  label="Total de Cajas"
-                  value={realBoxCount}
-                />
-                <InfoRow
-                  icon={<Package className="w-5 h-5" />}
-                  label="Capacidad (maxBoxes)"
-                  value={pallet.maxBoxes ?? 'N/A'}
-                />
-                <InfoRow
-                  icon={<Hash className="w-5 h-5" />}
-                  label="Estado"
-                  value={pallet.estado === 'open' ? 'Abierto' : 'Cerrado'}
-                />
-                <InfoRow
-                  icon={<Building2 className="w-5 h-5" />}
-                  label="Empresa"
-                  value={getEmpresaNombre(pallet.codigo)}
-                />
-                <InfoRow
-                  icon={<Clock className="w-5 h-5" />}
-                  label="Turno"
-                  value={getTurnoNombre(pallet.codigo)}
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Boxes */}
-          <Card variant="flat">
-            <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4" />
-              Historial reciente
-              <span className="ml-2 px-2 py-0.5 rounded-md bg-gray-200 text-xs text-muted-foreground">
-                {realBoxCount}
-              </span>
-            </h3>
-            {realBoxCount === 0 ? (
-              <div className="flex flex-col items-center justify-center py-6 text-foreground-tertiary">
-                <PackageX className="w-8 h-8 mb-3 opacity-60" />
-                No hay cajas registradas en este pallet
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
-                {getPalletBoxes(pallet).map((caja, index) => (
-                  <div
-                    key={index}
-                    className="group relative bg-white border border-border rounded-md hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
-                    onClick={() => handleBoxClick(caja)}
-                  >
-                    {selectionMode && (
-                      <div className="absolute top-2 left-2 z-10">
-                        <input
-                          type="checkbox"
-                          checked={selectedBoxCodes.has(caja)}
-                          onChange={() => handleBoxClick(caja)}
-                          className="w-4 h-4 accent-primary"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                    )}
-                    {/* Status indicator */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary/70" />
-
-                    {/* Content */}
-                    <div className="p-3">
-                      {/* Header */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Package className="w-4 h-4 text-primary" />
-                          <span className="text-xs text-muted-foreground font-medium">
-                            Caja #{index + 1}
-                          </span>
-                        </div>
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                      </div>
-
-                      {/* Code */}
-                      <div className="mb-3">
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Código
-                        </p>
-                        <p className="text-sm font-mono font-medium text-foreground break-all">
-                          {caja}
-                        </p>
-                      </div>
-
-                      {/* Parsed badges: Operario, Calibre, Contador */}
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
-                          Op: {getOperarioFromCodigo(caja)}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
-                          Cal: {formatCalibreName(getCalibreFromCodigo(caja))}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-gray-100 text-xs text-muted-foreground border border-border">
-                          N°{getContadorFromCodigo(caja)}
-                        </span>
-                      </div>
-
-                      {/* Calibre info (extracted from code) */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Calibre
-                          </p>
-                          <p className="text-sm font-medium text-foreground">
-                            {formatCalibreName(getCalibreFromCodigo(caja))}
-                          </p>
-                        </div>
-                        <div className="text-muted-foreground group-hover:text-primary transition-colors">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Hover effect */}
-                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
-            <Button
-              variant="secondary"
-              size="medium"
-              leftIcon={<Printer size={16} />}
-              onClick={() => navigate(`/pallet/label/${pallet.codigo}`)}
-            >
-              Generar Etiqueta
-            </Button>
-            {pallet.estado === 'open' && (
-              <>
-                <Button
-                  variant={selectionMode ? 'primary' : 'secondary'}
-                  size="medium"
-                  leftIcon={<MoveRight size={16} />}
-                  onClick={() => {
-                    setSelectionMode((prev) => !prev);
-                    setMoveFeedback(null);
-                    setSelectedBoxCodes(new Set());
-                  }}
-                >
-                  {selectionMode ? 'Cancelar mover' : 'Mover Cajas'}
-                </Button>
-                <Button
-                  variant="primary"
-                  size="medium"
-                  leftIcon={<CheckCircle size={16} />}
-                  onClick={handleClosePalletWithAudit}
-                >
-                  Cerrar Pallet
-                </Button>
-              </>
-            )}
-            {pallet.estado === 'closed' && (
-              <div className="relative">
-                <Button
-                  variant="secondary"
-                  size="medium"
-                  leftIcon={<MoveRight size={16} />}
-                  onClick={() => setShowMoveOptions(!showMoveOptions)}
-                >
-                  Mover Pallet {showMoveOptions ? '▲' : '▼'}
-                </Button>
-                {showMoveOptions && (
-                  <div className="absolute left-0 mt-1 w-full rounded-md bg-white shadow-lg z-10">
-                    {moveLocations.map((location) => (
-                      <button
-                        key={location}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => {
-                          onMovePallet?.(pallet.codigo, location);
-                          setShowMoveOptions(false);
-                        }}
-                      >
-                        <MapPin size={14} />
-                        Mover a {location}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Move Boxes Toolbar */}
-          {selectionMode && (
-            <Card variant="flat">
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="px-3 py-1.5 text-sm rounded-md border border-border hover:border-primary transition-colors"
-                      onClick={toggleSelectAll}
-                    >
-                      {selectedBoxCodes.size === realBoxCount
-                        ? 'Deseleccionar todo'
-                        : 'Seleccionar todo'}
-                    </button>
-                    <span className="text-sm text-muted-foreground">
-                      {selectedBoxCodes.size} seleccionada(s)
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  variant="primary"
-                  size="medium"
-                  leftIcon={<MoveRight size={16} />}
-                  disabled={isMovingBoxes || selectedBoxCodes.size === 0}
-                  onClick={() => setShowSelectTargetModal(true)}
-                >
-                  {isMovingBoxes ? 'Moviendo...' : 'Mover seleccionadas'}
-                </Button>
-
-                {moveFeedback && (
-                  <div
-                    className={`p-3 rounded-md border ${
-                      moveFeedback.type === 'success'
-                        ? 'bg-green-50 border-green-200 text-green-700'
-                        : 'bg-red-50 border-red-200 text-red-700'
-                    }`}
-                  >
-                    {moveFeedback.message}
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
-
-          {/* Box Detail Modal */}
-          <BoxDetailModal
-            isOpen={showBoxDetailModal}
-            onClose={() => setShowBoxDetailModal(false)}
-            box={selectedBox}
+          <PalletFooterActions
+            pallet={pallet}
+            selectionMode={selectionMode}
+            moveLocations={moveLocations}
+            onPrintLabel={() => navigate(`/pallet/label/${pallet.codigo}`)}
+            onToggleSelectionMode={handleToggleSelectionMode}
+            onStartAudit={startAuditBeforeClose}
+            onMovePallet={onMovePallet}
           />
+        </DialogContent>
+      </Dialog>
 
-          {/* Audit Modal */}
-          <PalletAuditModal
-            isOpen={showAuditModal}
-            onClose={handleCancelAudit}
-            auditResult={auditResult}
-            onConfirmClose={handleConfirmClose}
-            isLoading={isAuditing}
-            palletCode={pallet.codigo}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+      <BoxDetailModal
+        isOpen={showBoxDetailModal}
+        onClose={() => setShowBoxDetailModal(false)}
+        box={selectedBox}
+      />
+
+      <PalletAuditModal
+        isOpen={showAuditModal}
+        onClose={cancelAudit}
+        auditResult={auditResult}
+        onConfirmClose={confirmCloseAfterAudit}
+        isLoading={isAuditing}
+        palletCode={pallet.codigo}
+      />
+
       <SelectTargetPalletModal
         isOpen={showSelectTargetModal}
         onClose={() => setShowSelectTargetModal(false)}

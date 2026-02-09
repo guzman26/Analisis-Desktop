@@ -633,7 +633,7 @@ showInfo('Information');
 
 ## Next Phases
 
-### 🚧 Phase 9: App Component Migration (In Progress)
+### ✅ Phase 9: App Component Migration (Complete)
 
 **Goal**: Refactor non-`ui/` components to shadcn primitives and remove legacy CSS modules
 
@@ -649,8 +649,8 @@ showInfo('Information');
    - `ScanBoxToFindPalletModal`
    - `SelectDestinationModal`
    - `SelectTargetPalletModal`
-   - `PalletDetailModal` (wrapper migrated)
-   - `SaleDetailModal` (wrapper migrated)
+   - `PalletDetailModal`
+   - `SaleDetailModal` (full shadcn layout)
 
 2. ✅ **Cards and panels migrated to shadcn primitives**:
    - `BoxCard`
@@ -678,16 +678,20 @@ showInfo('Information');
    - `PalletCard.module.css`
    - `IssueCard.css`
    - `CustomerPreferencesPanel.css`
+   - `SaleDetailModal.css`
 
-**Pending / remaining**:
-- Layout shell refactor to shadcn defaults:
-  - `Layout.tsx`
-  - `Sidebar.tsx`
-- Review for any remaining macOS-only classes in migrated components
+6. ✅ **Shell migrated to shadcn look**:
+   - `Layout.tsx`
+   - `Sidebar.tsx`
+
+7. ✅ **Shared UI dedupe added**:
+   - `src/components/shared/InfoRow.tsx`
+   - `src/components/shared/FilterHeader.tsx`
+   - `src/components/shared/StatCard.tsx`
 
 **Verification**:
 - ✅ `npm run type-check` passes
-- ⏳ `npm run build` timed out (2 attempts at 120s and 180s)
+- ✅ `npm run build` passes
 
 ---
 
@@ -743,7 +747,7 @@ showInfo('Information');
 - ✅ TypeScript compiles
 - ✅ Dev server runs successfully
 
-### Remaining Testing (Phase 9)
+### Remaining Testing (Phase 10)
 - ⏳ Comprehensive end-to-end testing
 - ⏳ Visual regression testing
 - ⏳ Performance validation
@@ -795,4 +799,4 @@ This ensures **100% backwards compatibility** with existing code.
 
 **Last Updated**: 2026-02-05
 **Status**: Phases 1-8 Complete (Foundation, Button, Input, Card, DataTable, Complex Forms, Notifications, Cleanup)
-**Next**: Phase 9 (Final Testing & Production Deployment)
+**Next**: Phase 10 (Final Testing & Production Deployment)

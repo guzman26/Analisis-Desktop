@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/design-system';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/app-dialog';
 import { MapPin } from 'lucide-react';
 import { Location } from '@/types';
 
@@ -52,7 +52,7 @@ const SelectDestinationModal: React.FC<SelectDestinationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent layer={70} className="max-w-md">
         <DialogHeader>
           <DialogTitle>Seleccionar Destino</DialogTitle>
         </DialogHeader>

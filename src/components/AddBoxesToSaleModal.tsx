@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Sale } from '@/types';
-import { addBoxesToSale } from '@/api/endpoints';
-import { useFilteredPallets } from '@/contexts/PalletContext';
+import { usePalletServerState } from '@/modules/inventory';
+import { salesApi } from '@/modules/sales';
 import { getPalletBoxes } from '@/utils/palletHelpers';
 import { useNotifications } from './Notification/Notification';
 import { Button } from './design-system';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/app-dialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
@@ -25,11 +31,17 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { pallets: closedPalletsInBodega } = useFilteredPallets();
+  const { closedPalletsInBodega, fetchClosedPalletsInBodega } =
+    usePalletServerState();
   const [selectedBoxes, setSelectedBoxes] = useState<Map<string, string[]>>(new Map());
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showSuccess, showError } = useNotifications();
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    void fetchClosedPalletsInBodega();
+  }, [fetchClosedPalletsInBodega, isOpen]);
 
   const handleToggleBox = (palletId: string, boxId: string) => {
     setSelectedBoxes((prev) => {
@@ -90,7 +102,7 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
         boxIds,
       }));
 
-      await addBoxesToSale({
+      await salesApi.addBoxesToSale({
         saleId: sale.saleId,
         items,
         reason: reason.trim() || undefined,
@@ -122,7 +134,7 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="max-w-5xl">
+      <DialogContent layer={60} className="max-w-5xl">
         <DialogHeader>
           <DialogTitle>Agregar Cajas a Venta</DialogTitle>
         </DialogHeader>

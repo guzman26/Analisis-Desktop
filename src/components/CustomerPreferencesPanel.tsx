@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CustomerPreferences } from '@/types';
-import { getCustomerPreferences } from '@/api/endpoints';
+import { customersApi } from '@/modules/customers';
 import { formatEggCount } from '@/utils/eggCalculations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import StatCard from '@/components/shared/StatCard';
 
 interface CustomerPreferencesPanelProps {
   customerId: string;
@@ -22,7 +23,7 @@ const CustomerPreferencesPanel: React.FC<CustomerPreferencesPanelProps> = ({
       setLoading(true);
       setError(null);
       try {
-        const data = await getCustomerPreferences(customerId);
+        const data = await customersApi.getPreferences(customerId);
         setPreferences(data);
       } catch (err) {
         console.error('Error fetching customer preferences:', err);
@@ -75,23 +76,16 @@ const CustomerPreferencesPanel: React.FC<CustomerPreferencesPanelProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Órdenes</div>
-            <div className="text-lg font-semibold">{preferences.totalOrders}</div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Total Cajas</div>
-            <div className="text-lg font-semibold">
-              {preferences.totalBoxes.toLocaleString('es-CL')}
-            </div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Total Huevos</div>
-            <div className="text-lg font-semibold">
-              {formatEggCount(preferences.totalEggs)}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <StatCard label="Órdenes" value={preferences.totalOrders} />
+          <StatCard
+            label="Total Cajas"
+            value={preferences.totalBoxes.toLocaleString('es-CL')}
+          />
+          <StatCard
+            label="Total Huevos"
+            value={formatEggCount(preferences.totalEggs)}
+          />
         </div>
 
         <div>

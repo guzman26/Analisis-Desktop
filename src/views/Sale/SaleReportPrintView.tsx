@@ -1,7 +1,6 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sale, Customer } from '@/types';
-import { SalesContext } from '@/contexts/SalesContext';
 import { useCustomerContext } from '@/contexts/CustomerContext';
 import { formatDate } from '@/utils/formatDate';
 import {
@@ -13,6 +12,7 @@ import { getOperarioFromCodigo } from '@/utils/getParamsFromCodigo';
 import '@/styles/SaleReportPrintView.css';
 import { WindowContainer } from '@/components/design-system';
 import { Button } from '@/components/design-system';
+import { useSaleByIdQuery } from '@/modules/sales';
 
 const SaleReportPrintView: React.FC = () => {
   const { saleId } = useParams<{ saleId: string }>();
@@ -22,39 +22,32 @@ const SaleReportPrintView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
-
-  const { salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated } =
-    useContext(SalesContext) || {};
+  const saleQuery = useSaleByIdQuery(saleId);
   const [, customerAPI] = useCustomerContext();
 
   useEffect(() => {
-    if (
-      saleId &&
-      (salesOrdersDRAFTPaginated?.data || salesOrdersCONFIRMEDPaginated?.data)
-    ) {
-      // Search in DRAFT sales first
-      let foundSale = salesOrdersDRAFTPaginated?.data?.find(
-        (s) => s.saleId === saleId
-      );
-
-      // If not found in DRAFT, search in CONFIRMED sales
-      if (!foundSale) {
-        foundSale = salesOrdersCONFIRMEDPaginated?.data?.find(
-          (s) => s.saleId === saleId
-        );
-      }
-
-      if (foundSale) {
-        setSale(foundSale);
-      } else {
-        setError('Venta no encontrada');
-      }
+    if (!saleId) {
+      setError('Venta no encontrada');
       setLoading(false);
-    } else if (saleId) {
-      setError('No se pudo cargar la información de ventas');
-      setLoading(false);
+      return;
     }
-  }, [saleId, salesOrdersDRAFTPaginated, salesOrdersCONFIRMEDPaginated]);
+
+    setLoading(saleQuery.isLoading);
+
+    if (saleQuery.data) {
+      setSale(saleQuery.data);
+      setError(null);
+      return;
+    }
+
+    if (saleQuery.error) {
+      setError(
+        saleQuery.error instanceof Error
+          ? saleQuery.error.message
+          : 'No se pudo cargar la información de ventas'
+      );
+    }
+  }, [saleId, saleQuery.data, saleQuery.error, saleQuery.isLoading]);
 
   // Fetch customer data when sale is found
   useEffect(() => {

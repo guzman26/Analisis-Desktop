@@ -2,12 +2,24 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sale, Customer, Box, SaleItem } from '@/types';
 import { formatDate } from '@/utils/formatDate';
-import { getBoxByCode, getCustomerById } from '@/api/endpoints';
+import { boxesApi } from '@/modules/inventory';
+import { customersApi } from '@/modules/customers';
 import { getOperarioFromCodigo } from '@/utils/getParamsFromCodigo';
 import BoxDetailModal from './BoxDetailModal';
 import { Button } from '@/components/design-system';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import '@/styles/SaleDetailModal.css';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/app-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import StatCard from '@/components/shared/StatCard';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface SaleDetailModalProps {
   sale: Sale | null;
@@ -37,7 +49,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
       }
 
       try {
-        const customerData = await getCustomerById(sale.customerId);
+        const customerData = await customersApi.getById(sale.customerId);
         setCustomer(customerData);
       } catch (error) {
         console.error('Error fetching customer:', error);
@@ -74,7 +86,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   const handleBoxClick = async (boxCode: string) => {
     try {
       setLoadingBox(boxCode);
-      const response = await getBoxByCode(boxCode);
+      const response = await boxesApi.getByCode(boxCode);
 
       // Extract the box data from the response
       // The API might return { data: boxData } or just boxData directly
@@ -222,219 +234,181 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
 
   if (!isOpen || !sale) return null;
 
+  const statusStyles: Record<string, string> = {
+    COMPLETED: 'bg-green-100 text-green-700',
+    CONFIRMED: 'bg-blue-100 text-blue-700',
+    DISPATCHED: 'bg-yellow-100 text-yellow-700',
+    DRAFT: 'bg-gray-100 text-gray-700',
+  };
+
+  const items = getItems();
+  const customerName =
+    sale.customerInfo?.name || sale.customerName || customer?.name || 'Cargando...';
+  const customerEmail = sale.customerInfo?.email || customer?.email || '';
+  const customerPhone = sale.customerInfo?.phone || customer?.phone || '';
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+      <DialogContent layer={60} className="max-w-6xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalle de la Venta</DialogTitle>
         </DialogHeader>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="modal-header">
-          <div className="modal-header-content">
-            <div className="modal-title-group">
-              <h2 className="modal-title">
-                {sale.saleNumber || `Venta ${sale.saleId.substring(0, 8)}...`}
-              </h2>
-              <div className="modal-badges">
-                <span
-                  className={`status-badge ${sale.state === 'COMPLETED' ? 'success' : sale.state === 'CONFIRMED' ? 'info' : sale.state === 'DISPATCHED' ? 'warning' : 'secondary'}`}
-                >
-                  {sale.state || 'DRAFT'}
-                </span>
-                <span className="date-badge">{formatDate(sale.createdAt)}</span>
-              </div>
-            </div>
-            <button
-              className="modal-close"
-              onClick={onClose}
-              aria-label="Cerrar"
-            >
-              ×
-            </button>
-          </div>
-        </div>
 
-        {/* Content */}
-        <div className="modal-body">
-          {/* Sale Summary */}
-          <div className="modal-section summary-section">
-            <div className="summary-metrics">
-              <div className="metric-item">
-                <span className="metric-label">Total Cajas</span>
-                <span className="metric-value">{getTotalBoxes()}</span>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="space-y-2">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg">
+                    {sale.saleNumber || `Venta ${sale.saleId.substring(0, 8)}...`}
+                  </CardTitle>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className={statusStyles[sale.state || 'DRAFT'] || 'bg-muted'}>
+                      {sale.state || 'DRAFT'}
+                    </Badge>
+                    <Badge variant="outline">{formatDate(sale.createdAt)}</Badge>
+                  </div>
+                </div>
               </div>
-              <div className="metric-item">
-                <span className="metric-label">Total Pallets</span>
-                <span className="metric-value">{getTotalPallets()}</span>
+            </CardHeader>
+          </Card>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <StatCard label="Total Cajas" value={getTotalBoxes()} />
+            <StatCard label="Total Pallets" value={getTotalPallets()} />
+            {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
+              <StatCard
+                label="Total Huevos"
+                value={sale.totalEggs.toLocaleString()}
+              />
+            )}
+          </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Cliente</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="text-sm font-medium">{customerName}</div>
+                <Badge variant="outline">{sale.customerId}</Badge>
               </div>
-              {sale.totalEggs !== undefined && sale.totalEggs > 0 && (
-                <div className="metric-item">
-                  <span className="metric-label">Total Huevos</span>
-                  <span className="metric-value">
-                    {sale.totalEggs.toLocaleString()}
-                  </span>
+              {(customerEmail || customerPhone) && (
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {customerEmail && (
+                    <a
+                      href={`mailto:${customerEmail}`}
+                      className="underline underline-offset-4"
+                    >
+                      {customerEmail}
+                    </a>
+                  )}
+                  {customerPhone && (
+                    <a
+                      href={`tel:${customerPhone}`}
+                      className="underline underline-offset-4"
+                    >
+                      {customerPhone}
+                    </a>
+                  )}
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Customer Information */}
-          <div className="modal-section customer-section">
-            <h3 className="section-title">Cliente</h3>
-            <div className="customer-info-compact">
-              <div className="customer-main">
-                <span className="customer-name-display">
-                  {sale.customerInfo?.name ||
-                    sale.customerName ||
-                    customer?.name ||
-                    'Cargando...'}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle className="text-base">Pallets</CardTitle>
+                <span className="text-xs text-muted-foreground">
+                  {getTotalPallets()} pallet{getTotalPallets() !== 1 ? 's' : ''} •{' '}
+                  {getTotalBoxes()} caja{getTotalBoxes() !== 1 ? 's' : ''}
                 </span>
-                <span className="customer-id">{sale.customerId}</span>
               </div>
-              {sale.customerInfo?.email ||
-              customer?.email ||
-              sale.customerInfo?.phone ||
-              customer?.phone ? (
-                <div className="customer-contact">
-                  {sale.customerInfo?.email || customer?.email ? (
-                    <a
-                      href={`mailto:${sale.customerInfo?.email || customer?.email}`}
-                      className="contact-link"
-                    >
-                      {sale.customerInfo?.email || customer?.email}
-                    </a>
-                  ) : null}
-                  {sale.customerInfo?.phone || customer?.phone ? (
-                    <a
-                      href={`tel:${sale.customerInfo?.phone || customer?.phone}`}
-                      className="contact-link"
-                    >
-                      {sale.customerInfo?.phone || customer?.phone}
-                    </a>
-                  ) : null}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!items || items.length === 0 ? (
+                <div className="text-sm text-muted-foreground">
+                  No hay items en esta venta
                 </div>
-              ) : null}
-            </div>
-          </div>
+              ) : (
+                <div className="space-y-4">
+                  {items.map((item, index) => {
+                    const groupedBoxes = groupBoxesByOperario(item.boxIds);
 
-          {/* Items Details */}
-          <div className="modal-section pallets-detail-section">
-            <div className="section-header-compact">
-              <h3 className="section-title">Pallets</h3>
-              <span className="section-subtitle-compact">
-                {getTotalPallets()} pallet{getTotalPallets() !== 1 ? 's' : ''} •{' '}
-                {getTotalBoxes()} caja{getTotalBoxes() !== 1 ? 's' : ''}
-              </span>
-            </div>
-            {(() => {
-              const items = getItems();
-              if (!items || items.length === 0) {
-                return (
-                  <div className="items-empty">No hay items en esta venta</div>
-                );
-              }
-              return (
-                <div className="items-container">
-                  {items.map((item, index) => (
-                    <div key={index} className="item-card pallet-card">
-                      <div className="item-header pallet-header">
-                        <div className="pallet-title-group">
-                          <span className="pallet-number">#{index + 1}</span>
-                          <h4 className="item-title pallet-id">
-                            Pallet {item.palletId}
-                          </h4>
+                    return (
+                      <div key={index} className="rounded-md border p-4 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">#{index + 1}</Badge>
+                            <span className="text-sm font-medium">
+                              Pallet {item.palletId}
+                            </span>
+                          </div>
+                          <Badge variant="outline">
+                            {item.boxIds?.length || 0} cajas
+                          </Badge>
                         </div>
-                        <div className="pallet-count-badge">
-                          <span className="count-number">
-                            {item.boxIds?.length || 0}
-                          </span>
-                          <span className="count-label">cajas</span>
-                        </div>
-                      </div>
 
-                      <div className="item-boxes pallet-boxes">
-                        <div className="boxes-header">
-                          <span className="boxes-label">CAJAS INCLUIDAS</span>
-                          <span className="boxes-count">
-                            {item.boxIds?.length || 0} caja
-                            {item.boxIds?.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        {(() => {
-                          const groupedBoxes = groupBoxesByOperario(
-                            item.boxIds
-                          );
+                        <Separator />
 
-                          if (groupedBoxes.length === 0) {
-                            return (
-                              <span className="no-boxes">
-                                No hay cajas asignadas
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <div className="boxes-grouped-by-operario">
-                              {groupedBoxes.map((group) => (
-                                <div
-                                  key={group.operario}
-                                  className="operario-group"
-                                >
-                                  <div className="operario-header">
-                                    <span className="operario-label">
-                                      Operario {group.operario}
-                                    </span>
-                                    <span className="operario-count">
-                                      {group.boxes.length} caja
-                                      {group.boxes.length !== 1 ? 's' : ''}
-                                    </span>
-                                  </div>
-                                  <div className="boxes-grid">
-                                    {group.boxes.map((boxId: string) => (
-                                      <div
-                                        key={boxId}
-                                        className={`box-item clickable ${loadingBox === boxId ? 'loading' : ''}`}
-                                        onClick={() => handleBoxClick(boxId)}
-                                        title="Clic para ver detalles de la caja"
-                                      >
-                                        {loadingBox === boxId ? (
-                                          <span className="loading-text">
-                                            Cargando...
-                                          </span>
-                                        ) : (
-                                          <span className="box-code">
-                                            {boxId}
-                                          </span>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
+                        {groupedBoxes.length === 0 ? (
+                          <div className="text-sm text-muted-foreground">
+                            No hay cajas asignadas
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {groupedBoxes.map((group) => (
+                              <div key={group.operario} className="space-y-2">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                  <span>Operario {group.operario}</span>
+                                  <span>
+                                    {group.boxes.length} caja
+                                    {group.boxes.length !== 1 ? 's' : ''}
+                                  </span>
                                 </div>
-                              ))}
-                            </div>
-                          );
-                        })()}
+                                <div className="flex flex-wrap gap-2">
+                                  {group.boxes.map((boxId: string) => (
+                                    <button
+                                      key={boxId}
+                                      className={`rounded-md border px-2 py-1 text-xs font-mono transition-colors ${
+                                        loadingBox === boxId
+                                          ? 'opacity-60'
+                                          : 'hover:bg-muted'
+                                      }`}
+                                      onClick={() => handleBoxClick(boxId)}
+                                      title="Clic para ver detalles de la caja"
+                                    >
+                                      {loadingBox === boxId
+                                        ? 'Cargando...'
+                                        : boxId}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              );
-            })()}
-          </div>
+              )}
+            </CardContent>
+          </Card>
 
-          {/* Notes */}
           {sale.notes && (
-            <div className="modal-section notes-section">
-              <h3 className="section-title">Notas</h3>
-              <div className="notes-compact">
-                <span className="notes-text">{sale.notes}</span>
-              </div>
-            </div>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Notas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{sale.notes}</p>
+              </CardContent>
+            </Card>
           )}
 
-          {/* Actions */}
-          <div className="modal-actions">
+          <DialogFooter className="flex flex-wrap gap-2 sm:justify-between">
             <Button variant="primary" onClick={handleShowPrintView}>
               Ver Guía de Despacho
             </Button>
@@ -443,6 +417,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
                 href={sale.reportUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                className={cn(buttonVariants({ variant: 'secondary' }))}
               >
                 Descargar Reporte
               </a>
@@ -450,16 +425,14 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
             <Button variant="secondary" onClick={onClose}>
               Cerrar
             </Button>
-          </div>
+          </DialogFooter>
         </div>
 
-        {/* Box Detail Modal */}
         <BoxDetailModal
           box={selectedBox}
           isOpen={showBoxModal}
           onClose={handleCloseBoxModal}
         />
-      </div>
       </DialogContent>
     </Dialog>
   );

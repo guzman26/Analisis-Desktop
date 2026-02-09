@@ -1,8 +1,6 @@
-import React, { useState, useContext } from 'react';
-import { usePalletContext } from '@/contexts/PalletContext';
-import { SalesContext } from '@/contexts/SalesContext';
+import React, { useState } from 'react';
+import { usePalletServerState } from '@/modules/inventory';
 import { Customer, Sale, SaleRequest, CalibreSelection } from '@/types';
-import { createSale } from '@/api/endpoints';
 import { useNotifications } from '@/components/Notification/Notification';
 import SaleTypeSelectionStep from './SaleTypeSelectionStep';
 import CustomerSelectionStep from './CustomerSelectionStep';
@@ -12,6 +10,11 @@ import SaleSuccessStep from './SaleSuccessStep';
 import '@/styles/CreateSaleForm.css';
 import { Button } from '@/components/design-system';
 import { WindowContainer } from '@/components/design-system';
+import {
+  useConfirmedSalesOrdersInfiniteQuery,
+  useCreateSaleMutation,
+  useDraftSalesOrdersInfiniteQuery,
+} from '@/modules/sales';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
 
@@ -34,8 +37,10 @@ const CreateSaleForm: React.FC = () => {
     saleResult: null,
   });
 
-  const { fetchClosedPalletsInBodega } = usePalletContext();
-  const { refreshAllSales } = useContext(SalesContext);
+  const { fetchClosedPalletsInBodega } = usePalletServerState();
+  const draftSales = useDraftSalesOrdersInfiniteQuery();
+  const confirmedSales = useConfirmedSalesOrdersInfiniteQuery();
+  const createSaleMutation = useCreateSaleMutation();
   const { showSuccess, showError } = useNotifications();
 
   const handleNext = () => {
@@ -90,7 +95,7 @@ const CreateSaleForm: React.FC = () => {
 
       // Crear la solicitud de venta con solo la información de calibres y cantidades
       showSuccess('Creando solicitud de venta...');
-      const sale = await createSale(saleRequest);
+      const sale = await createSaleMutation.mutateAsync(saleRequest);
 
       setState((prev) => ({
         ...prev,
@@ -100,8 +105,9 @@ const CreateSaleForm: React.FC = () => {
       }));
 
       // Step 5: Refresh data in contexts
-      refreshAllSales();
-      fetchClosedPalletsInBodega();
+      await draftSales.refresh();
+      await confirmedSales.refresh();
+      await fetchClosedPalletsInBodega();
 
       const totalRequestedBoxes = validCalibres.reduce((sum, cal) => sum + cal.boxCount, 0);
       const saleNumberText = sale.saleNumber ? ` (${sale.saleNumber})` : '';
