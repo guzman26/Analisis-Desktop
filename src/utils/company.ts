@@ -1,13 +1,44 @@
 // Mapeo centralizado de códigos de empresa a su nombre legible
 // Si cambia el catálogo, actualice este objeto.
 
-const COMPANY_CODE_TO_NAME: Record<string | number, string> = {
-  1: 'Lomas Altas',
-  2: 'Santa Marta',
-  3: 'Coliumo',
-  4: 'El monte',
-  5: 'Libre',
+const COMPANY_CODE_TO_NAME: Record<string, string> = {
+  '01': 'Lomas Altas',
+  '02': 'Santa Marta',
+  '03': 'Coliumo',
+  '04': 'El Monte',
+  '05': 'Libre',
 };
+
+const COMPANY_NAME_TO_CODE: Record<string, string> = {
+  'lomas altas': '01',
+  'santa marta': '02',
+  coliumo: '03',
+  'el monte': '04',
+  libre: '05',
+};
+
+/**
+ * Normaliza empresa a código canónico de 2 dígitos (01..05).
+ * Soporta entradas como "04", 4 y nombres legibles.
+ */
+export function normalizeCompanyCode(
+  codeOrName: string | number | undefined | null
+): string | null {
+  if (codeOrName === undefined || codeOrName === null) return null;
+  const raw = String(codeOrName).trim();
+  if (!raw) return null;
+
+  if (/^\d+$/.test(raw)) {
+    const normalized = Number(raw);
+    if (!Number.isInteger(normalized) || normalized < 1 || normalized > 5) {
+      return null;
+    }
+    return String(normalized).padStart(2, '0');
+  }
+
+  const normalizedName = raw.toLowerCase();
+  return COMPANY_NAME_TO_CODE[normalizedName] || null;
+}
 
 /**
  * Devuelve el nombre de la empresa a partir de su código.
@@ -18,6 +49,8 @@ export function getCompanyNameFromCode(
   code: string | number | undefined | null
 ): string {
   if (code === undefined || code === null || code === '') return 'Sin empresa';
+  const normalizedCode = normalizeCompanyCode(code);
+  if (normalizedCode) return COMPANY_CODE_TO_NAME[normalizedCode];
   const key = typeof code === 'string' ? code.trim() : code;
   return COMPANY_CODE_TO_NAME[key] || `Empresa ${key}`;
 }

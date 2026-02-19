@@ -8,6 +8,7 @@ export interface DispatchCardProps {
   onEdit?: (dispatch: Dispatch) => void;
   onApprove?: (dispatch: Dispatch) => void;
   onCancel?: (dispatch: Dispatch) => void;
+  onPrint?: (dispatch: Dispatch) => void;
   isApproving?: boolean;
   className?: string;
 }
@@ -21,6 +22,7 @@ const DispatchCard: React.FC<DispatchCardProps> = ({
   onEdit,
   onApprove,
   onCancel,
+  onPrint,
   isApproving,
   className,
 }) => {
@@ -76,6 +78,7 @@ const DispatchCard: React.FC<DispatchCardProps> = ({
   const canEdit = dispatch.estado === 'DRAFT';
   const canApprove = dispatch.estado === 'DRAFT';
   const canCancel = dispatch.estado === 'DRAFT';
+  const canPrint = dispatch.estado === 'APPROVED';
 
   return (
     <div className={`sales-card dispatch-card ${className || ''}`}>
@@ -147,7 +150,7 @@ const DispatchCard: React.FC<DispatchCardProps> = ({
       )}
 
       {/* Actions */}
-      {(onViewDetails || onEdit || onApprove || onCancel) && (
+      {(onViewDetails || onEdit || onApprove || onCancel || onPrint) && (
         <div className="sale-actions">
           {onViewDetails && (
             <button
@@ -184,6 +187,15 @@ const DispatchCard: React.FC<DispatchCardProps> = ({
               title="Cancelar este despacho"
             >
               Cancelar
+            </button>
+          )}
+          {onPrint && canPrint && (
+            <button
+              className="action-button view-details-btn"
+              onClick={() => onPrint(dispatch)}
+              title="Imprimir guia de despacho"
+            >
+              Imprimir
             </button>
           )}
         </div>

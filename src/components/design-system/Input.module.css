@@ -1,0 +1,140 @@
+/* Input Component - macOS Style */
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+}
+
+.label {
+  display: block;
+  font-family: var(--macos-font-family-text);
+  font-size: var(--macos-font-size-footnote);
+  font-weight: 500;
+  color: var(--macos-text-primary);
+  margin-bottom: var(--macos-space-2);
+  line-height: var(--macos-line-height-normal);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  height: var(--macos-height-input);
+  padding: var(--macos-input-padding-y) var(--macos-input-padding-x);
+  font-family: var(--macos-font-family-text);
+  font-size: var(--macos-font-size-subheadline);
+  line-height: var(--macos-line-height-normal);
+  color: var(--macos-text-primary);
+  background: var(--macos-content-bg);
+  border: 1px solid var(--macos-border-primary);
+  border-radius: var(--macos-radius-medium);
+  outline: none;
+  transition: all var(--macos-duration-fast) var(--macos-ease-out);
+}
+
+.input::placeholder {
+  color: var(--macos-text-tertiary);
+  font-weight: 400;
+}
+
+.input:focus {
+  border-color: var(--macos-blue);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.input:disabled {
+  background: var(--macos-gray-6);
+  color: var(--macos-text-tertiary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Icon States */
+.hasLeftIcon {
+  padding-left: calc(var(--macos-space-8) + var(--macos-input-padding-x));
+}
+
+.hasRightIcon {
+  padding-right: calc(var(--macos-space-8) + var(--macos-input-padding-x));
+}
+
+.leftIcon {
+  position: absolute;
+  left: var(--macos-input-padding-x);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--macos-text-tertiary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rightIcon {
+  position: absolute;
+  right: var(--macos-input-padding-x);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--macos-text-tertiary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Error State */
+.error {
+  border-color: var(--macos-red);
+  background: rgba(255, 59, 48, 0.05);
+}
+
+.error:focus {
+  border-color: var(--macos-red);
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: var(--macos-space-2);
+  margin-top: var(--macos-space-2);
+  font-family: var(--macos-font-family-text);
+  font-size: var(--macos-font-size-caption-1);
+  color: var(--macos-red);
+  line-height: var(--macos-line-height-normal);
+}
+
+.helperText {
+  margin-top: var(--macos-space-2);
+  font-family: var(--macos-font-family-text);
+  font-size: var(--macos-font-size-caption-1);
+  color: var(--macos-text-secondary);
+  line-height: var(--macos-line-height-normal);
+}
+
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .input {
+    transition: none;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .input {
+    border-width: 2px;
+  }
+
+  .input:focus {
+    border-width: 3px;
+  }
+
+  .error {
+    border-width: 2px;
+  }
+
+  .error:focus {
+    border-width: 3px;
+  }
+}

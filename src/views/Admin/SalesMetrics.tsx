@@ -28,7 +28,6 @@ import {
   aggregateByState,
   aggregateByTemporalPeriod,
   calculateSalesSummary,
-  getPreviousPeriod,
   compareSalesPeriods,
   compareAggregatedData,
   ChangeIndicator,
@@ -37,9 +36,11 @@ import {
   AggregatedByType,
   AggregatedByState,
 } from '@/utils/salesMetricsAggregation';
+import { getPreviousPeriod } from '@/utils/periodComparison';
 import { exportSalesToExcel } from '@/utils/exportToExcel';
 import { Sale, SaleType, SaleState, Customer } from '@/types';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { calculateCycleTimeMetrics } from '@/utils/cycleTimeCalculations';
 import {
   filterValid,
   isValidSale,
@@ -328,6 +329,11 @@ const SalesMetrics: React.FC = () => {
     if (!enableComparison || !summaryDataComparison) return null;
     return compareSalesPeriods(summaryData, summaryDataComparison);
   }, [enableComparison, summaryData, summaryDataComparison]);
+
+  const cycleMetrics = useMemo(
+    () => calculateCycleTimeMetrics([], filteredSales, []),
+    [filteredSales]
+  );
 
   // Memoize format functions
   const formatNumber = useCallback((num: number) => {
@@ -1587,6 +1593,65 @@ const SalesMetrics: React.FC = () => {
                     {renderChangeIndicator(periodComparison.averageBoxesPerSale)}
                   </div>
                 )}
+              </div>
+            </div>
+          </Card>
+
+          <Card variant="flat" padding="medium" isHoverable>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--2)',
+              }}
+            >
+              <div
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--purple-500)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(175, 82, 222, 0.2)',
+                }}
+              >
+                <CalendarDays
+                  style={{ width: '28px', height: '28px', color: 'white' }}
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  className="text-sm"
+                  style={{
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
+                    fontWeight: 500,
+                  }}
+                >
+                  Tiempo medio Confirmada a Despachada
+                </p>
+                <p
+                  className="text-2xl font-semibold"
+                  style={{
+                    color: 'var(--text-foreground)',
+                    fontWeight: 700,
+                    margin: 0,
+                    fontSize: '28px',
+                  }}
+                >
+                  {cycleMetrics.saleToDispatch.averageHours.toFixed(1)} h
+                </p>
+                <p
+                  className="text-xs"
+                  style={{
+                    color: 'var(--text-muted-foreground)',
+                    margin: '4px 0 0 0',
+                  }}
+                >
+                  Muestras: {cycleMetrics.saleToDispatch.count}
+                </p>
               </div>
             </div>
           </Card>

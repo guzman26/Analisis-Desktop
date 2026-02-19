@@ -1,0 +1,187 @@
+/* Button Component - macOS Style */
+
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--macos-font-family-text);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--macos-radius-medium);
+  cursor: pointer;
+  transition: all var(--macos-duration-fast) var(--macos-ease-out);
+  outline: none;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  gap: var(--macos-space-2);
+  min-height: var(--macos-height-button);
+  padding: var(--macos-button-padding-y) var(--macos-button-padding-x);
+  font-size: var(--macos-font-size-subheadline);
+  line-height: var(--macos-line-height-normal);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--macos-blue);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Size Variants */
+.small {
+  min-height: 28px;
+  padding: 6px 12px;
+  font-size: var(--macos-font-size-caption-1);
+  gap: var(--macos-space-1);
+}
+
+.medium {
+  min-height: var(--macos-height-button);
+  padding: var(--macos-button-padding-y) var(--macos-button-padding-x);
+  font-size: var(--macos-font-size-subheadline);
+}
+
+.large {
+  min-height: 44px;
+  padding: 12px 24px;
+  font-size: var(--macos-font-size-callout);
+  gap: var(--macos-space-3);
+}
+
+/* Color Variants */
+.primary {
+  background: var(--macos-blue);
+  color: var(--macos-text-on-color);
+  box-shadow: var(--macos-shadow-small);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--macos-blue-hover);
+  box-shadow: var(--macos-shadow-medium);
+  transform: translateY(-1px);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--macos-blue-pressed);
+  transform: scale(0.98) translateY(0);
+}
+
+.secondary {
+  background: var(--macos-gray-6);
+  color: var(--macos-text-primary);
+  border: 1px solid var(--macos-border-primary);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--macos-gray-5);
+  border-color: var(--macos-border-secondary);
+  transform: translateY(-1px);
+}
+
+.secondary:active:not(:disabled) {
+  background: var(--macos-gray-4);
+  transform: scale(0.98) translateY(0);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--macos-blue);
+}
+
+.ghost:hover:not(:disabled) {
+  background: rgba(0, 122, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.ghost:active:not(:disabled) {
+  background: rgba(0, 122, 255, 0.2);
+  transform: scale(0.98) translateY(0);
+}
+
+.danger {
+  background: var(--macos-red);
+  color: var(--macos-text-on-color);
+  box-shadow: var(--macos-shadow-small);
+}
+
+.danger:hover:not(:disabled) {
+  background: #ff2d20;
+  box-shadow: var(--macos-shadow-medium);
+  transform: translateY(-1px);
+}
+
+.danger:active:not(:disabled) {
+  background: #e6291c;
+  transform: scale(0.98) translateY(0);
+}
+
+/* Loading State */
+.loading {
+  pointer-events: none;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.iconLeft {
+  margin-right: var(--macos-space-2);
+}
+
+.iconRight {
+  margin-left: var(--macos-space-2);
+}
+
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+
+  .button:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+  .button {
+    border: 2px solid currentColor;
+  }
+
+  .primary {
+    border-color: var(--macos-blue);
+  }
+
+  .secondary {
+    border-color: var(--macos-text-primary);
+  }
+
+  .danger {
+    border-color: var(--macos-red);
+  }
+}

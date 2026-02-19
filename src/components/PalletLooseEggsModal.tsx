@@ -9,8 +9,16 @@ import {
 } from '@/components/ui/app-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { usePalletServerState } from '@/modules/inventory';
 import { Location } from '@/types';
+import { COMPANY_CATALOG, normalizeCompanyCode } from '@/utils/company';
 
 interface PalletLooseEggsModalProps {
   isOpen: boolean;
@@ -32,6 +40,13 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
   const [empresa, setEmpresa] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const companyOptions = React.useMemo(
+    () =>
+      Object.entries(COMPANY_CATALOG)
+        .filter(([key]) => /^\d{2}$/.test(key))
+        .sort(([a], [b]) => Number(a) - Number(b)),
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +63,11 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
       setError('Seleccione la empresa');
       return;
     }
+    const normalizedEmpresa = normalizeCompanyCode(empresa);
+    if (!normalizedEmpresa) {
+      setError('Empresa inválida');
+      return;
+    }
     setSubmitting(true);
     try {
       await createLooseEggPallet({
@@ -56,7 +76,7 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
         carts: carts ? Number(carts) : undefined,
         trays: trays ? Number(trays) : undefined,
         eggs: eggs ? Number(eggs) : undefined,
-        empresa,
+        empresa: normalizedEmpresa,
       });
       onClose();
       // reset
@@ -99,11 +119,24 @@ const PalletLooseEggsModal: React.FC<PalletLooseEggsModalProps> = ({
             </div>
             <div className="space-y-2">
               <Label>Empresa</Label>
-              <Input
-                placeholder="Ej: 1"
-                value={empresa}
-                onChange={(e) => setEmpresa(e.target.value)}
-              />
+              <Select
+                value={empresa || 'unselected'}
+                onValueChange={(value) =>
+                  setEmpresa(value === 'unselected' ? '' : value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unselected">Seleccionar empresa</SelectItem>
+                  {companyOptions.map(([code, name]) => (
+                    <SelectItem key={code} value={code}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

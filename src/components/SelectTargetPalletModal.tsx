@@ -18,10 +18,12 @@ import { cn } from '@/lib/utils';
 import {
   formatCalibreName,
   getCalibreFromCodigo,
+  getEmpresaFromCodigo,
   getTurnoNombre,
 } from '@/utils/getParamsFromCodigo';
 import { getPalletBoxCount } from '@/utils/palletHelpers';
 import { Package } from 'lucide-react';
+import { normalizeCompanyCode } from '@/utils/company';
 
 interface SelectTargetPalletModalProps {
   isOpen: boolean;
@@ -49,14 +51,23 @@ const SelectTargetPalletModal: React.FC<SelectTargetPalletModalProps> = ({
   }, [fetchActivePallets, isOpen]);
 
   const pallets = useMemo(
-    () =>
-      openPallets
+    () => {
+      const sourceCompany = excludePalletCode
+        ? normalizeCompanyCode(getEmpresaFromCodigo(excludePalletCode))
+        : '';
+
+      return openPallets
         .filter((pallet) => pallet.codigo !== excludePalletCode)
+        .filter((pallet) => {
+          if (!sourceCompany) return true;
+          return normalizeCompanyCode(getEmpresaFromCodigo(pallet.codigo)) === sourceCompany;
+        })
         .filter((pallet) =>
           query.trim()
             ? pallet.codigo.toLowerCase().includes(query.trim().toLowerCase())
             : true
-        ),
+        );
+    },
     [excludePalletCode, openPallets, query]
   );
 

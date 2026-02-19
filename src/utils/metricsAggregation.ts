@@ -32,7 +32,9 @@ export interface AggregatedByOperario {
 export interface AggregatedByCalibre {
   calibre: string;
   totalBoxes: number;
-  percentage: number;
+  totalEggUnits: number;
+  percentageBoxes: number;
+  percentageEggUnits: number;
 }
 
 export interface AggregatedByHorario {
@@ -46,12 +48,14 @@ export interface TemporalData {
   period: string;
   totalBoxes: number;
   totalPallets: number;
+  totalCarts: number;
   date: Date;
 }
 
 export interface SummaryData {
   totalBoxes: number;
   totalPallets: number;
+  totalCarts: number;
   totalDays: number;
   topOperarios: AggregatedByOperario[];
   topCalibres: AggregatedByCalibre[];
@@ -225,34 +229,52 @@ export function aggregateByOperario(metrics: Metric[]): AggregatedByOperario[] {
  * Aggregate metrics by calibre
  */
 export function aggregateByCalibre(metrics: Metric[]): AggregatedByCalibre[] {
-  const calibreMap = new Map<string, number>();
+  const calibreMap = new Map<string, { totalBoxes: number; totalEggUnits: number }>();
 
   metrics.forEach((metric) => {
     if (metric.metricType !== 'PRODUCTION_DAILY') return;
     const data = metric.data || {};
     const boxesByCalibre = data.boxesByCalibre || {};
+    const eggsByCalibre = data.eggsByCalibre || {};
 
     Object.entries(boxesByCalibre).forEach(([calibre, boxes]) => {
       const boxesNum = safeNumber(boxes);
       if (boxesNum === 0) return;
 
-      const current = calibreMap.get(calibre) || 0;
-      calibreMap.set(calibre, current + boxesNum);
+      const current = calibreMap.get(calibre) || { totalBoxes: 0, totalEggUnits: 0 };
+      current.totalBoxes += boxesNum;
+      calibreMap.set(calibre, current);
+    });
+
+    Object.entries(eggsByCalibre).forEach(([calibre, eggs]) => {
+      const eggsNum = safeNumber(eggs);
+      if (eggsNum === 0) return;
+
+      const current = calibreMap.get(calibre) || { totalBoxes: 0, totalEggUnits: 0 };
+      current.totalEggUnits += eggsNum;
+      calibreMap.set(calibre, current);
     });
   });
 
   const totalBoxes = Array.from(calibreMap.values()).reduce(
-    (sum, boxes) => sum + boxes,
+    (sum, values) => sum + values.totalBoxes,
+    0
+  );
+  const totalEggUnits = Array.from(calibreMap.values()).reduce(
+    (sum, values) => sum + values.totalEggUnits,
     0
   );
 
   return Array.from(calibreMap.entries())
-    .map(([calibre, boxes]) => ({
+    .map(([calibre, values]) => ({
       calibre,
-      totalBoxes: boxes,
-      percentage: totalBoxes > 0 ? (boxes / totalBoxes) * 100 : 0,
+      totalBoxes: values.totalBoxes,
+      totalEggUnits: values.totalEggUnits,
+      percentageBoxes: totalBoxes > 0 ? (values.totalBoxes / totalBoxes) * 100 : 0,
+      percentageEggUnits:
+        totalEggUnits > 0 ? (values.totalEggUnits / totalEggUnits) * 100 : 0,
     }))
-    .sort((a, b) => b.totalBoxes - a.totalBoxes);
+    .sort((a, b) => b.totalEggUnits - a.totalEggUnits || b.totalBoxes - a.totalBoxes);
 }
 
 /**
@@ -321,6 +343,7 @@ export function aggregateByTemporalPeriod(
     {
       totalBoxes: number;
       totalPallets: number;
+      totalCarts: number;
       date: Date;
     }
   >();
@@ -346,6 +369,7 @@ export function aggregateByTemporalPeriod(
       periodMap.set(periodKey, {
         totalBoxes: 0,
         totalPallets: 0,
+        totalCarts: 0,
         date: new Date(metricDate),
       });
     }
@@ -353,6 +377,7 @@ export function aggregateByTemporalPeriod(
     const entry = periodMap.get(periodKey)!;
     entry.totalBoxes += safeNumber(data.totalBoxes);
     entry.totalPallets += safeNumber(data.totalPallets);
+    entry.totalCarts += safeNumber(data.totalCarts);
   });
 
   return Array.from(periodMap.entries())
@@ -360,6 +385,7 @@ export function aggregateByTemporalPeriod(
       period,
       totalBoxes: data.totalBoxes,
       totalPallets: data.totalPallets,
+      totalCarts: data.totalCarts,
       date: data.date,
     }))
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -383,6 +409,11 @@ export function calculateSummary(metrics: Metric[]): SummaryData {
     0
   );
 
+  const totalCarts = productionMetrics.reduce(
+    (sum, m) => sum + safeNumber(m.data?.totalCarts || 0),
+    0
+  );
+
   const uniqueDates = new Set(
     productionMetrics.map((m) => m.date || m.dateKey)
   );
@@ -394,6 +425,7 @@ export function calculateSummary(metrics: Metric[]): SummaryData {
   return {
     totalBoxes,
     totalPallets,
+    totalCarts,
     totalDays: uniqueDates.size,
     topOperarios: operarios.slice(0, 5),
     topCalibres: calibres.slice(0, 5),

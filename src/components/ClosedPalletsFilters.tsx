@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Filter, Package, Search, Clock, Building2 } from 'lucide-react';
 import FilterHeader from '@/components/shared/FilterHeader';
+import { COMPANY_CATALOG, normalizeCompanyCode } from '@/utils/company';
 
 export type Filters = {
   fechaDesde?: string;
@@ -47,7 +48,7 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
     dateFrom: filters.fechaDesde || '',
     dateTo: filters.fechaHasta || '',
     turno: filters.turno || '',
-    empresa: filters.empresa || '',
+    empresa: normalizeCompanyCode(filters.empresa) || '',
   });
 
   // Sincronizar estado local cuando cambian los filtros desde fuera
@@ -58,9 +59,17 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
       dateFrom: filters.fechaDesde || '',
       dateTo: filters.fechaHasta || '',
       turno: filters.turno || '',
-      empresa: filters.empresa || '',
+      empresa: normalizeCompanyCode(filters.empresa) || '',
     });
   }, [filters]);
+
+  const companyOptions = React.useMemo(
+    () =>
+      Object.entries(COMPANY_CATALOG)
+        .filter(([key]) => /^\d{2}$/.test(key))
+        .sort(([a], [b]) => Number(a) - Number(b)),
+    []
+  );
 
   // Función para aplicar todos los filtros del estado local
   const handleApplyFilters = () => {
@@ -145,15 +154,28 @@ const ClosedPalletsFilters: React.FC<ClosedPalletsFiltersProps> = ({
             <Label className="text-xs flex items-center gap-1">
               <Building2 size={14} /> Empresa
             </Label>
-            <Input
-              placeholder="Nombre de empresa"
-              value={localState.empresa}
-              onChange={(e) => {
-                const value = e.target.value;
-                setLocalState((prev) => ({ ...prev, empresa: value }));
-              }}
+            <Select
+              value={localState.empresa || 'all'}
+              onValueChange={(value) =>
+                setLocalState((prev) => ({
+                  ...prev,
+                  empresa: value === 'all' ? '' : value,
+                }))
+              }
               disabled={disabled}
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {companyOptions.map(([code, name]) => (
+                  <SelectItem key={code} value={code}>
+                    {name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1">

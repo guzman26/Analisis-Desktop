@@ -5,6 +5,7 @@ import {
   TrendingUp,
   Package,
   Palette,
+  ShoppingCart,
   BarChart3,
   Calendar,
   Columns,
@@ -14,6 +15,7 @@ import { useNotifications } from '@/components/Notification/Notification';
 import { useNavigate } from 'react-router-dom';
 import { CALIBRE_MAP } from '@/utils/getParamsFromCodigo';
 import CalibreLegend from '@/components/CalibreLegend';
+import { calculatePeriodChange } from '@/utils/periodComparison';
 
 interface Metric {
   metricType: string;
@@ -29,6 +31,7 @@ interface MetricsResponse {
   summary: {
     totalBoxes: number;
     totalPallets: number;
+    totalCarts?: number;
     totalDays: number;
   };
   count: number;
@@ -47,6 +50,7 @@ const Metrics: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MetricsResponse | null>(null);
+  const [previousSummary, setPreviousSummary] = useState<MetricsResponse['summary'] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Table UI state
@@ -71,7 +75,9 @@ const Metrics: React.FC = () => {
       'type',
       'totalBoxes',
       'totalPallets',
+      'totalCarts',
       'byCalibre',
+      'byCalibreEggs',
       'byShift',
       'byOperario',
       'byLocation',
@@ -106,6 +112,23 @@ const Metrics: React.FC = () => {
 
       const response = await adminMetricsApi.getMetrics(params);
 
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffDays = Math.max(
+        1,
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+      );
+      const previousEnd = new Date(start);
+      previousEnd.setDate(start.getDate() - 1);
+      const previousStart = new Date(previousEnd);
+      previousStart.setDate(previousEnd.getDate() - (diffDays - 1));
+
+      const previousResponse = await adminMetricsApi.getMetrics({
+        metricType: metricType === 'all' ? 'all' : metricType,
+        startDate: previousStart.toISOString().split('T')[0],
+        endDate: previousEnd.toISOString().split('T')[0],
+      });
+
       // Debug: Log response structure
       console.log('📊 Metrics response:', {
         count: response.count,
@@ -115,6 +138,7 @@ const Metrics: React.FC = () => {
       });
 
       setData(response);
+      setPreviousSummary(previousResponse.summary || null);
       showSuccess(`Métricas cargadas: ${response.count} registros encontrados`);
     } catch (err: any) {
       const errorMessage = err.message || 'Error al cargar las métricas';
@@ -156,6 +180,60 @@ const Metrics: React.FC = () => {
     return 0;
   };
 
+  const boxesComparison = data?.summary
+    ? calculatePeriodChange(data.summary.totalBoxes, previousSummary?.totalBoxes || 0)
+    : null;
+  const palletsComparison = data?.summary
+    ? calculatePeriodChange(data.summary.totalPallets, previousSummary?.totalPallets || 0)
+    : null;
+  const daysComparison = data?.summary
+    ? calculatePeriodChange(data.summary.totalDays, previousSummary?.totalDays || 0)
+    : null;
+
+  const healthMetrics = useMemo(() => {
+    const production = (data?.metrics || []).filter(
+      (metric) => metric.metricType === 'PRODUCTION_DAILY'
+    );
+    const totalPallets = production.reduce(
+      (acc, metric) => acc + safeNumber(metric.data?.totalPallets),
+      0
+    );
+    const issueBreakdown = new Map<string, number>();
+    const auditGrades = {
+      EXCELLENT: 0,
+      GOOD: 0,
+      WARNING: 0,
+      CRITICAL: 0,
+    };
+
+    production.forEach((metric) => {
+      const issues = metric.data?.auditIssueCounts || {};
+      Object.entries(issues).forEach(([issue, value]) => {
+        issueBreakdown.set(issue, (issueBreakdown.get(issue) || 0) + safeNumber(value));
+      });
+
+      const grades = metric.data?.auditGrades || {};
+      (Object.keys(auditGrades) as Array<keyof typeof auditGrades>).forEach((grade) => {
+        auditGrades[grade] += safeNumber(grades[grade]);
+      });
+    });
+
+    const totalIssues = Array.from(issueBreakdown.values()).reduce(
+      (acc, value) => acc + value,
+      0
+    );
+    const incidentsPer100 = totalPallets > 0 ? (totalIssues / totalPallets) * 100 : 0;
+    const topIssues = Array.from(issueBreakdown.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+
+    return {
+      incidentsPer100,
+      auditGrades,
+      topIssues,
+    };
+  }, [data]);
+
   // Helper to display key/value aggregates as compact text
   const formatObjectAsText = (obj: any, maxItems: number = 3): string => {
     if (!obj || typeof obj !== 'object') return '-';
@@ -181,7 +259,7 @@ const Metrics: React.FC = () => {
     if (!entries.length) return null;
 
     // Determinar si es una tabla de calibres
-    const isCalibreTable = title === 'Cajas por Calibre';
+    const isCalibreTable = title === 'Cajas por Calibre' || title === 'Huevos por Calibre';
 
     // Sort by value (descending) for better readability
     const sortedEntries = entries.sort((a, b) => {
@@ -228,7 +306,7 @@ const Metrics: React.FC = () => {
               color: '#666',
             }}
           >
-            Total: {formatNumber(total)} cajas
+            Total: {formatNumber(total)} {valueLabel.toLowerCase()}
           </p>
         </div>
         <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
@@ -456,11 +534,31 @@ const Metrics: React.FC = () => {
         width: 120,
       },
       {
+        id: 'totalCarts',
+        header: 'Total Carros',
+        align: 'right',
+        sortable: true,
+        accessor: (row) =>
+          row.isProduction ? safeNumber(row.metricData.totalCarts) : 0,
+        renderCell: (row) =>
+          row.isProduction ? formatNumber(safeNumber(row.metricData.totalCarts)) : '-',
+        width: 120,
+      },
+      {
         id: 'byCalibre',
         header: 'Cajas por Calibre',
         accessor: (row) =>
           row.isProduction
             ? formatObjectAsText(row.metricData.boxesByCalibre)
+            : '-',
+        width: 220,
+      },
+      {
+        id: 'byCalibreEggs',
+        header: 'Huevos por Calibre',
+        accessor: (row) =>
+          row.isProduction
+            ? formatObjectAsText(row.metricData.eggsByCalibre)
             : '-',
         width: 220,
       },
@@ -750,6 +848,60 @@ const Metrics: React.FC = () => {
                 >
                   {formatNumber(data.summary.totalBoxes)}
                 </p>
+                {boxesComparison && (
+                  <p className="text-xs text-muted-foreground">
+                    {boxesComparison.isNeutral
+                      ? 'Sin cambios vs periodo anterior'
+                      : `${boxesComparison.isPositive ? 'Sube' : 'Baja'} ${Math.abs(boxesComparison.percentage).toFixed(1)}%`}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+
+          <Card variant="flat" padding="medium">
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--2)',
+              }}
+            >
+              <div
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: 'var(--rounded-md)',
+                  backgroundColor: 'var(--orange-500)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ShoppingCart
+                  style={{ width: '24px', height: '24px', color: 'white' }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p
+                  className="text-sm"
+                  style={{
+                    color: 'var(--text-muted-foreground)',
+                    marginBottom: 'var(--0.5)',
+                  }}
+                >
+                  Total Carros
+                </p>
+                <p
+                  className="text-2xl font-semibold"
+                  style={{
+                    color: 'var(--text-foreground)',
+                    fontWeight: 700,
+                    margin: 0,
+                  }}
+                >
+                  {formatNumber(data.summary.totalCarts || 0)}
+                </p>
               </div>
             </div>
           </Card>
@@ -797,6 +949,13 @@ const Metrics: React.FC = () => {
                 >
                   {formatNumber(data.summary.totalPallets)}
                 </p>
+                {palletsComparison && (
+                  <p className="text-xs text-muted-foreground">
+                    {palletsComparison.isNeutral
+                      ? 'Sin cambios vs periodo anterior'
+                      : `${palletsComparison.isPositive ? 'Sube' : 'Baja'} ${Math.abs(palletsComparison.percentage).toFixed(1)}%`}
+                  </p>
+                )}
               </div>
             </div>
           </Card>
@@ -844,10 +1003,60 @@ const Metrics: React.FC = () => {
                 >
                   {data.summary.totalDays} días
                 </p>
+                {daysComparison && (
+                  <p className="text-xs text-muted-foreground">
+                    {daysComparison.isNeutral
+                      ? 'Sin cambios vs periodo anterior'
+                      : `${daysComparison.isPositive ? 'Sube' : 'Baja'} ${Math.abs(daysComparison.percentage).toFixed(1)}%`}
+                  </p>
+                )}
               </div>
             </div>
           </Card>
         </div>
+      )}
+
+      {data && (
+        <Card variant="default" padding="medium" style={{ marginBottom: 'var(--6)' }}>
+          <h3 className="text-lg font-semibold" style={{ marginBottom: 'var(--2)' }}>
+            Salud Operativa
+          </h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: 'var(--3)',
+            }}
+          >
+            <div>
+              <p className="text-sm text-muted-foreground">Incidencias por 100 pallets</p>
+              <p className="text-2xl font-semibold">
+                {healthMetrics.incidentsPer100.toFixed(1)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Distribucion de auditoria</p>
+              <p className="text-sm">
+                EXCELLENT {healthMetrics.auditGrades.EXCELLENT} | GOOD {healthMetrics.auditGrades.GOOD}
+              </p>
+              <p className="text-sm">
+                WARNING {healthMetrics.auditGrades.WARNING} | CRITICAL {healthMetrics.auditGrades.CRITICAL}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Top causas de friccion</p>
+              {healthMetrics.topIssues.length === 0 ? (
+                <p className="text-sm">Sin incidencias en el periodo.</p>
+              ) : (
+                healthMetrics.topIssues.map(([issue, count]) => (
+                  <p key={issue} className="text-sm">
+                    {issue}: {formatNumber(count)}
+                  </p>
+                ))
+              )}
+            </div>
+          </div>
+        </Card>
       )}
 
       {/* Error State */}
@@ -1052,6 +1261,26 @@ const Metrics: React.FC = () => {
                             }}
                           >
                             Sin datos de calibre
+                          </div>
+                        )}
+                        {createDetailTable(
+                          metricData.eggsByCalibre,
+                          'Huevos por Calibre',
+                          'Calibre',
+                          'Huevos'
+                        ) || (
+                          <div
+                            style={{
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              padding: '20px',
+                              textAlign: 'center',
+                              backgroundColor: 'white',
+                              color: '#999',
+                              fontSize: '12px',
+                            }}
+                          >
+                            Sin datos de huevos por calibre
                           </div>
                         )}
                         {createDetailTable(

@@ -20,6 +20,8 @@ import { Separator } from '@/components/ui/separator';
 import StatCard from '@/components/shared/StatCard';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { buildSaleTimeline } from '@/utils/timelineBuilder';
+import { ProductionTimeline } from '@/components/story/ProductionTimeline';
 
 interface SaleDetailModalProps {
   sale: Sale | null;
@@ -242,6 +244,7 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
   };
 
   const items = getItems();
+  const saleTimeline = buildSaleTimeline(sale);
   const customerName =
     sale.customerInfo?.name || sale.customerName || customer?.name || 'Cargando...';
   const customerEmail = sale.customerInfo?.email || customer?.email || '';
@@ -283,6 +286,15 @@ const SaleDetailModal = ({ sale, isOpen, onClose }: SaleDetailModalProps) => {
               />
             )}
           </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Historia de la venta</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProductionTimeline events={saleTimeline} />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader className="pb-3">

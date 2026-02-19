@@ -5,6 +5,7 @@ const DispatchListView = lazy(() => import('@/views/Dispatch/DispatchesList'));
 const CreateDispatchView = lazy(
   () => import('@/views/Dispatch/CreateDispatchForm')
 );
+const DispatchPrintView = lazy(() => import('@/views/Dispatch/DispatchPrintView'));
 
 export const dispatchRoutes: ModuleRoute[] = [
   {
@@ -34,6 +35,16 @@ export const dispatchRoutes: ModuleRoute[] = [
       title: 'Editar despacho',
       section: 'dispatch',
       breadcrumb: ['Despachos', 'Editar'],
+      featureFlag: 'dispatch-core',
+    },
+  },
+  {
+    path: '/dispatch/print/:id',
+    component: DispatchPrintView,
+    meta: {
+      title: 'Imprimir despacho',
+      section: 'dispatch',
+      breadcrumb: ['Despachos', 'Imprimir'],
       featureFlag: 'dispatch-core',
     },
   },

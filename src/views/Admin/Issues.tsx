@@ -1,7 +1,8 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { IssuesContext } from '@/contexts/IssuesContext';
 import '@/styles/SalesOrdersList.css';
 import IssueCard from '@/components/IssueCard';
+import { Card } from '@/components/design-system';
 
 const AdminIssues: React.FC = () => {
   const { adminIssuesPaginated } = useContext(IssuesContext);
@@ -22,6 +23,23 @@ const AdminIssues: React.FC = () => {
     (issue) => issue.status !== 'RESOLVED'
   );
 
+  const issuesSummary = useMemo(() => {
+    const summary = {
+      total: filteredIssues.length,
+      open: 0,
+      inProgress: 0,
+      closed: 0,
+    };
+
+    filteredIssues.forEach((issue) => {
+      if (issue.status === 'OPEN') summary.open += 1;
+      else if (issue.status === 'IN_PROGRESS') summary.inProgress += 1;
+      else if (issue.status === 'CLOSED') summary.closed += 1;
+    });
+
+    return summary;
+  }, [filteredIssues]);
+
   return (
     <div className="sales-orders-list">
       <div className="sales-orders-header">
@@ -40,6 +58,34 @@ const AdminIssues: React.FC = () => {
           <p>Error al cargar los issues: {adminIssuesPaginated.error}</p>
         </div>
       )}
+
+      <Card variant="default" padding="medium" style={{ marginBottom: 'var(--4)' }}>
+        <h3 style={{ marginTop: 0, marginBottom: 'var(--2)' }}>Salud de incidencias</h3>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 'var(--2)',
+          }}
+        >
+          <div>
+            <p className="text-sm text-muted-foreground">Activas</p>
+            <p className="text-2xl font-semibold">{issuesSummary.total}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Abiertas</p>
+            <p className="text-2xl font-semibold">{issuesSummary.open}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">En progreso</p>
+            <p className="text-2xl font-semibold">{issuesSummary.inProgress}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Cerradas en periodo cargado</p>
+            <p className="text-2xl font-semibold">{issuesSummary.closed}</p>
+          </div>
+        </div>
+      </Card>
 
       {adminIssuesPaginated.data.length === 0 &&
       !adminIssuesPaginated.loading ? (

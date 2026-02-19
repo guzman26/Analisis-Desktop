@@ -6,6 +6,7 @@ import {
   WindowContainer,
   LoadingOverlay,
   DispatchCard,
+  Modal,
 } from '@/components/design-system';
 import { useNotifications } from '@/components/Notification';
 import {
@@ -20,6 +21,8 @@ import {
   PageHeaderV2,
   SectionCardV2,
 } from '@/components/app-v2';
+import { buildDispatchTimeline } from '@/utils/timelineBuilder';
+import { ProductionTimeline } from '@/components/story/ProductionTimeline';
 
 import '@/styles/SalesOrdersList.css';
 
@@ -37,6 +40,7 @@ const DispatchesList: React.FC = () => {
   const [approvingStates, setApprovingStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [selectedDispatch, setSelectedDispatch] = useState<Dispatch | null>(null);
 
   const { dispatches, loading, error, hasMore, isEmpty, refresh, loadMore } =
     useDispatchListQuery(filters);
@@ -53,6 +57,11 @@ const DispatchesList: React.FC = () => {
   };
 
   const handleApprove = async (dispatch: Dispatch) => {
+    if (!dispatch.pallets || dispatch.pallets.length === 0) {
+      showError('No se puede confirmar un borrador sin pallets asignados.');
+      return;
+    }
+
     if (
       !window.confirm(
         `¿Está seguro de que desea aprobar el despacho ${dispatch.folio}? Esta acción moverá todas las cajas a TRANSITO.`
@@ -104,7 +113,11 @@ const DispatchesList: React.FC = () => {
   };
 
   const handleViewDetails = (dispatch: Dispatch) => {
-    showSuccess(`Folio ${dispatch.folio} seleccionado`);
+    setSelectedDispatch(dispatch);
+  };
+
+  const handlePrint = (dispatch: Dispatch) => {
+    navigate(`/dispatch/print/${dispatch.id}`);
   };
 
   const handleFilterChange = (
@@ -238,6 +251,7 @@ const DispatchesList: React.FC = () => {
                   onEdit={handleEdit}
                   onApprove={handleApprove}
                   onCancel={handleCancel}
+                  onPrint={handlePrint}
                   isApproving={approvingStates[dispatch.id]}
                 />
               ))}
@@ -264,6 +278,33 @@ const DispatchesList: React.FC = () => {
           )}
         </div>
       </WindowContainer>
+
+      <Modal
+        isOpen={Boolean(selectedDispatch)}
+        onClose={() => setSelectedDispatch(null)}
+        title={selectedDispatch ? `Historia del despacho ${selectedDispatch.folio}` : 'Historia del despacho'}
+        size="medium"
+      >
+        {selectedDispatch ? (
+          <div className="space-y-4">
+            <div className="grid gap-2 text-sm md:grid-cols-2">
+              <p>
+                <strong>Destino:</strong> {selectedDispatch.destino}
+              </p>
+              <p>
+                <strong>Estado:</strong> {selectedDispatch.estado}
+              </p>
+              <p>
+                <strong>Pallets:</strong> {selectedDispatch.pallets.length}
+              </p>
+              <p>
+                <strong>Chofer:</strong> {selectedDispatch.nombreChofer}
+              </p>
+            </div>
+            <ProductionTimeline events={buildDispatchTimeline(selectedDispatch)} />
+          </div>
+        ) : null}
+      </Modal>
     </>
   );
 };

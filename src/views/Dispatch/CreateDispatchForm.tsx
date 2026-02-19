@@ -234,10 +234,6 @@ const CreateDispatchForm: React.FC = () => {
       errors.cargador = 'El cargador es requerido';
     }
 
-    if (formData.pallets.length === 0) {
-      errors.pallets = 'Debe agregar al menos un pallet';
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -268,13 +264,13 @@ const CreateDispatchForm: React.FC = () => {
 
       if (isEditMode && id) {
         await updateDispatchMutation.mutateAsync(id, dispatchData, 'user');
-        showSuccess('Despacho actualizado exitosamente');
+        showSuccess('Borrador de despacho actualizado exitosamente');
       } else {
         await createDispatchMutation.mutateAsync({
           ...dispatchData,
           userId: 'user', // TODO: Get actual user ID
         });
-        showSuccess('Despacho creado exitosamente');
+        showSuccess('Borrador de despacho creado exitosamente');
       }
       navigate('/dispatch/list');
     } catch (err) {
@@ -320,8 +316,7 @@ const CreateDispatchForm: React.FC = () => {
             {isEditMode ? 'Editar Despacho' : 'Crear Nuevo Despacho'}
           </h2>
           <p style={{ fontSize: '0.9rem', color: '#666' }}>
-            Complete los datos del despacho para{' '}
-            {isEditMode ? 'actualizarlo' : 'crearlo'}
+            Complete los datos para guardar el despacho como borrador.
           </p>
           {isEditMode && loadedDispatch?.estado !== 'DRAFT' && (
             <p style={{ fontSize: '0.9rem', color: '#dc2626' }}>
@@ -680,6 +675,9 @@ const CreateDispatchForm: React.FC = () => {
             style={{ padding: '1rem' }}
           >
             <h3 style={{ fontWeight: 600, marginBottom: '1rem' }}>Pallets</h3>
+            <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.75rem' }}>
+              Opcional en borrador. Puede cargar pallets desde esta vista o desde el lector mobile.
+            </p>
 
             <div style={{ marginBottom: '1rem' }}>
               <div
@@ -711,19 +709,6 @@ const CreateDispatchForm: React.FC = () => {
                   Agregar
                 </Button>
               </div>
-
-              {formErrors.pallets && (
-                <span
-                  style={{
-                    fontSize: '0.85rem',
-                    color: '#dc2626',
-                    display: 'block',
-                    marginTop: '0.25rem',
-                  }}
-                >
-                  {formErrors.pallets}
-                </span>
-              )}
 
               {/* Selected Pallets */}
               {selectedPallets.length > 0 && (
@@ -817,8 +802,8 @@ const CreateDispatchForm: React.FC = () => {
                   ? 'Actualizando...'
                   : 'Creando...'
                 : isEditMode
-                  ? 'Actualizar Despacho'
-                  : 'Crear Despacho'}
+                  ? 'Actualizar Borrador'
+                  : 'Guardar Borrador'}
             </Button>
           </div>
         </form>

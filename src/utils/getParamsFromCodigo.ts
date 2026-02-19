@@ -1,5 +1,6 @@
 import type { CalibreCode } from '@/types';
 import { calculateDateFromBoxCode } from '@/utils/formatDate';
+import { normalizeCompanyCode } from '@/utils/company';
 
 /**
  * Esquemas de códigos
@@ -261,8 +262,15 @@ export const getFormatoFromCodigo = (codigo: string) => {
 };
 
 export const getEmpresaFromCodigo = (codigo: string) => {
-  // Empresa: posición 12-13
-  return codigo.slice(12, 14);
+  // Empresa: caja (1 dígito) o pallet (2 dígitos), según esquema detectado
+  const type = detectCodigoType(codigo);
+  if (type === 'unknown') return '';
+  return extractField(codigo, type, 'empresa');
+};
+
+export const getEmpresaFromCodigoNormalized = (codigo: string): string => {
+  const empresa = getEmpresaFromCodigo(codigo);
+  return normalizeCompanyCode(empresa) || '';
 };
 
 export const getContadorFromCodigo = (codigo: string) => {

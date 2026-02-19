@@ -5,6 +5,7 @@ import {
   TrendingUp,
   Package,
   Palette,
+  ShoppingCart,
   Users,
   Clock,
   BarChart3,
@@ -28,6 +29,10 @@ import {
   calculateSummary,
   Metric,
 } from '@/utils/metricsAggregation';
+import { getClosedPallets, getDispatches, getOpenPallets, getSalesOrders } from '@/api/endpoints';
+import { calculateCycleTimeMetrics } from '@/utils/cycleTimeCalculations';
+import { calculatePeriodChange, getPreviousPeriod } from '@/utils/periodComparison';
+import { Sale, Dispatch, Pallet } from '@/types';
 
 type ViewType = 'operario' | 'calibre' | 'horario' | 'temporal' | 'summary';
 
@@ -37,6 +42,9 @@ const MetricsAggregated: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [allMetrics, setAllMetrics] = useState<Metric[]>([]);
+  const [allSales, setAllSales] = useState<Sale[]>([]);
+  const [allDispatches, setAllDispatches] = useState<Dispatch[]>([]);
+  const [allPallets, setAllPallets] = useState<Pallet[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const [periodType, setPeriodType] = useState<PeriodType>('month');
@@ -70,8 +78,19 @@ const MetricsAggregated: React.FC = () => {
         endDate: endDate.toISOString().split('T')[0],
       };
 
-      const response = await adminMetricsApi.getMetrics(params);
+      const [response, salesResponse, dispatchesResponse, openPallets, bodegaPallets] =
+        await Promise.all([
+          adminMetricsApi.getMetrics(params),
+          getSalesOrders({ limit: 2000 }),
+          getDispatches({ limit: 2000 }),
+          getOpenPallets(),
+          getClosedPallets({ ubicacion: 'BODEGA', limit: 2000 }),
+        ]);
+
       setAllMetrics(response.metrics || []);
+      setAllSales(salesResponse.items || []);
+      setAllDispatches(dispatchesResponse.items || []);
+      setAllPallets([...(openPallets || []), ...(bodegaPallets.items || [])]);
       showSuccess(`Métricas cargadas: ${response.count} registros encontrados`);
     } catch (err: any) {
       const errorMessage = err.message || 'Error al cargar las métricas';
@@ -118,6 +137,54 @@ const MetricsAggregated: React.FC = () => {
   const summaryData = useMemo(
     () => calculateSummary(filteredMetrics),
     [filteredMetrics]
+  );
+
+  const filteredSales = useMemo(
+    () =>
+      allSales.filter((sale) => {
+        const date = new Date(sale.createdAt);
+        return date >= periodRange.start && date <= periodRange.end;
+      }),
+    [allSales, periodRange]
+  );
+
+  const filteredDispatches = useMemo(
+    () =>
+      allDispatches.filter((dispatch) => {
+        const date = new Date(dispatch.approvedAt || dispatch.createdAt);
+        return date >= periodRange.start && date <= periodRange.end;
+      }),
+    [allDispatches, periodRange]
+  );
+
+  const cycleMetrics = useMemo(
+    () => calculateCycleTimeMetrics(allPallets, filteredSales, filteredDispatches),
+    [allPallets, filteredSales, filteredDispatches]
+  );
+
+  const previousPeriodRange = useMemo(
+    () => getPreviousPeriod(periodType, customStart, customEnd),
+    [periodType, customStart, customEnd]
+  );
+
+  const previousMetrics = useMemo(
+    () => filterMetricsByPeriod(allMetrics, previousPeriodRange),
+    [allMetrics, previousPeriodRange]
+  );
+
+  const previousSummaryData = useMemo(
+    () => calculateSummary(previousMetrics),
+    [previousMetrics]
+  );
+
+  const boxesTrend = useMemo(
+    () => calculatePeriodChange(summaryData.totalBoxes, previousSummaryData.totalBoxes),
+    [summaryData.totalBoxes, previousSummaryData.totalBoxes]
+  );
+
+  const palletsTrend = useMemo(
+    () => calculatePeriodChange(summaryData.totalPallets, previousSummaryData.totalPallets),
+    [summaryData.totalPallets, previousSummaryData.totalPallets]
   );
 
   // View tabs
@@ -295,6 +362,58 @@ const MetricsAggregated: React.FC = () => {
                       >
                         {formatNumber(summaryData.totalBoxes)}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {boxesTrend.isNeutral
+                          ? 'Sin cambios vs periodo anterior'
+                          : `${boxesTrend.isPositive ? 'Sube' : 'Baja'} ${Math.abs(boxesTrend.percentage).toFixed(1)}%`}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card variant="flat" padding="medium">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--2)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: 'var(--rounded-md)',
+                        backgroundColor: 'var(--orange-500)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ShoppingCart
+                        style={{ width: '24px', height: '24px', color: 'white' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: 'var(--text-muted-foreground)',
+                          marginBottom: 'var(--0.5)',
+                        }}
+                      >
+                        Total Carros
+                      </p>
+                      <p
+                        className="text-2xl font-semibold"
+                        style={{
+                          color: 'var(--text-foreground)',
+                          fontWeight: 700,
+                          margin: 0,
+                        }}
+                      >
+                        {formatNumber(summaryData.totalCarts)}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -342,6 +461,11 @@ const MetricsAggregated: React.FC = () => {
                       >
                         {formatNumber(summaryData.totalPallets)}
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {palletsTrend.isNeutral
+                          ? 'Sin cambios vs periodo anterior'
+                          : `${palletsTrend.isPositive ? 'Sube' : 'Baja'} ${Math.abs(palletsTrend.percentage).toFixed(1)}%`}
+                      </p>
                     </div>
                   </div>
                 </Card>
@@ -388,6 +512,56 @@ const MetricsAggregated: React.FC = () => {
                         }}
                       >
                         {summaryData.totalDays}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card variant="flat" padding="medium">
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--2)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: 'var(--rounded-md)',
+                        backgroundColor: 'var(--purple-500)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Clock
+                        style={{ width: '24px', height: '24px', color: 'white' }}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p
+                        className="text-sm"
+                        style={{
+                          color: 'var(--text-muted-foreground)',
+                          marginBottom: 'var(--0.5)',
+                        }}
+                      >
+                        Confirmada a Despachada
+                      </p>
+                      <p
+                        className="text-2xl font-semibold"
+                        style={{
+                          color: 'var(--text-foreground)',
+                          fontWeight: 700,
+                          margin: 0,
+                        }}
+                      >
+                        {cycleMetrics.saleToDispatch.averageHours.toFixed(1)} h
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Muestras: {cycleMetrics.saleToDispatch.count}
                       </p>
                     </div>
                   </div>
@@ -530,7 +704,16 @@ const MetricsAggregated: React.FC = () => {
                                 margin: 0,
                               }}
                             >
-                              {cal.percentage.toFixed(1)}%
+                              {formatNumber(cal.totalEggUnits)} huevos
+                            </p>
+                            <p
+                              className="text-xs"
+                              style={{
+                                color: 'var(--text-muted-foreground)',
+                                margin: 0,
+                              }}
+                            >
+                              {cal.percentageBoxes.toFixed(1)}% cajas / {cal.percentageEggUnits.toFixed(1)}% huevos
                             </p>
                           </div>
                         </div>
@@ -660,18 +843,36 @@ const MetricsAggregated: React.FC = () => {
                       renderCell: (row) => formatNumber(row.totalBoxes),
                     },
                     {
-                      id: 'percentage',
-                      header: 'Distribución',
+                      id: 'totalEggUnits',
+                      header: 'Total Huevos',
+                      align: 'right',
+                      width: 180,
+                      accessor: (row) => row.totalEggUnits,
+                      sortable: true,
+                      renderCell: (row) => formatNumber(row.totalEggUnits),
+                    },
+                    {
+                      id: 'percentageBoxes',
+                      header: 'Distribución Cajas',
                       align: 'right',
                       width: 150,
-                      accessor: (row) => row.percentage,
+                      accessor: (row) => row.percentageBoxes,
                       sortable: true,
-                      renderCell: (row) => `${row.percentage.toFixed(2)}%`,
+                      renderCell: (row) => `${row.percentageBoxes.toFixed(2)}%`,
+                    },
+                    {
+                      id: 'percentageEggUnits',
+                      header: 'Distribución Huevos',
+                      align: 'right',
+                      width: 150,
+                      accessor: (row) => row.percentageEggUnits,
+                      sortable: true,
+                      renderCell: (row) => `${row.percentageEggUnits.toFixed(2)}%`,
                     },
                   ]}
                   data={calibreData}
                   getRowId={(row) => row.calibre}
-                  initialSort={{ columnId: 'totalBoxes', direction: 'desc' }}
+                  initialSort={{ columnId: 'totalEggUnits', direction: 'desc' }}
                 />
               </Card>
               
@@ -755,6 +956,15 @@ const MetricsAggregated: React.FC = () => {
                     accessor: (row) => row.totalPallets,
                     sortable: true,
                     renderCell: (row) => formatNumber(row.totalPallets),
+                  },
+                  {
+                    id: 'totalCarts',
+                    header: 'Total Carros',
+                    align: 'right',
+                    width: 180,
+                    accessor: (row) => row.totalCarts,
+                    sortable: true,
+                    renderCell: (row) => formatNumber(row.totalCarts),
                   },
                 ]}
                 data={temporalData}

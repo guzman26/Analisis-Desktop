@@ -22,6 +22,7 @@ interface MetricsResponse {
   summary: {
     totalBoxes: number;
     totalPallets: number;
+    totalCarts?: number;
     totalDays: number;
   };
   count: number;
