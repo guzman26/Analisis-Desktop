@@ -21,9 +21,11 @@ import {
   PaginationParams,
   CreateLooseEggPalletRequest,
   InventoryValidationResult,
+  CalibreSelection,
   CustomerPreferences,
   ReturnBoxesRequest,
   AddBoxesToSaleRequest,
+  AddBoxesToSaleResponse,
   GetCartsParams,
   Dispatch,
   CreateDispatchRequest,
@@ -413,6 +415,9 @@ export const validateInventory = (
   items: Array<{ palletId: string; boxIds: string[] }>
 ) => sales<InventoryValidationResult>('validate-inventory', 'order', { items });
 
+export const validateInventoryByCalibres = (calibres: CalibreSelection[]) =>
+  sales<InventoryValidationResult>('validate-inventory', 'order', { calibres });
+
 /**
  * Get customer purchase preferences based on history
  */
@@ -429,7 +434,7 @@ export const returnBoxes = (request: ReturnBoxesRequest) =>
  * Add boxes to an existing sale
  */
 export const addBoxesToSale = (request: AddBoxesToSaleRequest) =>
-  sales<Sale>('add-boxes', 'order', request);
+  sales<AddBoxesToSaleResponse | Sale>('add-boxes', 'order', request);
 
 /**
  * Update sale state (dispatch, complete, etc.)

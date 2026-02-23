@@ -415,8 +415,28 @@ export interface ReturnBoxesRequest {
 
 export interface AddBoxesToSaleRequest {
   saleId: string;
-  items: SaleItem[];
+  items?: SaleItem[];
+  boxCode?: string;
+  palletCode?: string;
   reason?: string;
+}
+
+export interface AddBoxesToSaleResponse {
+  sale: Sale;
+  currentEggs?: number;
+  isComplete?: boolean;
+  boxesByCalibre?: Record<string, number>;
+  remainingBoxes?: Record<string, number>;
+  addedItem?: {
+    type: 'box' | 'pallet';
+    code: string;
+    calibre?: string | null;
+    eggs?: number;
+  };
+  batch?: {
+    processed: number;
+    mode: 'items';
+  };
 }
 
 // Inventory Validation types
@@ -430,6 +450,12 @@ export interface BoxAvailability {
 
 export interface InventoryValidationResult {
   valid: boolean;
+  calibreAvailability?: Array<{
+    calibre: string;
+    requested: number;
+    available: number;
+    missing: number;
+  }>;
   totalItems?: number;
   totalBoxes?: number;
   unavailableBoxes?: BoxAvailability[];

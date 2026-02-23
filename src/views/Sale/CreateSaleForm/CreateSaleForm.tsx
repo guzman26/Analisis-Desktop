@@ -14,6 +14,7 @@ import {
   useConfirmedSalesOrdersInfiniteQuery,
   useCreateSaleMutation,
   useDraftSalesOrdersInfiniteQuery,
+  salesApi,
 } from '@/modules/sales';
 
 type SaleType = 'Venta' | 'Reposición' | 'Donación' | 'Inutilizado' | 'Ración';
@@ -85,6 +86,30 @@ const CreateSaleForm: React.FC = () => {
       const validCalibres = state.selectedCalibres.filter(
         (cal) => cal.boxCount > 0
       );
+
+      // Validate stock availability in BODEGA before creating the draft order.
+      const validation = await salesApi.validateByCalibres(validCalibres);
+      if (!validation.valid) {
+        const unavailable = validation.calibreAvailability?.filter(
+          (entry) => entry.missing > 0
+        );
+        const details =
+          unavailable && unavailable.length > 0
+            ? unavailable
+                .map(
+                  (entry) =>
+                    `Calibre ${entry.calibre}: faltan ${entry.missing} caja(s)`
+                )
+                .join(', ')
+            : validation.message;
+
+        showError(
+          details ||
+            'No hay stock suficiente en BODEGA para completar la solicitud'
+        );
+        setState((prev) => ({ ...prev, isSubmitting: false }));
+        return;
+      }
 
       const saleRequest: SaleRequest = {
         customerId: state.selectedCustomer.customerId,

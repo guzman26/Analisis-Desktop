@@ -7,10 +7,14 @@ import {
   getSaleById,
   getSalesOrders,
   returnBoxes,
+  validateInventoryByCalibres,
 } from '@/api/endpoints';
 import type {
+  AddBoxesToSaleResponse,
   AddBoxesToSaleRequest,
+  CalibreSelection,
   GetSalesOrdersParamsPaginated,
+  InventoryValidationResult,
   PaginatedResponse,
   ReturnBoxesRequest,
   Sale,
@@ -86,7 +90,19 @@ export const salesApi = {
 
   addBoxesToSale: async (payload: AddBoxesToSaleRequest): Promise<Sale> => {
     try {
-      return await addBoxesToSale(payload);
+      const response = await addBoxesToSale(payload);
+      // Backward compatible: backend may return Sale directly or wrapper { sale, ... }.
+      return (response as AddBoxesToSaleResponse).sale ?? (response as Sale);
+    } catch (error) {
+      throw toDomainErrorException(error);
+    }
+  },
+
+  validateByCalibres: async (
+    calibres: CalibreSelection[]
+  ): Promise<InventoryValidationResult> => {
+    try {
+      return await validateInventoryByCalibres(calibres);
     } catch (error) {
       throw toDomainErrorException(error);
     }

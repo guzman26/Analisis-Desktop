@@ -113,6 +113,41 @@ const SalesCard: React.FC<SalesCardProps> = ({
     sale.metadata.requestedBoxesByCalibre.length > 0
       ? sale.metadata.requestedBoxesByCalibre
       : null;
+  const confirmValidation = (() => {
+    if (requestedBoxesByCalibre) {
+      const hasMissing = requestedBoxesByCalibre.some((req: any) => {
+        const current = sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
+        return current < req.boxCount;
+      });
+      if (hasMissing) {
+        return {
+          canConfirm: false,
+          reason: 'Debe completar las cajas solicitadas por calibre antes de confirmar',
+        };
+      }
+
+      const hasExcess = requestedBoxesByCalibre.some((req: any) => {
+        const current = sale.metadata?.boxesByCalibre?.[req.calibre] || 0;
+        return current > req.boxCount;
+      });
+      if (hasExcess) {
+        return {
+          canConfirm: false,
+          reason: 'Hay exceso de cajas en uno o más calibres',
+        };
+      }
+
+      return { canConfirm: true, reason: '' };
+    }
+
+    const hasAnyInventory = getTotalBoxes(sale) > 0 || getPalletsCount(sale) > 0;
+    return {
+      canConfirm: hasAnyInventory,
+      reason: hasAnyInventory
+        ? ''
+        : 'La venta debe tener al menos una caja o pallet para confirmar',
+    };
+  })();
 
   return (
     <div className={`sales-card ${className || ''}`}>
@@ -241,7 +276,8 @@ const SalesCard: React.FC<SalesCardProps> = ({
             <button
               className="action-button confirm-btn"
               onClick={() => onConfirm(sale)}
-              disabled={isConfirming}
+              disabled={isConfirming || !confirmValidation.canConfirm}
+              title={confirmValidation.reason || undefined}
             >
               {isConfirming ? 'Confirmando...' : 'Confirmar'}
             </button>

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Sale } from '@/types';
 import SaleDetailModal from '@/components/SaleDetailModal';
 import ReturnBoxesModal from '@/components/ReturnBoxesModal';
-import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
 import {
   WindowContainer,
   Button,
@@ -27,7 +26,6 @@ const ConfirmedSalesOrdersList: React.FC = () => {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
-  const [showAddBoxesModal, setShowAddBoxesModal] = useState(false);
   const { showSuccess, showError } = useNotifications();
 
   useEffect(() => {
@@ -68,11 +66,6 @@ const ConfirmedSalesOrdersList: React.FC = () => {
   const handleReturnBoxes = (sale: Sale) => {
     setSelectedSale(sale);
     setShowReturnModal(true);
-  };
-
-  const handleAddBoxes = (sale: Sale) => {
-    setSelectedSale(sale);
-    setShowAddBoxesModal(true);
   };
 
   const handleDispatchSale = async (sale: Sale) => {
@@ -167,7 +160,6 @@ const ConfirmedSalesOrdersList: React.FC = () => {
                   onViewDetails={handleViewDetails}
                   onPrint={handlePrintSale}
                   onReturn={handleReturnBoxes}
-                  onAddBoxes={handleAddBoxes}
                   onDispatch={handleDispatchSale}
                   onComplete={handleCompleteSale}
                 />
@@ -212,14 +204,6 @@ const ConfirmedSalesOrdersList: React.FC = () => {
         />
       )}
 
-      {selectedSale && showAddBoxesModal && (
-        <AddBoxesToSaleModal
-          sale={selectedSale}
-          isOpen={showAddBoxesModal}
-          onClose={() => setShowAddBoxesModal(false)}
-          onSuccess={handleModalSuccess}
-        />
-      )}
     </>
   );
 };

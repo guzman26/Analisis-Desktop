@@ -37,6 +37,7 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showSuccess, showError } = useNotifications();
+  const requestedBoxesByCalibre = sale.metadata?.requestedBoxesByCalibre || [];
 
   React.useEffect(() => {
     if (!isOpen) return;
@@ -159,6 +160,30 @@ const AddBoxesToSaleModal: React.FC<AddBoxesToSaleModalProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {requestedBoxesByCalibre.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Progreso por calibre</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {requestedBoxesByCalibre.map((requested) => {
+                  const current = sale.metadata?.boxesByCalibre?.[requested.calibre] || 0;
+                  return (
+                    <div
+                      key={requested.calibre}
+                      className="flex items-center justify-between rounded border px-2 py-1"
+                    >
+                      <span>Calibre {requested.calibre}</span>
+                      <span className="font-medium">
+                        {current}/{requested.boxCount}
+                      </span>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

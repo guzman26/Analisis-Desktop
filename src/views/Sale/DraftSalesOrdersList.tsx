@@ -8,6 +8,7 @@ import {
   SalesCard,
 } from '../../components/design-system';
 import SaleDetailModal from '@/components/SaleDetailModal';
+import AddBoxesToSaleModal from '@/components/AddBoxesToSaleModal';
 import { useNotifications } from '../../components/Notification';
 import {
   useConfirmSaleMutation,
@@ -25,6 +26,7 @@ const SalesOrdersList: React.FC = () => {
   const { showSuccess, showError } = useNotifications();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showAddBoxesModal, setShowAddBoxesModal] = useState(false);
   const [confirmingStates, setConfirmingStates] = useState<{
     [key: string]: boolean;
   }>({});
@@ -64,6 +66,11 @@ const SalesOrdersList: React.FC = () => {
     navigate(`/sales/print/${sale.saleId}`);
   };
 
+  const handleAddBoxes = (sale: Sale) => {
+    setSelectedSale(sale);
+    setShowAddBoxesModal(true);
+  };
+
   const handleConfirmSale = async (sale: Sale) => {
     try {
       // Establecer el estado de carga para esta venta específica
@@ -91,6 +98,11 @@ const SalesOrdersList: React.FC = () => {
         return newStates;
       });
     }
+  };
+
+  const handleModalSuccess = async () => {
+    await salesOrdersDRAFTPaginated.refresh();
+    await salesOrdersCONFIRMEDPaginated.refresh();
   };
 
   // Early return if context is not available
@@ -143,6 +155,7 @@ const SalesOrdersList: React.FC = () => {
                 sale={sale}
                 onViewDetails={handleViewDetails}
                 onPrint={handlePrintSale}
+                onAddBoxes={handleAddBoxes}
                 onConfirm={handleConfirmSale}
                 isConfirming={confirmingStates[sale.saleId]}
               />
@@ -178,6 +191,15 @@ const SalesOrdersList: React.FC = () => {
         isOpen={showDetailModal}
         onClose={handleCloseModal}
       />
+
+      {selectedSale && showAddBoxesModal && (
+        <AddBoxesToSaleModal
+          sale={selectedSale}
+          isOpen={showAddBoxesModal}
+          onClose={() => setShowAddBoxesModal(false)}
+          onSuccess={handleModalSuccess}
+        />
+      )}
     </>
   );
 };
