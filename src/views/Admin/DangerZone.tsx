@@ -23,6 +23,7 @@ const {
   deletePalletsAndAssignedBoxes: deletePalletsAndAssignedBoxesAsync,
   deleteUnassignedBoxes: deleteUnassignedBoxesAsync,
   deleteBoxesByLocation: deleteBoxesByLocationAsync,
+  deleteBoxesOlderThan: deleteBoxesOlderThanAsync,
   backfillMetrics,
   calculateMetricsForDate,
   moveAllPalletsFromBodegaToVenta,
@@ -299,6 +300,33 @@ const DangerZone: React.FC = () => {
       dangerLevel: 'high',
       allowLocationSelection: true,
       defaultLocation: 'PACKING',
+    },
+    {
+      id: 'deleteBoxesOlderThanSixMonthsAsync',
+      title: 'Eliminar cajas > 6 meses (asíncrono)',
+      description:
+        'Inicia un proceso asíncrono que borra todas las cajas con más de 6 meses de antigüedad en todas las ubicaciones.',
+      icon: <Trash2 className="w-6 h-6" />,
+      action: async () => {
+        try {
+          await deleteBoxesOlderThanAsync(180);
+          return {
+            success: true,
+            message:
+              'Se inició la eliminación asíncrona de cajas con más de 6 meses. Revisa los logs para el progreso.',
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al iniciar la eliminación: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas iniciar la eliminación ASÍNCRONA de cajas con más de 6 meses de antigüedad en todas las ubicaciones? Esta acción no se puede deshacer.',
+      dangerLevel: 'critical',
     },
     {
       id: 'deletePackingPalletsAsync',

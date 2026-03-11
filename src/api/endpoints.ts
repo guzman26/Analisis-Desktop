@@ -509,6 +509,12 @@ export const deleteBoxesByLocationAsync = (ubicacion?: string) =>
     ...(ubicacion && { ubicacion }),
   });
 
+export const deleteBoxesOlderThanAsync = (olderThanDays: number) =>
+  admin<any>('delete-boxes', 'bulk', {
+    confirmDelete: true,
+    olderThanDays,
+  });
+
 export const closeAllOpenPallets = (ubicacion?: string | string[]) =>
   admin<{
     success: boolean;

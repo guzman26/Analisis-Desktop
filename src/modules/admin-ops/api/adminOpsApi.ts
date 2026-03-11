@@ -4,6 +4,7 @@ import {
   deleteAllBoxes,
   deleteAllBoxesAsync,
   deleteBoxesByLocationAsync,
+  deleteBoxesOlderThanAsync,
   deletePackingBoxesAsync,
   deletePackingPalletsAsync,
   deletePalletsAndAssignedBoxesAsync,
@@ -71,6 +72,14 @@ export const adminOpsApi = {
       return await deleteBoxesByLocationAsync(
         ubicacion === 'ALL' ? undefined : ubicacion
       );
+    } catch (error) {
+      throw toDomainErrorException(error);
+    }
+  },
+
+  deleteBoxesOlderThan: async (olderThanDays: number) => {
+    try {
+      return await deleteBoxesOlderThanAsync(olderThanDays);
     } catch (error) {
       throw toDomainErrorException(error);
     }
