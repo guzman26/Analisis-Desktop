@@ -515,6 +515,15 @@ export const deleteBoxesOlderThanAsync = (olderThanDays: number) =>
     olderThanDays,
   });
 
+export const cleanupPackingPallets = (
+  mode: 'dry-run' | 'apply',
+  confirmApply?: boolean
+) =>
+  admin<any>('cleanup-packing-pallets', 'bulk', {
+    mode,
+    ...(confirmApply ? { confirmApply: true } : {}),
+  });
+
 export const closeAllOpenPallets = (ubicacion?: string | string[]) =>
   admin<{
     success: boolean;

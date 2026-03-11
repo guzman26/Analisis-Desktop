@@ -24,6 +24,7 @@ const {
   deleteUnassignedBoxes: deleteUnassignedBoxesAsync,
   deleteBoxesByLocation: deleteBoxesByLocationAsync,
   deleteBoxesOlderThan: deleteBoxesOlderThanAsync,
+  cleanupPackingPallets: cleanupPackingPalletsAsync,
   backfillMetrics,
   calculateMetricsForDate,
   moveAllPalletsFromBodegaToVenta,
@@ -326,6 +327,58 @@ const DangerZone: React.FC = () => {
       },
       confirmationMessage:
         '¿Confirmas iniciar la eliminación ASÍNCRONA de cajas con más de 6 meses de antigüedad en todas las ubicaciones? Esta acción no se puede deshacer.',
+      dangerLevel: 'critical',
+    },
+    {
+      id: 'cleanupPackingPalletsDryRun',
+      title: 'Limpieza PACKING (simulación)',
+      description:
+        'Ejecuta un dry-run de limpieza en PACKING: reporta pallets vacías > 1 semana y pallets > 2 semanas sin aplicar cambios.',
+      icon: <Shield className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await cleanupPackingPalletsAsync('dry-run');
+          return {
+            success: true,
+            message: `Dry-run completado. Revisados: ${result.totalPackingReviewed}, vacías >1 semana: ${result.emptyOlder7Found}, >2 semanas: ${result.older14Found}.`,
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al ejecutar dry-run: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas ejecutar la simulación de limpieza en PACKING? Esta acción NO modifica datos.',
+      dangerLevel: 'high',
+    },
+    {
+      id: 'cleanupPackingPalletsApply',
+      title: 'Limpieza PACKING (aplicar)',
+      description:
+        'Aplica limpieza en PACKING: elimina pallets vacías > 1 semana y cierra+mueve a VENTA pallets > 2 semanas.',
+      icon: <AlertTriangle className="w-6 h-6" />,
+      action: async () => {
+        try {
+          const result = await cleanupPackingPalletsAsync('apply');
+          return {
+            success: true,
+            message: `Limpieza aplicada. Revisados: ${result.totalPackingReviewed}, vacías eliminadas: ${result.emptyOlder7Deleted}, pallets movidos a VENTA: ${result.older14MovedToVenta}.`,
+          };
+        } catch (error) {
+          return {
+            success: false,
+            message: `Error al aplicar limpieza: ${
+              error instanceof Error ? error.message : 'Error desconocido'
+            }`,
+          };
+        }
+      },
+      confirmationMessage:
+        '¿Confirmas APLICAR limpieza en PACKING? Esta acción es irreversible: eliminará pallets vacías antiguas y moverá pallets antiguas a VENTA.',
       dangerLevel: 'critical',
     },
     {

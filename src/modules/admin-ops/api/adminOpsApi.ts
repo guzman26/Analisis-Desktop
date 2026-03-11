@@ -1,6 +1,7 @@
 import {
   backfillMetrics,
   calculateMetricsForDate,
+  cleanupPackingPallets,
   deleteAllBoxes,
   deleteAllBoxesAsync,
   deleteBoxesByLocationAsync,
@@ -80,6 +81,14 @@ export const adminOpsApi = {
   deleteBoxesOlderThan: async (olderThanDays: number) => {
     try {
       return await deleteBoxesOlderThanAsync(olderThanDays);
+    } catch (error) {
+      throw toDomainErrorException(error);
+    }
+  },
+
+  cleanupPackingPallets: async (mode: 'dry-run' | 'apply') => {
+    try {
+      return await cleanupPackingPallets(mode, mode === 'apply');
     } catch (error) {
       throw toDomainErrorException(error);
     }
